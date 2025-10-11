@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "VZuOPqcpvKlGexATfxRf3WPe47VxDNDeGT8BlMgce14=",
+  "Source": "IHCAE.Api",
+  "BasePath": "_content/IHCAE.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

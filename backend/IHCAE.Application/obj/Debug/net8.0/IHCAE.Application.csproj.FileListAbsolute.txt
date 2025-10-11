@@ -1,0 +1,15 @@
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/bin/Debug/net8.0/IHCAE.Application.deps.json
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/bin/Debug/net8.0/IHCAE.Application.dll
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/bin/Debug/net8.0/IHCAE.Application.pdb
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/bin/Debug/net8.0/IHCAE.Domain.dll
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/bin/Debug/net8.0/IHCAE.Domain.pdb
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Application.csproj.AssemblyReference.cache
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Application.AssemblyInfoInputs.cache
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Application.AssemblyInfo.cs
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Application.csproj.CoreCompileInputs.cache
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Ap.1FFE4FA0.Up2Date
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Application.dll
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/refint/IHCAE.Application.dll
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/IHCAE.Application.pdb
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Application/obj/Debug/net8.0/ref/IHCAE.Application.dll
