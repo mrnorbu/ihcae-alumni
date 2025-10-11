@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Serilog;
-using IHCAE.Infrastructure.Data;
-using IHCAE.Infrastructure.Repositories;
-using IHCAE.Infrastructure.Services;
-using IHCAE.Application.Interfaces;
+using IHCAE.Api.Shared.Data;
+using IHCAE.Api.Features.Auth.Repositories;
+using IHCAE.Api.Features.Auth.Services;
+using IHCAE.Api.Features.Alumni.Services;
+using IHCAE.Api.Features.EmailVerification.Services;
+using IHCAE.Api.Features.PasswordReset.Services;
+using IHCAE.Api.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +46,7 @@ builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IAlumniImportService, AlumniImportService>();
 
 // Seed Data Service
-builder.Services.AddHostedService<IHCAE.Infrastructure.Services.SeedDataService>();
+builder.Services.AddHostedService<SeedDataService>();
 
 // JWT Authentication Configuration
 var jwtSettings = builder.Configuration.GetSection("Jwt");

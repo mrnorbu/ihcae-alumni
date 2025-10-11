@@ -98,7 +98,8 @@ The Indian Himalayan Centre for Adventure & Eco-Tourism (IHCAE) community, compr
 
 ### Technology Best Practices
 * **.NET (Backend)**
-    * **Layered Architecture**: Employ a clean, layered architecture (e.g., Domain, Application, Infrastructure, Presentation) to ensure separation of concerns.
+    * **Feature-Based Architecture**: Organize the backend using a feature-based structure that groups related functionality together (e.g., Auth, Admin, Alumni, EmailVerification, PasswordReset) for improved maintainability and clarity.
+    * **Single Project Structure**: Consolidate all backend code into a single `IHCAE.Api` project with feature-based folders, eliminating the complexity of multiple projects while maintaining clear separation of concerns.
     * **RESTful APIs**: All APIs should be designed following RESTful principles for consistency and predictability.
     * **Dependency Injection**: Utilize the built-in DI container to manage dependencies and promote loosely coupled code.
     * **ORM Usage**: Use an Object-Relational Mapper (ORM) like Entity Framework Core for data access to the MySQL database.
@@ -107,6 +108,47 @@ The Indian Himalayan Centre for Adventure & Eco-Tourism (IHCAE) community, compr
     * **State Management**: Implement a clear state management strategy (e.g., service-based or a library like NgRx) for handling application state.
     * **Reactive Forms**: Use Reactive Forms for handling complex form logic and validation.
     * **Style Guide Adherence**: Follow the official Angular style guide to maintain code consistency and readability.
+
+### Backend Architecture Approach
+
+The backend follows a **Feature-Based Architecture** pattern that organizes code by business capabilities rather than technical layers. This approach provides several benefits:
+
+* **Improved Maintainability**: Related functionality is grouped together, making it easier to understand and modify
+* **Reduced Complexity**: Single project structure eliminates the need to navigate between multiple projects
+* **Clear Ownership**: Each feature has obvious boundaries and responsibilities
+* **Easier Onboarding**: New developers can understand features independently
+* **Future-Ready**: New features can be added as self-contained vertical slices
+
+#### Feature Organization Structure
+
+```
+IHCAE.Api/
+├── Features/                    # Feature-based vertical slices
+│   ├── Auth/                   # Authentication & User Management
+│   │   ├── Controllers/        # API endpoints
+│   │   ├── Services/           # Business logic
+│   │   ├── Repositories/      # Data access
+│   │   └── Models/             # Entities and DTOs
+│   ├── Admin/                  # Administrative Functions
+│   ├── Alumni/                 # Alumni Data Management
+│   ├── EmailVerification/      # Email Verification
+│   └── PasswordReset/          # Password Reset
+├── Shared/                     # Cross-cutting concerns
+│   ├── Models/                 # Shared entities (Role, UserRole)
+│   ├── Services/               # Shared services (Email, SeedData)
+│   ├── DTOs/                   # Common DTOs (ErrorResponse)
+│   └── Data/                   # Database context and migrations
+└── Program.cs                  # Application entry point
+```
+
+#### Shared Components Strategy
+
+Components are placed in the `Shared/` folder when they are:
+* Used by multiple features (e.g., `Role`, `UserRole` entities)
+* Cross-cutting concerns (e.g., `EmailService`, `AppDbContext`)
+* Common utilities (e.g., `ErrorResponse`, `PaginatedResult` DTOs)
+
+This approach ensures that truly shared components are easily accessible while maintaining clear feature boundaries.
 
 ---
 ## 5. Epic List
@@ -135,13 +177,14 @@ The Indian Himalayan Centre for Adventure & Eco-Tourism (IHCAE) community, compr
 
 #### Story 1.1: Initial Project Scaffolding
 * **As a** developer,
-* **I want** the initial .NET and Angular project structures set up in the monorepo,
+* **I want** the initial .NET and Angular project structures set up in the monorepo with a feature-based backend architecture,
 * **so that** I have a clean foundation to start building features.
 * **Acceptance Criteria:**
-    1.  A .NET 8+ Web API project is created.
+    1.  A .NET 8+ Web API project is created with feature-based folder structure.
     2.  An Angular 17+ workspace is created.
     3.  Both projects are located within a single Git monorepo.
-    4.  A basic CI/CD pipeline is configured to build and run initial tests for both projects.
+    4.  The backend follows a feature-based architecture pattern with Features/ and Shared/ folders.
+    5.  A basic CI/CD pipeline is configured to build and run initial tests for both projects.
 
 #### Story 1.2: Database Setup and Alumni Data Import
 * **As an** administrator,

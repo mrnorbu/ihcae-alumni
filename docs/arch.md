@@ -2680,20 +2680,57 @@ Here's the tenth section: **Backend Architecture**. ⚙️
 
 ## **10. Backend Architecture**
 
-This section details the specific patterns and structure for our .NET application, following a **Layered Architecture** pattern as required by the PRD. 📦
+This section details the specific patterns and structure for our .NET application, following a **Feature-Based Architecture** pattern optimized for maintainability and scalability. 📦
 
 ### **Service Architecture**
 
-The backend monolith will be organized into a clean, layered structure to separate concerns.
+The backend monolith is organized into a feature-based structure that groups related functionality together, making it easier to maintain and understand. This approach replaces the traditional layered architecture with vertical slices organized by business capabilities.
 
-  * **Layered Project Structure**:
+  * **Feature-Based Project Structure**:
     ```text
-    src/
-    ├── Domain/              # Core entities and business models (e.g., User, JobPosting)
-    ├── Application/         # Business logic, services, and interfaces (e.g., IForumService)
-    ├── Infrastructure/      # Data access (DbContext, repositories), email services
-    └── Api/                 # ASP.NET Core project: controllers, DTOs, middleware
+    IHCAE.Api/
+    ├── Features/            # Feature-based vertical slices
+    │   ├── Auth/            # Authentication & User Management
+    │   ├── Admin/           # Administrative Functions  
+    │   ├── Alumni/          # Alumni Data Management
+    │   ├── EmailVerification/ # Email Verification
+    │   └── PasswordReset/   # Password Reset
+    ├── Shared/              # Cross-cutting concerns
+    │   ├── Models/          # Shared entities (Role, UserRole)
+    │   ├── Services/        # Shared services (Email, SeedData)
+    │   ├── DTOs/            # Common DTOs (ErrorResponse, PaginatedResult)
+    │   └── Data/            # Database context and migrations
+    └── Program.cs           # Application entry point
     ```
+
+### **Feature-Based Architecture Benefits**
+
+This approach provides several advantages over traditional layered architecture:
+
+  * **Cohesion**: Related functionality is grouped together, making it easier to understand and maintain
+  * **Reduced Complexity**: No need to navigate between multiple projects for a single feature
+  * **Clear Ownership**: Each feature has obvious ownership and boundaries
+  * **Easier Onboarding**: New developers can understand features independently
+  * **Future-Ready**: Easy to add new features (Forums, Jobs, Events) as vertical slices
+  * **Simplified Dependencies**: Clear separation between feature-specific and shared components
+
+### **Feature Organization Pattern**
+
+Each feature follows a consistent structure:
+
+  * **Controllers/**: API endpoints specific to the feature
+  * **Services/**: Business logic and interfaces for the feature
+  * **Repositories/**: Data access patterns (when needed)
+  * **Models/**: 
+    - **Entities/**: Domain models owned by the feature
+    - **DTOs/**: Data transfer objects for the feature
+
+### **Shared Components Strategy**
+
+Components are placed in `Shared/` when they are:
+  * Used by multiple features (e.g., `Role`, `UserRole`)
+  * Cross-cutting concerns (e.g., `EmailService`, `AppDbContext`)
+  * Common utilities (e.g., `ErrorResponse`, `PaginatedResult`)
 
 ### **Database Architecture**
 
@@ -2906,21 +2943,77 @@ This monorepo layout is designed to logically separate the Angular frontend and 
 ├── IHCAE.sln                 # .NET Solution file for the entire backend
 |
 ├── src/
-│   ├── IHCAE.Api/            # .NET Presentation Layer (ASP.NET Core Web API)
-│   │   ├── Controllers/      # API Controllers (e.g., ForumsController.cs)
-│   │   ├── DTOs/             # Data Transfer Objects
-│   │   └── Program.cs        # Application entry point and configuration
-│   │
-│   ├── IHCAE.Application/    # .NET Application Layer (Business Logic)
-│   │   ├── Interfaces/       # Service and Repository interfaces (e.g., IForumService.cs)
-│   │   └── Services/         # Concrete service implementations
-│   │
-│   ├── IHCAE.Domain/         # .NET Domain Layer (Core Models)
-│   │   └── Entities/         # Domain entities (e.g., User.cs, JobPosting.cs)
-│   │
-│   ├── IHCAE.Infrastructure/ # .NET Infrastructure Layer (Data Access, etc.)
-│   │   ├── Data/             # Entity Framework DbContext
-│   │   └── Repositories/     # Repository pattern implementations
+├── IHCAE.Api/            # Single .NET Project with Feature-Based Structure
+│   ├── Features/         # Feature-based organization
+│   │   ├── Auth/        # Authentication & User Management
+│   │   │   ├── Controllers/
+│   │   │   │   └── AuthController.cs
+│   │   │   ├── Services/
+│   │   │   │   ├── IAuthService.cs
+│   │   │   │   └── AuthService.cs
+│   │   │   ├── Repositories/
+│   │   │   │   ├── IUserRepository.cs
+│   │   │   │   └── UserRepository.cs
+│   │   │   └── Models/
+│   │   │       ├── Entities/
+│   │   │       │   ├── User.cs
+│   │   │       │   ├── UserRefreshToken.cs
+│   │   │       │   └── AlumniProfile.cs
+│   │   │       └── DTOs/
+│   │   │           ├── RegisterRequest.cs
+│   │   │           ├── LoginRequest.cs
+│   │   │           ├── AuthResult.cs
+│   │   │           └── UserSummaryDto.cs
+│   │   ├── Admin/       # Administrative Functions
+│   │   │   ├── Controllers/
+│   │   │   │   ├── AdminController.cs
+│   │   │   │   └── UserManagementController.cs
+│   │   │   └── Models/DTOs/
+│   │   │       ├── AdminActionResponse.cs
+│   │   │       └── PaginatedResult.cs
+│   │   ├── Alumni/      # Alumni Data Management
+│   │   │   ├── Services/
+│   │   │   │   ├── IAlumniImportService.cs
+│   │   │   │   └── AlumniImportService.cs
+│   │   │   └── Models/
+│   │   │       ├── Entities/
+│   │   │       │   └── AlumniDatabase.cs
+│   │   │       └── DTOs/
+│   │   │           ├── AlumniImportRequest.cs
+│   │   │           ├── AlumniImportResult.cs
+│   │   │           └── AlumniDatabaseDto.cs
+│   │   ├── EmailVerification/  # Email Verification Feature
+│   │   │   ├── Controllers/
+│   │   │   │   └── EmailVerificationController.cs
+│   │   │   ├── Services/
+│   │   │   │   ├── IEmailVerificationService.cs
+│   │   │   │   └── EmailVerificationService.cs
+│   │   │   └── Models/Entities/
+│   │   │       └── EmailVerificationToken.cs
+│   │   └── PasswordReset/     # Password Reset Feature
+│   │       ├── Controllers/
+│   │       │   └── PasswordResetController.cs
+│   │       ├── Services/
+│   │       │   ├── IPasswordResetService.cs
+│   │       │   └── PasswordResetService.cs
+│   │       └── Models/Entities/
+│   │           └── PasswordResetToken.cs
+│   ├── Shared/          # Cross-cutting concerns and shared components
+│   │   ├── Models/      # Shared entities used across features
+│   │   │   ├── Role.cs
+│   │   │   └── UserRole.cs
+│   │   ├── Services/    # Shared services
+│   │   │   ├── IEmailService.cs
+│   │   │   ├── EmailService.cs
+│   │   │   └── SeedDataService.cs
+│   │   ├── DTOs/        # Shared DTOs
+│   │   │   ├── ErrorResponse.cs
+│   │   │   └── PaginatedResult.cs
+│   │   └── Data/        # Database context and migrations
+│   │       ├── AppDbContext.cs
+│   │       └── Migrations/
+│   ├── Program.cs       # Application entry point and configuration
+│   └── appsettings.json # Configuration settings
 │   │
 │   └── IHCAE.Web/            # Angular Frontend Application (SPA)
 │       ├── src/
@@ -2955,12 +3048,12 @@ This section outlines the tools, setup steps, and commands required to run the p
       * MySQL Server (for local development)
   * **Initial Setup**:
     1.  Clone the repository.
-    2.  Run `dotnet restore` in the backend directory (`/src/IHCAE.Api/`).
-    3.  Run `npm install` in the frontend directory (`/src/IHCAE.Web/`).
+    2.  Run `dotnet restore` in the backend directory (`/backend/IHCAE.Api/`).
+    3.  Run `npm install` in the frontend directory (`/frontend/`).
     4.  Start the local MySQL database server.
   * **Development Commands**: The backend and frontend must be run concurrently in separate terminals.
-      * **Run Backend API**: `dotnet run --project src/IHCAE.Api/IHCAE.Api.csproj`
-      * **Run Frontend App**: `cd src/IHCAE.Web && ng serve`
+      * **Run Backend API**: `cd backend/IHCAE.Api && dotnet run`
+      * **Run Frontend App**: `cd frontend && ng serve`
 
 ### **Environment Configuration**
 
@@ -2971,7 +3064,7 @@ This section outlines the tools, setup steps, and commands required to run the p
       "Jwt": { "Key": "...", "Issuer": "..." }
     }
     ```
-  * **Frontend (`src/IHCAE.Web/src/environments/environment.ts`)**:
+  * **Frontend (`frontend/src/environments/environment.ts`)**:
     ```typescript
     export const environment = {
       production: false,

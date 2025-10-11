@@ -1,0 +1,303 @@
+# IHCAE Alumni Network - Monorepo .gitignore
+# Tailored for .NET 8 + Angular 17 monorepo with production deployment strategy
+
+# ===========================================
+# .NET Backend Build Artifacts
+# ===========================================
+
+# Build outputs (will be published for production)
+backend/**/bin/
+backend/**/obj/
+backend/**/out/
+backend/**/publish/
+
+# .NET build artifacts
+*.dll
+*.pdb
+*.exe
+*.cache
+*.log
+*.tmp
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet packages and restore artifacts
+backend/**/packages/
+backend/**/project.lock.json
+backend/**/project.fragment.lock.json
+backend/**/artifacts/
+backend/**/.nuget/
+
+# Entity Framework migrations (keep the migration files, ignore temp files)
+backend/**/Migrations/*.Designer.cs
+backend/**/Migrations/*.ModelSnapshot.cs.bak
+
+# ===========================================
+# Angular Frontend Build Artifacts
+# ===========================================
+
+# Angular build outputs (will be published for production)
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+
+# Angular cache and temp files
+frontend/.angular/
+frontend/.angular/cache/
+frontend/.sass-cache/
+frontend/connect.lock
+frontend/libpeerconnection.log
+frontend/testem.log
+frontend/typings/
+
+# Node.js dependencies (will be installed during build)
+frontend/node_modules/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/lerna-debug.log*
+
+# ===========================================
+# Development and IDE Files
+# ===========================================
+
+# Visual Studio / Visual Studio Code
+.vs/
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+
+# JetBrains IDEs
+.idea/
+*.sln.iml
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+# Eclipse
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# ===========================================
+# Environment and Configuration Files
+# ===========================================
+
+# Environment-specific configuration (keep templates, ignore actual values)
+backend/**/appsettings.Development.json
+backend/**/appsettings.Production.json
+backend/**/appsettings.Staging.json
+frontend/src/environments/environment.prod.ts
+frontend/src/environments/environment.staging.ts
+
+# Keep the base configuration files
+!backend/**/appsettings.json
+!frontend/src/environments/environment.ts
+
+# Database files (if using local SQLite for development)
+*.db
+*.sqlite
+*.sqlite3
+
+# ===========================================
+# Logs and Runtime Files
+# ===========================================
+
+# Application logs
+backend/**/logs/
+backend/**/*.log
+frontend/logs/
+*.log
+
+# Runtime and temporary files
+*.pid
+*.seed
+*.pid.lock
+*.tgz
+*.tar.gz
+
+# Coverage reports
+coverage/
+*.lcov
+.nyc_output/
+
+# ===========================================
+# Security and Sensitive Files
+# ===========================================
+
+# JWT secrets and API keys
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Data Protection keys
+backend/**/DataProtection-Keys/
+
+# ===========================================
+# OS Generated Files
+# ===========================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===========================================
+# Testing and Quality Assurance
+# ===========================================
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Screenshots for testing
+__screenshots__/
+e2e/screenshots/
+
+# ===========================================
+# Package Managers
+# ===========================================
+
+# npm
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.npm
+frontend/.eslintcache
+
+# Yarn
+frontend/.yarn-integrity
+frontend/.yarn/cache
+frontend/.yarn/unplugged
+frontend/.yarn/build-state.yml
+frontend/.yarn/install-state.gz
+frontend/.pnp.*
+
+# ===========================================
+# Deployment and CI/CD
+# ===========================================
+
+# Deployment artifacts (will be generated during CI/CD)
+deploy/
+deployment/
+*.zip
+*.tar.gz
+*.war
+*.jar
+
+# CI/CD configuration (keep templates, ignore actual secrets)
+.github/workflows/secrets/
+.gitlab-ci-local/
+
+# ===========================================
+# Documentation Build Artifacts
+# ===========================================
+
+# Generated documentation
+docs/_build/
+docs/build/
+docs/site/
+
+# ===========================================
+# Backup and Temporary Files
+# ===========================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# ===========================================
+# Custom Project-Specific Ignores
+# ===========================================
+
+# IHCAE-specific ignores
+backend-restructure-plan.plan.md
+*.plan.md
+migration-status.md
+migrate*.sh
+
+# Keep important files
+!.gitignore
+!README.md
+!docs/
+!backend/IHCAE.Api/IHCAE.Api.csproj
+!frontend/package.json
+!frontend/angular.json
+!frontend/tailwind.config.js
+!IHCAE.sln
