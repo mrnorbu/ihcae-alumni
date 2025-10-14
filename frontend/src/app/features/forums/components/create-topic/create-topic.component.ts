@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { LucideAngularModule, X, Eye, EyeOff, Send, Tag, Hash } from 'lucide-angular';
 import type { CreateTopicRequest, TagDto } from '../../../../shared/models';
 import { convertLinksToHtml } from '../../utils/link-parser';
 import { ForumService } from '../../services/forum.service';
@@ -13,7 +14,7 @@ import { ForumService } from '../../services/forum.service';
 @Component({
   selector: 'app-create-topic',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, LucideAngularModule],
   template: `
     <div class="bg-white rounded-lg shadow-md p-6">
       <div class="flex justify-between items-center mb-6">

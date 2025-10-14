@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type {
   TopicSummaryDto,
@@ -127,6 +127,29 @@ export class ForumService {
   getPopularTags(limit: number = 20): Observable<TagDto[]> {
     const params = new HttpParams().set('limit', limit.toString());
     return this.http.get<TagDto[]>(`${this.apiUrl}/tags/popular`, { params });
+  }
+
+  /**
+   * Gets posts for a specific topic.
+   * Returns all posts in the topic including replies.
+   */
+  getTopicPosts(topicId: string): Observable<PostDto[]> {
+    return this.getTopicById(topicId).pipe(
+      map(topic => topic.posts)
+    );
+  }
+
+  /**
+   * Creates a reply to a specific post.
+   * Convenience method for creating nested replies.
+   */
+  createReply(topicId: string, postId: string, content: string): Observable<PostDto> {
+    const request: CreatePostRequest = {
+      content: content,
+      parentPostId: postId
+    };
+    
+    return this.createPost(topicId, request);
   }
 }
 

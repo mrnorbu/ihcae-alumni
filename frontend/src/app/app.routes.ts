@@ -43,7 +43,7 @@ export const routes: Routes = [
   },
   {
     path: 'directory',
-    loadComponent: () => import('./features/directory/containers/directory-page/directory-page.component').then(m => m.DirectoryPageComponent),
+    loadComponent: () => import('./features/directory/containers/modern-directory-page/modern-directory-page.component').then(m => m.ModernDirectoryPageComponent),
     canActivate: [AlumniGuard]
   },
   {
@@ -78,12 +78,7 @@ export const routes: Routes = [
   },
   {
     path: 'forums',
-    loadComponent: () => import('./features/forums/containers/forum-list/forum-list.component').then(m => m.ForumListComponent),
-    canActivate: [AlumniGuard]
-  },
-  {
-    path: 'forums/create',
-    loadComponent: () => import('./features/forums/components/create-topic/create-topic.component').then(m => m.CreateTopicComponent),
+    loadComponent: () => import('./features/forums/containers/modern-forum-list/modern-forum-list.component').then(m => m.ModernForumListComponent),
     canActivate: [AlumniGuard]
   },
   {
