@@ -62,6 +62,21 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'admin/content',
+    loadComponent: () => import('./features/admin/content-management/content-management.component').then(m => m.ContentManagementComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/alumni',
+    loadComponent: () => import('./features/admin/alumni-management/alumni-management.component').then(m => m.AlumniManagementComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/forums',
+    loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'forums',
     loadComponent: () => import('./features/forums/containers/forum-list/forum-list.component').then(m => m.ForumListComponent),
     canActivate: [AuthGuard]

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, MessageCircle } from 'lucide-angular';
+import { LucideAngularModule, MessageCircle, Pin, Lock, Unlock, Trash2 } from 'lucide-angular';
 import type { TopicSummaryDto } from '../../../../shared/models';
 
 /**
@@ -19,9 +19,8 @@ import type { TopicSummaryDto } from '../../../../shared/models';
   template: `
     <div
       class="bg-white rounded-lg border border-neutral-200 hover:border-neutral-300 hover:shadow-sm transition-all cursor-pointer"
-      [class.border-l-4]="topic.isPinned"
-      [class.!border-l-primary-500]="topic.isPinned"
-      [class.bg-primary-50]="isExpanded"
+      [class.bg-blue-50]="isExpanded"
+      [class.border-blue-200]="isExpanded"
       (click)="toggleExpansion()"
     >
       <!-- Compact Topic Header -->
@@ -30,12 +29,12 @@ import type { TopicSummaryDto } from '../../../../shared/models';
           <!-- Author Avatar (Smaller) -->
           <div class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-neutral-600">
             <img
-              *ngIf="topic.createdBy.profileImageUrl"
+              *ngIf="topic.createdBy.profileImageUrl && !isLucideIconUrl(topic.createdBy.profileImageUrl)"
               [src]="topic.createdBy.profileImageUrl"
               [alt]="getAuthorName(topic.createdBy)"
               class="w-8 h-8 rounded-full object-cover"
             />
-            <span *ngIf="!topic.createdBy.profileImageUrl">
+            <span *ngIf="!topic.createdBy.profileImageUrl || isLucideIconUrl(topic.createdBy.profileImageUrl)">
               {{ getAuthorInitials(topic.createdBy) }}
             </span>
           </div>
@@ -44,9 +43,12 @@ import type { TopicSummaryDto } from '../../../../shared/models';
           <div class="flex-1 min-w-0">
             <!-- Title Row -->
             <div class="flex items-start gap-2 mb-2">
-              <i *ngIf="topic.isPinned" class="bi bi-pin-fill text-primary-600 text-xs mt-0.5 flex-shrink-0" title="Pinned"></i>
-              <i *ngIf="topic.isLocked" class="bi bi-lock-fill text-neutral-400 text-xs mt-0.5 flex-shrink-0" title="Locked"></i>
-              <h3 class="text-base font-semibold text-neutral-900 hover:text-primary-600 transition-colors flex-1 line-clamp-2">
+              <div *ngIf="topic.isPinned" class="flex items-center gap-1 mt-0.5 flex-shrink-0">
+                <lucide-icon [img]="pinIcon" [size]="12" class="text-blue-600" title="Pinned"></lucide-icon>
+                <span class="text-xs text-blue-600 font-medium bg-blue-50 px-1.5 py-0.5 rounded">Pinned</span>
+              </div>
+              <lucide-icon *ngIf="topic.isLocked" [img]="lockIcon" [size]="12" class="text-neutral-400 mt-0.5 flex-shrink-0" title="Locked"></lucide-icon>
+              <h3 class="text-base font-semibold text-neutral-900 hover:text-blue-600 transition-colors flex-1 line-clamp-2">
                 {{ topic.title }}
               </h3>
             </div>
@@ -60,7 +62,7 @@ import type { TopicSummaryDto } from '../../../../shared/models';
             
             <!-- Reply Count -->
             <div class="flex items-center gap-1 text-sm text-neutral-600 mb-2">
-              <lucide-icon [img]="messageIcon" [size]="14" class="text-primary-600"></lucide-icon>
+              <lucide-icon [img]="messageIcon" [size]="14" class="text-blue-600"></lucide-icon>
               <span>{{ topic.postCount }} {{ topic.postCount === 1 ? 'reply' : 'replies' }}</span>
             </div>
             
@@ -68,13 +70,13 @@ import type { TopicSummaryDto } from '../../../../shared/models';
             <div *ngIf="topic.tags && topic.tags.length > 0" class="flex flex-wrap gap-1.5 mt-2">
               <span
                 *ngFor="let tag of topic.tags.slice(0, 3)"
-                class="text-sm px-2 py-0.5 bg-primary-50 text-primary-700 rounded-md font-medium"
+                class="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md"
               >
                 {{ tag.name }}
               </span>
               <span
                 *ngIf="topic.tags.length > 3"
-                class="text-sm px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded-md font-medium"
+                class="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md"
               >
                 +{{ topic.tags.length - 3 }}
               </span>
@@ -101,16 +103,16 @@ import type { TopicSummaryDto } from '../../../../shared/models';
           >
             <button
               (click)="togglePinTopic($event)"
-              class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 flex items-center gap-2"
+              class="w-full px-3 py-2 text-left text-sm text-blue-700 hover:bg-blue-50 flex items-center gap-2"
             >
-              <i class="bi" [class.bi-pin]="!topic.isPinned" [class.bi-pin-fill]="topic.isPinned"></i>
+              <lucide-icon [img]="pinIcon" [size]="12"></lucide-icon>
               {{ topic.isPinned ? 'Unpin' : 'Pin' }}
             </button>
             <button
               (click)="toggleLockTopic($event)"
               class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 flex items-center gap-2"
             >
-              <i class="bi" [class.bi-unlock]="topic.isLocked" [class.bi-lock]="!topic.isLocked"></i>
+              <lucide-icon [img]="topic.isLocked ? unlockIcon : lockIcon" [size]="12"></lucide-icon>
               {{ topic.isLocked ? 'Unlock' : 'Lock' }}
             </button>
             <hr class="my-1">
@@ -118,7 +120,7 @@ import type { TopicSummaryDto } from '../../../../shared/models';
               (click)="deleteTopic($event)"
               class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
             >
-              <i class="bi bi-trash"></i>
+              <lucide-icon [img]="deleteIcon" [size]="12"></lucide-icon>
               Delete
             </button>
           </div>
@@ -142,6 +144,10 @@ export class TopicCardComponent {
   
   // Lucide icons
   readonly messageIcon = MessageCircle;
+  readonly pinIcon = Pin;
+  readonly lockIcon = Lock;
+  readonly unlockIcon = Unlock;
+  readonly deleteIcon = Trash2;
 
   /**
    * Toggles the expansion state of the topic
@@ -227,6 +233,13 @@ export class TopicCardComponent {
     }
     
     return 'U';
+  }
+
+  /**
+   * Checks if the URL is a Lucide icon URL (default placeholder)
+   */
+  isLucideIconUrl(url: string): boolean {
+    return url.includes('lucide') || url.includes('placeholder') || url.includes('default');
   }
 
   /**

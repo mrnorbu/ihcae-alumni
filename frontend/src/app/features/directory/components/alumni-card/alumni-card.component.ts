@@ -19,14 +19,14 @@ import {
  * 
  * **Key Features:**
  * - Click-to-navigate card with router link
- * - Profile image with gradient fallback
+ * - Profile image with initials fallback
  * - Hover effects (shadow, zoom, color change)
  * - Responsive design with proper aspect ratio
  * - Displays: name, job title, location, course & graduation year
  * 
  * **Design Elements:**
  * - Square aspect ratio for consistent grid layout
- * - Gradient fallback using IHCAE brand colors
+ * - Initials fallback with gradient background using IHCAE brand colors
  * - Smooth transitions on hover (300ms)
  * - Truncated text for long content
  * - Icon + text layout for information display
@@ -59,13 +59,15 @@ import {
           [alt]="alumni.firstName + ' ' + alumni.lastName"
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <!-- Fallback Gradient Background -->
+        <!-- Fallback Initials Display -->
         <!-- Uses IHCAE brand colors for consistent branding -->
         <div
           *ngIf="!alumni.profileImageUrl || isLucideIconUrl(alumni.profileImageUrl)"
           class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-secondary-100"
         >
-          <lucide-icon [img]="userIcon" [size]="64" class="text-primary-600"></lucide-icon>
+          <span class="text-3xl font-bold text-primary-600">
+            {{ getInitials(alumni.firstName, alumni.lastName) }}
+          </span>
         </div>
       </div>
 
@@ -126,6 +128,18 @@ export class AlumniCardComponent {
   isLucideIconUrl(url: string | undefined): boolean {
     if (!url) return true;
     return url.includes('lucide.dev/icons/') || url.includes('lucide.dev/icons/user.svg');
+  }
+
+  /**
+   * Generates initials from first and last name
+   * @param firstName The first name
+   * @param lastName The last name
+   * @returns Initials string (e.g., "JD" for John Doe)
+   */
+  getInitials(firstName: string | undefined, lastName: string | undefined): string {
+    const first = firstName?.charAt(0)?.toUpperCase() || '';
+    const last = lastName?.charAt(0)?.toUpperCase() || '';
+    return first + last;
   }
 }
 

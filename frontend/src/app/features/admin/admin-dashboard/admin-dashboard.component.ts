@@ -20,7 +20,10 @@ import {
   LogOut, 
   RefreshCw,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  UserCheck,
+  MessageSquare
 } from 'lucide-angular';
 
 /**
@@ -89,6 +92,39 @@ import {
               <a href="#" class="sidebar-item">
                 <lucide-icon [img]="usersIcon" [size]="18" [strokeWidth]="2" class="text-neutral-400"></lucide-icon>
                 <span>All Users</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Content Management Section -->
+          <div>
+            <h3 class="sidebar-section-title">Content Management</h3>
+            <div class="space-y-0.5">
+              <a href="/admin/content" class="sidebar-item">
+                <lucide-icon [img]="fileTextIcon" [size]="18" [strokeWidth]="2" class="text-neutral-400"></lucide-icon>
+                <span>News & Events</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Alumni Directory Section -->
+          <div>
+            <h3 class="sidebar-section-title">Alumni Directory</h3>
+            <div class="space-y-0.5">
+              <a href="/admin/alumni" class="sidebar-item">
+                <lucide-icon [img]="userCheckIcon" [size]="18" [strokeWidth]="2" class="text-neutral-400"></lucide-icon>
+                <span>Alumni Management</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Forum Moderation Section -->
+          <div>
+            <h3 class="sidebar-section-title">Forum Moderation</h3>
+            <div class="space-y-0.5">
+              <a href="/admin/forums" class="sidebar-item">
+                <lucide-icon [img]="messageSquareIcon" [size]="18" [strokeWidth]="2" class="text-neutral-400"></lucide-icon>
+                <span>Forum Management</span>
               </a>
             </div>
           </div>
@@ -442,6 +478,9 @@ export class AdminDashboardComponent implements OnInit {
   readonly refreshIcon = RefreshCw;
   readonly trendingIcon = TrendingUp;
   readonly alertIcon = AlertCircle;
+  readonly fileTextIcon = FileText;
+  readonly userCheckIcon = UserCheck;
+  readonly messageSquareIcon = MessageSquare;
 
   user = signal<User | null>(null);
   sidebarOpen = signal(true);

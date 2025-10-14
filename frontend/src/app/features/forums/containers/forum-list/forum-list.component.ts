@@ -118,9 +118,9 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
             ></app-topic-card>
 
             <!-- Expanded Content -->
-            <div *ngIf="expandedTopics.has(topic.id)" class="bg-white rounded-lg border border-neutral-200 p-3 mt-1 border-t-2 border-t-primary-200 relative">
+            <div *ngIf="expandedTopics.has(topic.id)" class="bg-blue-50 rounded-lg border border-blue-200 p-3 mt-1 border-t-2 border-t-blue-300 relative">
               <!-- Connection Indicator -->
-              <div class="absolute -top-1 left-6 w-3 h-3 bg-primary-200 rounded-full border-2 border-white"></div>
+              <div class="absolute -top-1 left-6 w-3 h-3 bg-blue-400 rounded-full border-2 border-white"></div>
               <!-- Loading State for Topic Details -->
               <div *ngIf="topicDetailsLoading.has(topic.id)" class="flex items-center justify-center py-8">
                 <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
@@ -143,51 +143,63 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
 
               <!-- Topic Posts -->
               <div *ngIf="topicDetails.has(topic.id) && !topicDetailsLoading.has(topic.id) && !topicDetailsError.has(topic.id)" class="space-y-4">
-                <!-- Posts -->
-                <div class="space-y-3">
-                  <div *ngFor="let post of topicDetails.get(topic.id)!.posts" class="space-y-3">
-                    <!-- Post Card -->
-                    <app-post-card
-                      [post]="post"
-                      [isNested]="false"
-                      [isAdmin]="authStore.isAdmin()"
-                      [isLocked]="topic.isLocked"
-                      (like)="onPostLiked(post.id)"
-                      (reply)="onReplyToPost(post.id, topic.id)"
-                    ></app-post-card>
+                <!-- Thread Container with Blue Background -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                  <!-- Thread Header -->
+                  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-blue-200">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <h3 class="text-sm font-semibold text-blue-800">Discussion Thread</h3>
+                    <span class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                      {{ topicDetails.get(topic.id)!.posts.length }} posts
+                    </span>
+                  </div>
 
-                    <!-- Reply Form for this specific post -->
-                    <div *ngIf="activeReplyForm === post.id && !topic.isLocked" class="bg-gray-50 border border-gray-200 rounded-lg p-4 ml-8">
-                      <h4 class="text-lg font-semibold text-neutral-900 mb-4">Reply to {{ getAuthorName(post.author) }}</h4>
-                      <form (ngSubmit)="submitReplyToPost(post.id, topic.id)">
-                        <textarea
-                          [(ngModel)]="replyContent[post.id]"
-                          [name]="'reply-' + post.id"
-                          rows="4"
-                          placeholder="Write your reply here..."
-                          class="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 mb-4 resize-none"
-                          required
-                        ></textarea>
-                        <div class="flex gap-3">
-                          <button 
-                            type="submit" 
-                            class="bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-2.5 text-base rounded-lg transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2" 
-                            [disabled]="!replyContent[post.id] || !replyContent[post.id].trim() || replySubmitting.has(post.id)"
-                          >
-                            <i class="bi bi-send"></i>
-                            <span *ngIf="!replySubmitting.has(post.id)">Post Reply</span>
-                            <span *ngIf="replySubmitting.has(post.id)">Posting...</span>
-                          </button>
-                          <button 
-                            type="button" 
-                            (click)="cancelReply(post.id)" 
-                            class="border border-neutral-300 hover:bg-neutral-50 text-neutral-700 font-medium px-4 py-2.5 text-base rounded-lg transition-colors duration-200"
-                            [disabled]="replySubmitting.has(post.id)"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
+                  <!-- Posts in Thread -->
+                  <div class="space-y-3">
+                    <div *ngFor="let post of topicDetails.get(topic.id)!.posts" class="space-y-3">
+                      <!-- Main Post Card -->
+                      <app-post-card
+                        [post]="post"
+                        [isNested]="false"
+                        [isAdmin]="authStore.isAdmin()"
+                        [isLocked]="topic.isLocked"
+                        (like)="onPostLiked(post.id)"
+                        (reply)="onReplyToPost(post.id, topic.id)"
+                      ></app-post-card> Now you again reduce the reply size of the nested ones, the first reply of the post.
+
+                      <!-- Reply Form for this specific post -->
+                      <div *ngIf="activeReplyForm === post.id && !topic.isLocked" class="bg-white border border-blue-300 rounded-lg p-4 ml-8 shadow-sm">
+                        <h4 class="text-lg font-semibold text-blue-800 mb-4">Reply to {{ getAuthorName(post.author) }}</h4>
+                        <form (ngSubmit)="submitReplyToPost(post.id, topic.id)">
+                          <textarea
+                            [(ngModel)]="replyContent[post.id]"
+                            [name]="'reply-' + post.id"
+                            rows="4"
+                            placeholder="Write your reply here..."
+                            class="w-full px-4 py-3 text-base border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mb-4 resize-none"
+                            required
+                          ></textarea>
+                          <div class="flex gap-3">
+                            <button 
+                              type="submit" 
+                              class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 text-base rounded-lg transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2" 
+                              [disabled]="!replyContent[post.id] || !replyContent[post.id].trim() || replySubmitting.has(post.id)"
+                            >
+                              <i class="bi bi-send"></i>
+                              <span *ngIf="!replySubmitting.has(post.id)">Post Reply</span>
+                              <span *ngIf="replySubmitting.has(post.id)">Posting...</span>
+                            </button>
+                            <button 
+                              type="button" 
+                              (click)="cancelReply(post.id)" 
+                              class="border border-blue-300 hover:bg-blue-50 text-blue-700 font-medium px-4 py-2.5 text-base rounded-lg transition-colors duration-200"
+                              [disabled]="replySubmitting.has(post.id)"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -712,13 +724,36 @@ export class ForumListComponent implements OnInit {
    * Handles post like events from topic detail
    */
   onPostLiked(postId: string): void {
-    // Find which topic this post belongs to and refresh it
-    for (const [topicId, topic] of this.topicDetails) {
-      if (topic.posts.some(post => post.id === postId)) {
-        this.topicDetails.delete(topicId);
-        this.loadTopicDetails(topicId);
+    // Find the post to determine if it's currently liked
+    let postToLike: any = null;
+    let topicId: string = '';
+    
+    for (const [tid, topic] of this.topicDetails) {
+      const post = topic.posts.find(p => p.id === postId);
+      if (post) {
+        postToLike = post;
+        topicId = tid;
         break;
       }
+    }
+    
+    if (postToLike) {
+      // Call the appropriate service method based on current like status
+      const likeAction = postToLike.isLikedByCurrentUser 
+        ? this.forumService.unlikePost(postId)
+        : this.forumService.likePost(postId);
+      
+      likeAction.subscribe({
+        next: () => {
+          // Refresh the topic details to get updated like counts
+          this.topicDetails.delete(topicId);
+          this.loadTopicDetails(topicId);
+        },
+        error: (err) => {
+          console.error('Error liking/unliking post:', err);
+          // You could show a toast notification here
+        }
+      });
     }
   }
 
