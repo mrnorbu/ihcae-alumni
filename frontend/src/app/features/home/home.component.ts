@@ -14,7 +14,8 @@ import {
   ChevronDown,
   Sparkles,
   Users,
-  Award
+  Award,
+  MessageCircle
 } from 'lucide-angular';
 
 @Component({
@@ -291,6 +292,119 @@ import {
         </div>
       </section>
 
+      <!-- Community Forums Section - Compact -->
+      <section id="forums" class="section-compact bg-white">
+        <div class="container-compact">
+          <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 mb-3">
+              <lucide-icon [img]="forumIcon" [size]="24" class="text-primary-600"></lucide-icon>
+              <h2 class="text-3xl font-sans text-neutral-900 font-bold">
+                Community Forums
+              </h2>
+            </div>
+            <p class="text-lg text-neutral-600 max-w-2xl mx-auto">
+              Connect with fellow alumni, share experiences, and discuss topics ranging from mountaineering techniques to conservation efforts.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Forum Card 1 -->
+            <div class="card hover:shadow-lg transition-all">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <lucide-icon [img]="mountainIcon" [size]="20" class="text-primary-600"></lucide-icon>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-semibold text-neutral-900">Mountaineering</h3>
+                    <p class="text-sm text-neutral-600">Technical discussions</p>
+                  </div>
+                </div>
+                <span class="badge badge-primary text-xs">Active</span>
+              </div>
+              <p class="text-sm text-neutral-600 mb-3 leading-relaxed">
+                Share climbing techniques, route conditions, and safety protocols for Himalayan expeditions.
+              </p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-primary-600">12 topics today</span>
+                <a 
+                  routerLink="/forums" 
+                  class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  Join Discussion →
+                </a>
+              </div>
+            </div>
+
+            <!-- Forum Card 2 -->
+            <div class="card hover:shadow-lg transition-all">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-success-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <lucide-icon [img]="heartIcon" [size]="20" class="text-success-600"></lucide-icon>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-semibold text-neutral-900">Conservation</h3>
+                    <p class="text-sm text-neutral-600">Environmental action</p>
+                  </div>
+                </div>
+                <span class="badge badge-success text-xs">Hot</span>
+              </div>
+              <p class="text-sm text-neutral-600 mb-3 leading-relaxed">
+                Discuss conservation projects, climate initiatives, and sustainable tourism practices.
+              </p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-primary-600">8 topics today</span>
+                <a 
+                  routerLink="/forums" 
+                  class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  Join Discussion →
+                </a>
+              </div>
+            </div>
+
+            <!-- Forum Card 3 -->
+            <div class="card hover:shadow-lg transition-all">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-info-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <lucide-icon [img]="usersIcon" [size]="20" class="text-info-600"></lucide-icon>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-semibold text-neutral-900">Alumni Stories</h3>
+                    <p class="text-sm text-neutral-600">Personal experiences</p>
+                  </div>
+                </div>
+                <span class="badge badge-info text-xs">Popular</span>
+              </div>
+              <p class="text-sm text-neutral-600 mb-3 leading-relaxed">
+                Share your adventures, career milestones, and memorable experiences from your time at IHCAE.
+              </p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-primary-600">15 topics today</span>
+                <a 
+                  routerLink="/forums" 
+                  class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  Join Discussion →
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center mt-8">
+            <a 
+              routerLink="/forums" 
+              class="btn-primary inline-flex items-center gap-2"
+            >
+              <span>Explore All Forums</span>
+              <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
+            </a>
+          </div>
+        </div>
+      </section>
+
       <!-- CTA Section - Compact -->
       <section class="py-16 bg-gradient-brand relative overflow-hidden">
         <div class="absolute inset-0 bg-black/20"></div>
@@ -338,4 +452,5 @@ export class HomeComponent {
   readonly sparklesIcon = Sparkles;
   readonly usersIcon = Users;
   readonly awardIcon = Award;
+  readonly forumIcon = MessageCircle;
 }

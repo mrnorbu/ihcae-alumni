@@ -167,32 +167,91 @@ export interface SocialLinks {
 }
 
 /**
- * Forum post model.
+ * Tag model for categorizing content.
  */
-export interface ForumPost {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  authorName: string;
-  topicId: string;
-  topicName: string;
-  createdAt: Date;
-  updatedAt: Date;
-  repliesCount: number;
-  likesCount: number;
-  isPinned: boolean;
+export interface TagDto {
+  id: number;
+  name: string;
+  slug: string;
+  usageCount: number;
 }
 
 /**
- * Forum topic model.
+ * Author information for forum posts and topics.
  */
-export interface ForumTopic {
+export interface AuthorDto {
   id: string;
-  name: string;
-  description?: string;
-  postsCount: number;
+  firstName: string;
+  lastName: string;
+  profileImageUrl?: string;
+}
+
+/**
+ * Forum post model with nested replies.
+ */
+export interface PostDto {
+  id: string;
+  content: string;
+  author: AuthorDto;
+  parentPostId?: string;
   createdAt: Date;
+  updatedAt?: Date;
+  likeCount: number;
+  isLikedByCurrentUser: boolean;
+  replies: PostDto[];
+}
+
+/**
+ * Topic summary for topic list.
+ */
+export interface TopicSummaryDto {
+  id: string;
+  title: string;
+  createdBy: AuthorDto;
+  postCount: number;
+  lastReplyAt?: Date;
+  isPinned: boolean;
+  isLocked: boolean;
+  createdAt: Date;
+  tags: TagDto[];
+}
+
+/**
+ * Topic detail with all posts.
+ */
+export interface TopicDetailDto {
+  id: string;
+  title: string;
+  createdBy: AuthorDto;
+  isPinned: boolean;
+  isLocked: boolean;
+  createdAt: Date;
+  posts: PostDto[];
+  tags: TagDto[];
+}
+
+/**
+ * Request to create a new topic.
+ */
+export interface CreateTopicRequest {
+  title: string;
+  content: string;
+  tags?: string[]; // Optional list of tag names (max 5)
+}
+
+/**
+ * Request to create a new post/reply.
+ */
+export interface CreatePostRequest {
+  content: string;
+  parentPostId?: string;
+}
+
+/**
+ * Request to update a post (admin only).
+ */
+export interface UpdatePostRequest {
+  content: string;
 }
 
 /**

@@ -37,6 +37,21 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'profile',
+    loadComponent: () => import('./features/profile/containers/my-profile/my-profile.component').then(m => m.MyProfileComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'directory',
+    loadComponent: () => import('./features/directory/containers/directory-page/directory-page.component').then(m => m.DirectoryPageComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'alumni/:userId',
+    loadComponent: () => import('./features/directory/containers/alumni-detail-page/alumni-detail-page.component').then(m => m.AlumniDetailPageComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'admin',
     loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
     canActivate: [AuthGuard]
@@ -44,6 +59,16 @@ export const routes: Routes = [
   {
     path: 'admin/users',
     loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'forums',
+    loadComponent: () => import('./features/forums/containers/forum-list/forum-list.component').then(m => m.ForumListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'forums/create',
+    loadComponent: () => import('./features/forums/components/create-topic/create-topic.component').then(m => m.CreateTopicComponent),
     canActivate: [AuthGuard]
   },
   {

@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "VZuOPqcpvKlGexATfxRf3WPe47VxDNDeGT8BlMgce14=",
+  "Hash": "aOjn0zxImHzTWG9CW+cA4zK+JUIe7w7/DNUyrRSdzow=",
   "Source": "IHCAE.Api",
   "BasePath": "_content/IHCAE.Api",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "IHCAE.Api/wwwroot",
+      "Source": "IHCAE.Api",
+      "ContentRoot": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/wwwroot/",
+      "BasePath": "_content/IHCAE.Api",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }

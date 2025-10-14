@@ -44,6 +44,12 @@ public class User
     public string LastName { get; set; } = string.Empty;
 
     /// <summary>
+    /// User's phone number (optional)
+    /// </summary>
+    [MaxLength(50)]
+    public string? Phone { get; set; }
+
+    /// <summary>
     /// Current status of the user account
     /// Pending: Awaiting admin approval
     /// Approved: Active user account

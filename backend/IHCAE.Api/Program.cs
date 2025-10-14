@@ -9,6 +9,9 @@ using IHCAE.Api.Features.Auth.Services;
 using IHCAE.Api.Features.Alumni.Services;
 using IHCAE.Api.Features.EmailVerification.Services;
 using IHCAE.Api.Features.PasswordReset.Services;
+using IHCAE.Api.Features.Profile.Services;
+using IHCAE.Api.Features.Directory.Services;
+using IHCAE.Api.Features.Forums.Services;
 using IHCAE.Api.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +47,11 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IAlumniImportService, AlumniImportService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IDirectoryService, DirectoryService>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IForumService, ForumService>();
 
 // Seed Data Service
 builder.Services.AddHostedService<SeedDataService>();
@@ -99,6 +107,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Serve static files (for uploaded images)
+app.UseStaticFiles();
 
 app.UseCors("AllowAngularApp");
 

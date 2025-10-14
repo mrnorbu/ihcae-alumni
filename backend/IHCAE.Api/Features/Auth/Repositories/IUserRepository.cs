@@ -69,5 +69,37 @@ public interface IUserRepository
     /// <param name="id">The user's unique identifier</param>
     /// <returns>The user with roles if found, null otherwise</returns>
     Task<User?> GetWithRolesAsync(Guid id);
+
+    /// <summary>
+    /// Gets approved alumni with optional filtering and pagination.
+    /// Includes AlumniProfile data.
+    /// </summary>
+    /// <param name="searchTerm">Optional search term for name or email</param>
+    /// <param name="course">Optional course filter</param>
+    /// <param name="graduationYear">Optional graduation year filter</param>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of records per page</param>
+    /// <returns>Tuple of (alumni list, total count)</returns>
+    Task<(IEnumerable<User> Users, int TotalCount)> GetApprovedAlumniAsync(
+        string? searchTerm = null,
+        string? course = null,
+        int? graduationYear = null,
+        int page = 1,
+        int pageSize = 20);
+
+    /// <summary>
+    /// Gets a user by ID with AlumniProfile included.
+    /// </summary>
+    /// <param name="id">The user's unique identifier</param>
+    /// <returns>The user with profile if found, null otherwise</returns>
+    Task<User?> GetWithProfileAsync(Guid id);
+
+    /// <summary>
+    /// Assigns a role to a user.
+    /// </summary>
+    /// <param name="userId">The user's unique identifier</param>
+    /// <param name="roleName">The name of the role to assign</param>
+    /// <returns>True if role was assigned successfully, false if user or role not found</returns>
+    Task<bool> AssignRoleAsync(Guid userId, string roleName);
 }
 

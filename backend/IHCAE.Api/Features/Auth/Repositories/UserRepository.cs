@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Shared.Data;
+using IHCAE.Api.Shared.Models;
 
 namespace IHCAE.Api.Features.Auth.Repositories;
 
@@ -150,6 +151,112 @@ public class UserRepository : IUserRepository
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    /// <summary>
+    /// Gets approved alumni with optional filtering and pagination.
+    /// Only returns users with "Alumnus" role, excluding administrators and other roles.
+    /// </summary>
+    public async Task<(IEnumerable<User> Users, int TotalCount)> GetApprovedAlumniAsync(
+        string? searchTerm = null,
+        string? course = null,
+        int? graduationYear = null,
+        int page = 1,
+        int pageSize = 20)
+    {
+        var query = _context.Users
+            .Include(u => u.AlumniProfile)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .Where(u => u.Status == UserStatus.Approved &&
+                       u.UserRoles.Any(ur => ur.Role.Name == "Alumnus"));
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower();
+            query = query.Where(u =>
+                u.FirstName.ToLower().Contains(lowerSearchTerm) ||
+                u.LastName.ToLower().Contains(lowerSearchTerm) ||
+                u.Email.ToLower().Contains(lowerSearchTerm) ||
+                (u.FirstName + " " + u.LastName).ToLower().Contains(lowerSearchTerm));
+        }
+
+        // Apply course filter
+        if (!string.IsNullOrWhiteSpace(course))
+        {
+            query = query.Where(u => u.AlumniProfile != null && 
+                                   u.AlumniProfile.Course != null &&
+                                   u.AlumniProfile.Course.ToLower().Contains(course.ToLower()));
+        }
+
+        // Apply graduation year filter
+        if (graduationYear.HasValue)
+        {
+            query = query.Where(u => u.AlumniProfile != null && 
+                                   u.AlumniProfile.GraduationYear == graduationYear.Value);
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync();
+
+        // Apply pagination
+        var users = await query
+            .OrderBy(u => u.FirstName)
+            .ThenBy(u => u.LastName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (users, totalCount);
+    }
+
+    /// <summary>
+    /// Gets a user by ID with AlumniProfile included.
+    /// </summary>
+    public async Task<User?> GetWithProfileAsync(Guid id)
+    {
+        return await _context.Users
+            .Include(u => u.AlumniProfile)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    /// <summary>
+    /// Assigns a role to a user.
+    /// </summary>
+    /// <param name="userId">The user's unique identifier</param>
+    /// <param name="roleName">The name of the role to assign</param>
+    /// <returns>True if role was assigned successfully, false if user or role not found</returns>
+    public async Task<bool> AssignRoleAsync(Guid userId, string roleName)
+    {
+        // Get the user
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return false;
+
+        // Get the role
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+        if (role == null) return false;
+
+        // Check if user already has this role
+        var existingUserRole = await _context.UserRoles
+            .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == role.Id);
+        
+        if (existingUserRole != null) return true; // Role already assigned
+
+        // Create new user role assignment
+        var userRole = new UserRole
+        {
+            UserId = userId,
+            RoleId = role.Id,
+            AssignedAt = DateTime.UtcNow,
+            AssignedBy = userId // Self-assigned during registration
+        };
+
+        _context.UserRoles.Add(userRole);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }
 

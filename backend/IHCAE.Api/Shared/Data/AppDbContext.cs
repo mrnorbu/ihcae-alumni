@@ -3,6 +3,7 @@ using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Features.Alumni.Models.Entities;
 using IHCAE.Api.Features.EmailVerification.Models.Entities;
 using IHCAE.Api.Features.PasswordReset.Models.Entities;
+using IHCAE.Api.Features.Forums.Models.Entities;
 using IHCAE.Api.Shared.Models;
 
 namespace IHCAE.Api.Shared.Data;
@@ -61,6 +62,31 @@ public class AppDbContext : DbContext
     /// PasswordResetTokens table - tokens for password reset functionality
     /// </summary>
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
+
+    /// <summary>
+    /// DiscussionTopics table - forum discussion threads
+    /// </summary>
+    public DbSet<DiscussionTopic> DiscussionTopics { get; set; } = null!;
+
+    /// <summary>
+    /// ForumPosts table - individual posts and replies within topics
+    /// </summary>
+    public DbSet<ForumPost> ForumPosts { get; set; } = null!;
+
+    /// <summary>
+    /// PostLikes table - likes on forum posts
+    /// </summary>
+    public DbSet<PostLike> PostLikes { get; set; } = null!;
+
+    /// <summary>
+    /// Tags table - shared tags across all content types
+    /// </summary>
+    public DbSet<Tag> Tags { get; set; } = null!;
+
+    /// <summary>
+    /// DiscussionTopicTags table - many-to-many relationship between topics and tags
+    /// </summary>
+    public DbSet<DiscussionTopicTag> DiscussionTopicTags { get; set; } = null!;
 
     /// <summary>
     /// Configures entity relationships and constraints using Fluent API.
@@ -229,6 +255,120 @@ public class AppDbContext : DbContext
             // Indexes for performance
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.TokenHash).IsUnique();
+        });
+
+        // Configure DiscussionTopic entity
+        modelBuilder.Entity<DiscussionTopic>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.IsLocked).HasDefaultValue(false);
+            entity.Property(e => e.IsPinned).HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Foreign key to User
+            entity.HasOne(e => e.CreatedBy)
+                  .WithMany()
+                  .HasForeignKey(e => e.CreatedById)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Indexes for performance
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.IsPinned);
+        });
+
+        // Configure ForumPost entity
+        modelBuilder.Entity<ForumPost>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+            entity.Property(e => e.DeletionReason).HasMaxLength(500);
+            
+            // Foreign key to DiscussionTopic
+            entity.HasOne(e => e.Topic)
+                  .WithMany(t => t.Posts)
+                  .HasForeignKey(e => e.TopicId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Foreign key to User (author)
+            entity.HasOne(e => e.Author)
+                  .WithMany()
+                  .HasForeignKey(e => e.AuthorId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Self-referencing foreign key for parent post
+            entity.HasOne(e => e.ParentPost)
+                  .WithMany(p => p.Replies)
+                  .HasForeignKey(e => e.ParentPostId)
+                  .OnDelete(DeleteBehavior.Restrict);
+                  
+            // Indexes for performance
+            entity.HasIndex(e => e.TopicId);
+            entity.HasIndex(e => e.AuthorId);
+            entity.HasIndex(e => e.ParentPostId);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Configure PostLike entity
+        modelBuilder.Entity<PostLike>(entity =>
+        {
+            entity.HasKey(e => new { e.PostId, e.UserId });
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Foreign key to ForumPost
+            entity.HasOne(e => e.Post)
+                  .WithMany(p => p.Likes)
+                  .HasForeignKey(e => e.PostId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Foreign key to User
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure Tag entity
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Slug).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.UsageCount).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Unique constraints
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => e.Slug).IsUnique();
+            
+            // Index for performance
+            entity.HasIndex(e => e.UsageCount);
+        });
+
+        // Configure DiscussionTopicTag entity (join table)
+        modelBuilder.Entity<DiscussionTopicTag>(entity =>
+        {
+            entity.HasKey(e => new { e.TopicId, e.TagId });
+            
+            // Foreign key to DiscussionTopic
+            entity.HasOne(e => e.Topic)
+                  .WithMany(t => t.TopicTags)
+                  .HasForeignKey(e => e.TopicId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Foreign key to Tag
+            entity.HasOne(e => e.Tag)
+                  .WithMany()
+                  .HasForeignKey(e => e.TagId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Index for filtering by tag
+            entity.HasIndex(e => e.TagId);
         });
     }
 }

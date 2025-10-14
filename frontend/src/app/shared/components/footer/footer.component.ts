@@ -8,8 +8,8 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
   standalone: true,
   imports: [CommonModule, RouterModule, LucideAngularModule],
   template: `
-    <!-- Footer - Compact Modern -->
-    <footer class="bg-neutral-900 text-white py-12">
+    <!-- Footer - Full Width -->
+    <footer class="bg-neutral-900 text-white py-12 w-full">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <!-- Brand Column -->

@@ -11,7 +11,7 @@
 @layer components {
   /* Modern Compact Buttons */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium px-4 py-2 text-sm rounded-md transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-medium px-5 py-2.5 text-sm rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:shadow-sm;
   }
   
   .btn-secondary {
@@ -202,6 +202,125 @@
 
   .container-compact {
     @apply max-w-7xl mx-auto;
+  }
+
+  /* ===== ENHANCED CARD COMPONENTS ===== */
+  
+  /* Elevated cards with better shadows - for prominent content */
+  .card-elevated {
+    @apply bg-white rounded-lg shadow-sm border border-neutral-100 p-4 hover:shadow-md transition-shadow duration-200;
+  }
+
+  /* Post card specific styling - for forum posts and topics */
+  .post-card {
+    @apply bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200;
+  }
+
+  /* Sidebar card - for right sidebar widgets */
+  .sidebar-card {
+    @apply bg-white rounded-lg border border-neutral-200 p-3 shadow-sm;
+  }
+
+  /* ===== ENHANCED TAG SYSTEM ===== */
+  
+  /* Tag pills with better visual design - compact for reference */
+  .tag-pill {
+    @apply inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 transition-colors cursor-pointer;
+  }
+
+  .tag-pill-removable {
+    @apply inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 transition-colors cursor-pointer pr-1.5;
+  }
+
+  .tag-pill-count {
+    @apply text-xs text-blue-600 ml-1 opacity-75;
+  }
+
+  .tag-pill-neutral {
+    @apply inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 text-neutral-700 rounded-full text-xs font-medium hover:bg-neutral-200 transition-colors;
+  }
+
+  /* ===== ENHANCED INTERACTIVE STATES ===== */
+  
+  /* Icon buttons */
+  .btn-icon {
+    @apply p-2 rounded-lg hover:bg-neutral-100 transition-colors duration-200;
+  }
+
+  /* Icon button with accent color */
+  .btn-icon-primary {
+    @apply p-2 rounded-lg hover:bg-primary-50 text-primary-600 transition-colors duration-200;
+  }
+
+  /* ===== ENHANCED TYPOGRAPHY SCALE ===== */
+  
+  /* Enhanced typography hierarchy - balanced for reference design */
+  .heading-page {
+    @apply text-2xl font-bold text-neutral-900 mb-1;
+  }
+
+  .heading-section {
+    @apply text-lg font-semibold text-neutral-900 mb-3;
+  }
+
+  .heading-card {
+    @apply text-sm font-semibold text-neutral-900;
+  }
+
+  .text-body {
+    @apply text-sm text-neutral-700 leading-relaxed;
+  }
+
+  .text-meta {
+    @apply text-xs text-neutral-500;
+  }
+
+  .text-subtitle {
+    @apply text-sm text-neutral-600;
+  }
+
+  /* ===== LAYOUT CONTAINERS ===== */
+  
+  /* Sidebar layouts - balanced spacing */
+  .layout-with-sidebar {
+    @apply flex gap-4 max-w-6xl mx-auto px-4 py-4;
+  }
+
+  .main-content {
+    @apply flex-1 min-w-0;
+  }
+
+  .sidebar-right {
+    @apply hidden xl:block w-80 flex-shrink-0;
+  }
+
+  /* ===== ENGAGEMENT METRICS ===== */
+  
+  /* Engagement stat item (likes, replies, etc.) */
+  .engagement-stat {
+    @apply flex items-center gap-1 text-xs text-neutral-500 hover:text-primary-600 transition-colors cursor-pointer;
+  }
+
+  .engagement-stat-active {
+    @apply flex items-center gap-1 text-xs text-primary-600 font-medium;
+  }
+
+  /* ===== AVATAR STYLES ===== */
+  
+  .avatar-sm {
+    @apply w-8 h-8 rounded-full object-cover ring-2 ring-neutral-100;
+  }
+
+  .avatar-md {
+    @apply w-10 h-10 rounded-full object-cover ring-2 ring-neutral-100;
+  }
+
+  .avatar-lg {
+    @apply w-12 h-12 rounded-full object-cover ring-2 ring-neutral-100;
+  }
+
+  .avatar-group-hover {
+    @apply ring-primary-200 transition-all duration-200;
   }
 }
 

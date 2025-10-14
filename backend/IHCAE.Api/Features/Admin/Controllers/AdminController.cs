@@ -135,6 +135,9 @@ public class AdminController : ControllerBase
             
             await _userRepository.UpdateAsync(user);
 
+            // Assign "Alumnus" role to the approved user
+            await _userRepository.AssignRoleAsync(userId, "Alumnus");
+
             // Send approval email
             await _emailService.SendRegistrationApprovedAsync(user.Email, user.FirstName);
 
