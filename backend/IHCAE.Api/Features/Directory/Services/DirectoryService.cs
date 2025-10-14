@@ -2,6 +2,7 @@ using IHCAE.Api.Features.Directory.Models.DTOs;
 using IHCAE.Api.Features.Auth.Repositories;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Shared.DTOs;
+using IHCAE.Api.Shared.Constants;
 
 namespace IHCAE.Api.Features.Directory.Services;
 
@@ -97,16 +98,16 @@ public class DirectoryService : IDirectoryService
             throw new KeyNotFoundException($"Alumni with ID {userId} not found");
         }
 
-        // Ensure user is an approved alumni member with "Alumnus" role
+        // Ensure user is an approved alumni member with "Alumni" role
         if (user.Status != UserStatus.Approved)
         {
             throw new UnauthorizedAccessException("User is not an approved alumni member");
         }
 
-        // Check if user has "Alumnus" role (exclude administrators and other roles)
-        if (!user.UserRoles.Any(ur => ur.Role.Name == "Alumnus"))
+        // Check if user has "Alumni" role (exclude administrators and other roles)
+        if (!user.UserRoles.Any(ur => ur.Role.Name == RoleConstants.Alumni))
         {
-            throw new UnauthorizedAccessException("User is not an alumnus member");
+            throw new UnauthorizedAccessException("User is not an alumni member");
         }
 
         _logger.LogInformation("Retrieved detailed profile for alumni {UserId}", userId);

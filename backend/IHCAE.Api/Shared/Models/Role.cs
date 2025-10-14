@@ -16,7 +16,7 @@ public class Role
 
     /// <summary>
     /// Name of the role - must be unique
-    /// Valid values: 'Admin', 'Alumnus', 'Trainee'
+    /// Valid values: 'Admin', 'Alumni', 'Applicant'
     /// </summary>
     [Required]
     [MaxLength(50)]

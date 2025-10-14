@@ -8,6 +8,7 @@ using IHCAE.Api.Features.Auth.Models.DTOs;
 using IHCAE.Api.Features.Admin.Models.DTOs;
 using IHCAE.Api.Features.Alumni.Models.DTOs;
 using IHCAE.Api.Shared.DTOs;
+using IHCAE.Api.Shared.Constants;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Features.Alumni.Models.Entities;
 
@@ -135,8 +136,8 @@ public class AdminController : ControllerBase
             
             await _userRepository.UpdateAsync(user);
 
-            // Assign "Alumnus" role to the approved user
-            await _userRepository.AssignRoleAsync(userId, "Alumnus");
+            // Assign "Alumni" role to the approved user
+            await _userRepository.AssignRoleAsync(userId, RoleConstants.Alumni);
 
             // Send approval email
             await _emailService.SendRegistrationApprovedAsync(user.Email, user.FirstName);

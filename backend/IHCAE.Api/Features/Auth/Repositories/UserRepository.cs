@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.Models;
+using IHCAE.Api.Shared.Constants;
 
 namespace IHCAE.Api.Features.Auth.Repositories;
 
@@ -155,7 +156,7 @@ public class UserRepository : IUserRepository
 
     /// <summary>
     /// Gets approved alumni with optional filtering and pagination.
-    /// Only returns users with "Alumnus" role, excluding administrators and other roles.
+    /// Only returns users with "Alumni" role, excluding administrators and other roles.
     /// </summary>
     public async Task<(IEnumerable<User> Users, int TotalCount)> GetApprovedAlumniAsync(
         string? searchTerm = null,
@@ -169,7 +170,7 @@ public class UserRepository : IUserRepository
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
             .Where(u => u.Status == UserStatus.Approved &&
-                       u.UserRoles.Any(ur => ur.Role.Name == "Alumnus"));
+                       u.UserRoles.Any(ur => ur.Role.Name == RoleConstants.Alumni));
 
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(searchTerm))

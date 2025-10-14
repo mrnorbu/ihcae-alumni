@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, Menu, X, User, LogOut, Users, UserCircle, Settings, MessageCircle } from 'lucide-angular';
+import { LucideAngularModule, Menu, X, User, LogOut, Users, UserCircle, Settings, MessageCircle, Briefcase, Newspaper, FileText } from 'lucide-angular';
 import { UserAuthStore, UserAuthState } from '../../../core/state/user-auth.store';
 import { Subscription } from 'rxjs';
 
@@ -29,29 +29,61 @@ import { Subscription } from 'rxjs';
             <!-- Public Navigation (when not authenticated) -->
             <ng-container *ngIf="!authState.isAuthenticated">
               <a href="#about" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors">About</a>
-              <a href="#news" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors">News</a>
-              <a href="#jobs" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors">Careers</a>
+              <a routerLink="/news-events" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
+                News & Events
+              </a>
+              <a routerLink="/jobs" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
+                Jobs
+              </a>
               <a href="#contact" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors">Contact</a>
             </ng-container>
             
             <!-- Authenticated User Navigation -->
             <ng-container *ngIf="authState.isAuthenticated">
-              <a routerLink="/directory" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
-                <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
-                Directory
+              <!-- Common features for all authenticated users -->
+              <a routerLink="/news-events" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
+                News & Events
               </a>
-              <a routerLink="/forums" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
-                <lucide-icon [img]="forumIcon" [size]="16"></lucide-icon>
-                Forums
+              <a routerLink="/jobs" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
+                Jobs
               </a>
-              <a routerLink="/profile" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
-                <lucide-icon [img]="userIcon" [size]="16"></lucide-icon>
-                Profile
-              </a>
+              
+              <!-- Applicant-specific features -->
+              <ng-container *ngIf="isApplicant()">
+                <a routerLink="/resume-builder" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                  <lucide-icon [img]="fileTextIcon" [size]="14"></lucide-icon>
+                  Resume Builder
+                </a>
+              </ng-container>
+              
+              <!-- Alumni-specific features -->
+              <ng-container *ngIf="isAlumni()">
+                <a routerLink="/directory" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                  <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
+                  Directory
+                </a>
+                <a routerLink="/forums" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                  <lucide-icon [img]="forumIcon" [size]="16"></lucide-icon>
+                  Forums
+                </a>
+              </ng-container>
+              
               <a routerLink="/dashboard" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
                 <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
                 Dashboard
               </a>
+              
+              <!-- Admin-specific features -->
+              <ng-container *ngIf="isAdmin()">
+                <a routerLink="/admin" class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors flex items-center gap-1">
+                  <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
+                  Admin Panel
+                </a>
+              </ng-container>
             </ng-container>
           </div>
 
@@ -127,8 +159,14 @@ import { Subscription } from 'rxjs';
           <!-- Public Mobile Menu (when not authenticated) -->
           <ng-container *ngIf="!authState.isAuthenticated">
             <a href="#about" (click)="toggleMobileMenu()" class="block px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">About</a>
-            <a href="#news" (click)="toggleMobileMenu()" class="block px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">News</a>
-            <a href="#jobs" (click)="toggleMobileMenu()" class="block px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">Careers</a>
+            <a routerLink="/news-events" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+              <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
+              News & Events
+            </a>
+            <a routerLink="/jobs" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+              <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
+              Jobs
+            </a>
             <a href="#contact" (click)="toggleMobileMenu()" class="block px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">Contact</a>
             <div class="pt-3 space-y-2">
               <a routerLink="/login" (click)="toggleMobileMenu()" class="block btn-outline w-full text-center">Sign In</a>
@@ -141,23 +179,52 @@ import { Subscription } from 'rxjs';
             <div class="px-3 py-2 border-b border-neutral-100 mb-2">
               <p class="text-sm font-medium text-neutral-900">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
               <p class="text-xs text-neutral-500">{{ authState.user?.email }}</p>
+              <p class="text-xs text-primary-600 font-medium">{{ getUserRole() }}</p>
             </div>
-            <a routerLink="/directory" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
-              <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
-              Alumni Directory
+            
+            <!-- Common features for all authenticated users -->
+            <a routerLink="/news-events" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+              <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
+              News & Events
             </a>
-            <a routerLink="/forums" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
-              <lucide-icon [img]="forumIcon" [size]="16"></lucide-icon>
-              Community Forums
+            <a routerLink="/jobs" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+              <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
+              Jobs
             </a>
-            <a routerLink="/profile" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
-              <lucide-icon [img]="userIcon" [size]="16"></lucide-icon>
-              My Profile
-            </a>
+            
+            <!-- Applicant-specific features -->
+            <ng-container *ngIf="isApplicant()">
+              <a routerLink="/resume-builder" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+                <lucide-icon [img]="fileTextIcon" [size]="14"></lucide-icon>
+                Resume Builder
+              </a>
+            </ng-container>
+            
+            <!-- Alumni-specific features -->
+            <ng-container *ngIf="isAlumni()">
+              <a routerLink="/directory" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+                <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
+                Alumni Directory
+              </a>
+              <a routerLink="/forums" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+                <lucide-icon [img]="forumIcon" [size]="16"></lucide-icon>
+                Community Forums
+              </a>
+            </ng-container>
+            
             <a routerLink="/dashboard" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
               <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
               Dashboard
             </a>
+            
+            <!-- Admin-specific features -->
+            <ng-container *ngIf="isAdmin()">
+              <a routerLink="/admin" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-md transition-colors">
+                <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
+                Admin Panel
+              </a>
+            </ng-container>
+            
             <div class="pt-3">
               <button (click)="logout()" class="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left rounded-md">
                 <lucide-icon [img]="logoutIcon" [size]="16"></lucide-icon>
@@ -200,6 +267,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly settingsIcon = Settings;
   readonly logoutIcon = LogOut;
   readonly forumIcon = MessageCircle;
+  readonly briefcaseIcon = Briefcase;
+  readonly newspaperIcon = Newspaper;
+  readonly fileTextIcon = FileText;
 
   ngOnInit() {
     // Subscribe to authentication state changes
@@ -260,5 +330,36 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.mobileMenuOpen = false;
     // Navigate to home page after logout
     window.location.href = '/';
+  }
+
+  /**
+   * Check if user is an applicant
+   */
+  isApplicant(): boolean {
+    return this.authState.user?.roles?.includes('Applicant') || false;
+  }
+
+  /**
+   * Check if user is an alumni
+   */
+  isAlumni(): boolean {
+    return this.authState.user?.roles?.includes('Alumni') || false;
+  }
+
+  /**
+   * Check if user is an admin
+   */
+  isAdmin(): boolean {
+    return this.authState.user?.roles?.includes('Admin') || false;
+  }
+
+  /**
+   * Get user role display name
+   */
+  getUserRole(): string {
+    if (this.isAdmin()) return 'Administrator';
+    if (this.isAlumni()) return 'Alumni';
+    if (this.isApplicant()) return 'Job Applicant';
+    return 'User';
   }
 }

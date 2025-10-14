@@ -219,14 +219,14 @@ import {
 
         <!-- Loading State with Skeleton -->
         <!-- Shows skeleton rows while fetching data from API -->
-        <div *ngIf="isLoading()" class="space-y-6 mb-8">
-          <app-alumni-row-skeleton *ngFor="let item of [1,2,3,4,5]"></app-alumni-row-skeleton>
+        <div *ngIf="isLoading()" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <app-alumni-row-skeleton *ngFor="let item of [1,2,3,4,5,6]"></app-alumni-row-skeleton>
         </div>
 
         <!-- Alumni List -->
-        <!-- Compact row layout for better space utilization -->
+        <!-- Two-column grid layout with proper spacing -->
         <!-- Only shows when not loading and has data -->
-        <div *ngIf="!isLoading() && alumni().length > 0" class="space-y-6 mb-8">
+        <div *ngIf="!isLoading() && alumni().length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <app-alumni-row
             *ngFor="let alumnus of alumni()"
             [alumni]="alumnus"

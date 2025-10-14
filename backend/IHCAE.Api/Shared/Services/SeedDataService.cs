@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.Models;
+using IHCAE.Api.Shared.Constants;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using BCrypt.Net;
 
@@ -57,20 +58,20 @@ public class SeedDataService : IHostedService
             {
                 new Role
                 {
-                    Name = "Admin",
+                    Name = RoleConstants.Admin,
                     Description = "System administrator with full access",
                     CreatedAt = DateTime.UtcNow
                 },
                 new Role
                 {
-                    Name = "Alumnus",
+                    Name = RoleConstants.Alumni,
                     Description = "Graduated IHCAE student with full member access",
                     CreatedAt = DateTime.UtcNow
                 },
                 new Role
                 {
-                    Name = "Trainee",
-                    Description = "Current IHCAE trainee with limited access",
+                    Name = RoleConstants.Applicant,
+                    Description = "Job applicant with limited access",
                     CreatedAt = DateTime.UtcNow
                 }
             };

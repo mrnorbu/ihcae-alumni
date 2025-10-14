@@ -106,6 +106,60 @@ export class AdminGuard implements CanActivate {
 }
 
 /**
+ * Alumni guard.
+ * Protects alumni-specific routes from non-alumni users.
+ * Requires both authentication and alumni role.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class AlumniGuard implements CanActivate {
+  
+  /**
+   * Initializes the alumni guard.
+   * @param authStore The authentication store service
+   * @param router The Angular router service
+   */
+  constructor(
+    private authStore: UserAuthStore,
+    private router: Router
+  ) {}
+
+  /**
+   * Determines if an alumni route can be activated.
+   * @param route The activated route snapshot
+   * @param state The router state snapshot
+   * @returns Observable<boolean> indicating if the route can be activated
+   */
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> {
+    return this.authStore.state$.pipe(
+      take(1),
+      map(authState => {
+        if (authState.isAuthenticated && authState.user) {
+          // Check if user has alumni role
+          if (authState.user.roles.includes('Alumni')) {
+            return true;
+          } else {
+            // Redirect to unauthorized page or dashboard
+            this.router.navigate(['/dashboard']);
+            return false;
+          }
+        } else {
+          // Redirect to login page
+          this.router.navigate(['/login'], { 
+            queryParams: { returnUrl: state.url } 
+          });
+          return false;
+        }
+      })
+    );
+  }
+}
+
+/**
  * Guest guard.
  * Prevents authenticated users from accessing guest-only pages (like login/register).
  * Redirects authenticated users to the dashboard.

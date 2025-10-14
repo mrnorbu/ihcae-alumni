@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth.guard';
+import { AuthGuard, AdminGuard, AlumniGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -44,47 +44,70 @@ export const routes: Routes = [
   {
     path: 'directory',
     loadComponent: () => import('./features/directory/containers/directory-page/directory-page.component').then(m => m.DirectoryPageComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AlumniGuard]
   },
   {
     path: 'alumni/:userId',
     loadComponent: () => import('./features/directory/containers/alumni-detail-page/alumni-detail-page.component').then(m => m.AlumniDetailPageComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AlumniGuard]
   },
   {
     path: 'admin',
     loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AdminGuard]
   },
   {
     path: 'admin/users',
     loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AdminGuard]
   },
   {
     path: 'admin/content',
     loadComponent: () => import('./features/admin/content-management/content-management.component').then(m => m.ContentManagementComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AdminGuard]
   },
   {
     path: 'admin/alumni',
     loadComponent: () => import('./features/admin/alumni-management/alumni-management.component').then(m => m.AlumniManagementComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AdminGuard]
   },
   {
     path: 'admin/forums',
     loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AdminGuard]
   },
   {
     path: 'forums',
     loadComponent: () => import('./features/forums/containers/forum-list/forum-list.component').then(m => m.ForumListComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AlumniGuard]
   },
   {
     path: 'forums/create',
     loadComponent: () => import('./features/forums/components/create-topic/create-topic.component').then(m => m.CreateTopicComponent),
+    canActivate: [AlumniGuard]
+  },
+  {
+    path: 'jobs',
+    loadComponent: () => import('./features/jobs/containers/job-board/job-board.component').then(m => m.JobBoardComponent)
+  },
+  {
+    path: 'jobs/:jobId',
+    loadComponent: () => import('./features/jobs/containers/job-detail/job-detail.component').then(m => m.JobDetailComponent),
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'success-stories',
+    loadComponent: () => import('./features/success-stories/containers/success-stories/success-stories.component').then(m => m.SuccessStoriesComponent),
+    canActivate: [AlumniGuard]
+  },
+  {
+    path: 'resume-builder',
+    loadComponent: () => import('./features/resume-builder/containers/resume-builder/resume-builder.component').then(m => m.ResumeBuilderComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'news-events',
+    loadComponent: () => import('./features/news-events/containers/news-events/news-events.component').then(m => m.NewsEventsComponent)
   },
   {
     path: '**',

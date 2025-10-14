@@ -5,13 +5,17 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LucideAngularModule, Mail, Lock, User, CheckCircle, ArrowRight, Mountain, Globe, Shield } from 'lucide-angular';
+import { HeaderComponent, FooterComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent, FooterComponent],
   template: `
-    <div class="min-h-screen flex">
+    <div class="min-h-screen bg-white">
+      <app-header></app-header>
+      
+      <div class="flex pt-16">
       <!-- Left Side - Brand Section -->
       <div class="hidden lg:flex lg:w-2/5 bg-gradient-brand relative overflow-hidden">
         <div class="absolute inset-0 bg-black bg-opacity-10"></div>
@@ -255,6 +259,8 @@ import { LucideAngularModule, Mail, Lock, User, CheckCircle, ArrowRight, Mountai
           </div>
         </div>
       </div>
+      
+      <app-footer></app-footer>
     </div>
   `,
   styles: []
