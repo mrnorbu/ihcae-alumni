@@ -13,6 +13,7 @@ using IHCAE.Api.Features.Profile.Services;
 using IHCAE.Api.Features.Directory.Services;
 using IHCAE.Api.Features.Forums.Services;
 using IHCAE.Api.Shared.Services;
+using IHCAE.Api.Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,6 +106,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Global exception handling middleware (must be early in pipeline)
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 

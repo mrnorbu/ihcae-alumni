@@ -17,7 +17,7 @@ import type { TopicSummaryDto } from '../../../../shared/models';
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="bg-white border-b border-neutral-200 py-4 px-6 hover:bg-neutral-50 transition-colors duration-200">
+    <div class="bg-white border-b border-neutral-200 py-4 px-6 hover:bg-neutral-50 transition-colors duration-200 relative group">
       <div class="flex items-start gap-4">
         <!-- User Avatar -->
         <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-neutral-600">
@@ -36,7 +36,12 @@ import type { TopicSummaryDto } from '../../../../shared/models';
         <div class="flex-1 min-w-0">
           <!-- User Name with Badge -->
           <div class="flex items-center gap-2 mb-2">
-            <span class="font-medium text-neutral-900">{{ getAuthorName(topic.createdBy) }}</span>
+            <span 
+              (click)="onAuthorClick($event)"
+              class="font-medium text-neutral-900 hover:text-blue-600 cursor-pointer transition-colors"
+            >
+              {{ getAuthorName(topic.createdBy) }}
+            </span>
             <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
           </div>
           
@@ -76,17 +81,35 @@ import type { TopicSummaryDto } from '../../../../shared/models';
               class="flex items-center gap-1 text-neutral-600 hover:text-blue-600 transition-colors duration-200"
             >
               <lucide-icon [img]="messageIcon" [size]="16"></lucide-icon>
-              <span class="text-sm">{{ topic.postCount }}</span>
+              <span class="text-sm">{{ getReplyCount(topic) }}</span>
             </button>
             
             <!-- Like Button -->
             <button 
+              *ngIf="hasMainPost(topic)"
               (click)="onLikeClick()"
-              class="flex items-center gap-1 text-neutral-600 hover:text-green-600 transition-colors duration-200"
+              [class.text-blue-600]="topic.isMainPostLikedByCurrentUser"
+              [class.text-neutral-600]="!topic.isMainPostLikedByCurrentUser"
+              class="flex items-center gap-1 hover:text-blue-600 transition-colors duration-200"
+              [title]="topic.isMainPostLikedByCurrentUser ? 'Unlike this thread' : 'Like this thread'"
             >
-              <lucide-icon [img]="thumbsUpIcon" [size]="16"></lucide-icon>
+              <lucide-icon 
+                [img]="thumbsUpIcon" 
+                [size]="16"
+                [class.text-blue-600]="topic.isMainPostLikedByCurrentUser"
+              ></lucide-icon>
               <span class="text-sm">{{ getLikeCount(topic) }}</span>
             </button>
+            
+            <!-- Disabled Like Button for topics without posts -->
+            <div 
+              *ngIf="!hasMainPost(topic)"
+              class="flex items-center gap-1 text-neutral-400 cursor-not-allowed"
+              title="This thread has no posts yet"
+            >
+              <lucide-icon [img]="thumbsUpIcon" [size]="16"></lucide-icon>
+              <span class="text-sm">0</span>
+            </div>
             
             <!-- Reply Button -->
             <button 
@@ -109,6 +132,7 @@ export class ModernThreadCardComponent {
   @Output() commentsClick = new EventEmitter<string>();
   @Output() likeClick = new EventEmitter<string>();
   @Output() replyClick = new EventEmitter<string>();
+  @Output() authorClick = new EventEmitter<{userId: string, userName: string}>();
 
   // Lucide icons
   readonly messageIcon = MessageCircle;
@@ -134,6 +158,17 @@ export class ModernThreadCardComponent {
    */
   onReplyClick(): void {
     this.replyClick.emit(this.topic.id);
+  }
+
+  /**
+   * Handles author name click
+   */
+  onAuthorClick(event: Event): void {
+    event.stopPropagation();
+    this.authorClick.emit({
+      userId: this.topic.createdBy.id,
+      userName: this.getAuthorName(this.topic.createdBy)
+    });
   }
 
   /**
@@ -184,26 +219,25 @@ export class ModernThreadCardComponent {
   }
 
   /**
-   * Gets like count for the topic
+   * Checks if topic has a main post
    */
-  getLikeCount(topic: TopicSummaryDto): number {
-    // Use a stable like count based on topic ID to prevent random changes
-    // In a real implementation, this would come from the topic's like count
-    const hash = this.hashCode(topic.id);
-    return Math.abs(hash % 200) + 50; // Generate stable number between 50-249
+  hasMainPost(topic: TopicSummaryDto): boolean {
+    return topic.mainPostId !== '00000000-0000-0000-0000-000000000000' && topic.postCount > 0;
   }
 
   /**
-   * Simple hash function to generate stable numbers from strings
+   * Gets reply count (excluding the main post)
    */
-  private hashCode(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash;
+  getReplyCount(topic: TopicSummaryDto): number {
+    // PostCount includes the main post, so subtract 1 to get replies only
+    return Math.max(0, (topic.postCount || 0) - 1);
+  }
+
+  /**
+   * Gets like count for the topic from actual data
+   */
+  getLikeCount(topic: TopicSummaryDto): number {
+    return topic.totalLikes || 0;
   }
 
   /**

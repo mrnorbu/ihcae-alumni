@@ -11,7 +11,7 @@ import { ModernForumSidebarComponent } from '../../components/modern-forum-sideb
 import { CreateTopicModalComponent } from '../../components/create-topic-modal/create-topic-modal.component';
 import { UserAuthStore } from '../../../../core/state/user-auth.store';
 import { ForumService } from '../../services/forum.service';
-import type { TopicSummaryDto, TagDto, PostDto, CreateTopicRequest } from '../../../../shared/models';
+import type { TopicSummaryDto, TagDto, PostDto, CreateTopicRequest, TopUserDto } from '../../../../shared/models';
 
 /**
  * Modern Forum List Component
@@ -61,45 +61,142 @@ import type { TopicSummaryDto, TagDto, PostDto, CreateTopicRequest } from '../..
               </div>
               
               <!-- Filter and Sort Bar -->
-              <div class="p-4 flex items-center gap-4">
-                <!-- Topic Dropdown -->
-                <div class="relative">
-                  <button
-                    (click)="toggleTopicDropdown()"
-                    class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
-                  >
-                    <span>Topic</span>
-                    <i class="bi bi-chevron-down text-xs"></i>
-                  </button>
-                  
-                  <!-- Topic Dropdown Menu -->
-                  <div *ngIf="showTopicDropdown" class="absolute top-full left-0 mt-1 w-48 bg-white border border-neutral-200 rounded-md shadow-lg z-10">
+              <div class="p-4 space-y-3">
+                <div class="flex items-center gap-4">
+                  <!-- Topic Dropdown -->
+                  <div class="relative">
                     <button
-                      *ngFor="let tag of popularTags.slice(0, 8)"
-                      (click)="selectTopic(tag.name)"
-                      class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                      (click)="toggleTopicDropdown()"
+                      class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
+                      [class.bg-blue-50]="selectedTagFilter"
+                      [class.border-blue-300]="selectedTagFilter"
                     >
-                      {{ tag.name }}
+                      <span>{{ selectedTagFilter || 'Topic' }}</span>
+                      <i class="bi bi-chevron-down text-xs"></i>
+                    </button>
+                    
+                    <!-- Topic Dropdown Menu -->
+                    <div *ngIf="showTopicDropdown" class="absolute top-full left-0 mt-1 w-48 bg-white border border-neutral-200 rounded-md shadow-lg z-10">
+                      <button
+                        *ngIf="selectedTagFilter"
+                        (click)="clearTagFilter(); toggleTopicDropdown()"
+                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors border-b border-neutral-200"
+                      >
+                        <i class="bi bi-x-circle mr-2"></i>Clear Filter
+                      </button>
+                      <button
+                        *ngFor="let tag of popularTags.slice(0, 8)"
+                        (click)="filterByTag(tag.name); toggleTopicDropdown()"
+                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                        [class.bg-blue-50]="selectedTagFilter === tag.name"
+                      >
+                        {{ tag.name }}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Sort Dropdown -->
+                  <div class="relative">
+                    <button
+                      (click)="showSortDropdown = !showSortDropdown"
+                      class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
+                    >
+                      <i class="bi bi-list text-sm"></i>
+                      <span>{{ getSortLabel() }}</span>
+                      <i class="bi bi-chevron-down text-xs"></i>
+                    </button>
+                    
+                    <!-- Sort Dropdown Menu -->
+                    <div *ngIf="showSortDropdown" class="absolute top-full left-0 mt-1 w-48 bg-white border border-neutral-200 rounded-md shadow-lg z-10">
+                      <button
+                        (click)="onSortChange('recent'); showSortDropdown = false"
+                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                        [class.bg-blue-50]="sortBy === 'recent'"
+                      >
+                        Most Recent
+                      </button>
+                      <button
+                        (click)="onSortChange('oldest'); showSortDropdown = false"
+                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                        [class.bg-blue-50]="sortBy === 'oldest'"
+                      >
+                        Oldest First
+                      </button>
+                      <button
+                        (click)="onSortChange('popular'); showSortDropdown = false"
+                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                        [class.bg-blue-50]="sortBy === 'popular'"
+                      >
+                        Most Popular
+                      </button>
+                      <button
+                        (click)="onSortChange('mostdiscussed'); showSortDropdown = false"
+                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                        [class.bg-blue-50]="sortBy === 'mostdiscussed'"
+                      >
+                        Most Discussed
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Search Bar -->
+                  <div class="ml-auto flex items-center gap-2">
+                    <div class="relative">
+                      <input
+                        type="text"
+                        [(ngModel)]="searchQuery"
+                        (keyup.enter)="onSearch()"
+                        placeholder="Search discussions..."
+                        class="pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                      />
+                      <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                      <button
+                        *ngIf="searchQuery"
+                        (click)="clearSearch()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                      >
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </div>
+                    <button
+                      (click)="onSearch()"
+                      class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Search
                     </button>
                   </div>
                 </div>
                 
-                <!-- Sort Button -->
-                <button class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors">
-                  <i class="bi bi-list text-sm"></i>
-                  <span>Sort</span>
-                </button>
-                
-                <!-- Bookmarks Button -->
-                <button class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors">
-                  <i class="bi bi-bookmark text-sm"></i>
-                  <span>Bookmarks</span>
-                </button>
-                
-                <!-- Search Icon -->
-                <div class="ml-auto">
-                  <button class="p-2 text-neutral-600 hover:text-neutral-800 transition-colors">
-                    <i class="bi bi-search text-lg"></i>
+                <!-- Active Filters Display -->
+                <div *ngIf="selectedAuthorName || selectedTagFilter || searchQuery" class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm text-neutral-600">Active filters:</span>
+                  
+                  <span *ngIf="selectedAuthorName" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                    Author: {{ selectedAuthorName }}
+                    <button (click)="clearAuthorFilter()" class="hover:text-blue-900">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </span>
+                  
+                  <span *ngIf="selectedTagFilter" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                    Tag: {{ selectedTagFilter }}
+                    <button (click)="clearTagFilter()" class="hover:text-blue-900">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </span>
+                  
+                  <span *ngIf="searchQuery" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                    Search: "{{ searchQuery }}"
+                    <button (click)="clearSearch()" class="hover:text-blue-900">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </span>
+                  
+                  <button
+                    (click)="clearAllFilters()"
+                    class="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Clear all
                   </button>
                 </div>
               </div>
@@ -150,6 +247,7 @@ import type { TopicSummaryDto, TagDto, PostDto, CreateTopicRequest } from '../..
                   (commentsClick)="toggleThreadExpansion($event)"
                   (likeClick)="onThreadLike($event)"
                   (replyClick)="onThreadReply($event)"
+                  (authorClick)="filterByAuthor($event.userId, $event.userName)"
                 ></app-modern-thread-card>
 
                 <!-- Expanded Thread Content -->
@@ -161,8 +259,10 @@ import type { TopicSummaryDto, TagDto, PostDto, CreateTopicRequest } from '../..
                   [error]="threadErrors.get(topic.id) || null"
                   [replySubmitting]="replySubmitting"
                   [activeReplyForm]="activeReplyForm"
+                  [currentUserId]="getCurrentUserId()"
                   (postLike)="onPostLike($event)"
                   (replySubmit)="onReplySubmit($event)"
+                  (postDelete)="onPostDelete($event)"
                   (retryClick)="loadThreadPosts(topic.id)"
                   (collapseClick)="onThreadCollapse(topic.id)"
                 ></app-modern-expanded-thread>
@@ -206,8 +306,10 @@ import type { TopicSummaryDto, TagDto, PostDto, CreateTopicRequest } from '../..
           <app-modern-forum-sidebar
             [topics]="topics"
             [popularTags]="popularTags"
+            [topUsers]="topUsers"
             (startThreadClick)="navigateToCreateTopic()"
             (topicClick)="onTopicClick($event)"
+            (userClick)="filterByAuthor($event.userId, $event.userName)"
           ></app-modern-forum-sidebar>
         </div>
       </div>
@@ -231,11 +333,13 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   error: string | null = null;
   showTopicDropdown: boolean = false;
+  showSortDropdown: boolean = false;
   showCreateTopicModal: boolean = false;
   
   // Data
   topics: TopicSummaryDto[] = [];
   popularTags: TagDto[] = [];
+  topUsers: TopUserDto[] = [];
   expandedThreads: Set<string> = new Set();
   threadPosts: Map<string, PostDto[]> = new Map();
   threadLoading: Set<string> = new Set();
@@ -248,6 +352,13 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   totalPages: number = 1;
   pageSize: number = 10;
   
+  // Filtering and Sorting
+  searchQuery: string = '';
+  selectedAuthorId?: string;
+  selectedAuthorName?: string;
+  sortBy: string = 'recent';
+  selectedTagFilter?: string;
+  
   // Services
   private authStore = inject(UserAuthStore);
   private forumService = inject(ForumService);
@@ -257,6 +368,7 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadTopics();
     this.loadPopularTags();
+    this.loadTopUsers();
   }
 
   ngOnDestroy(): void {
@@ -265,13 +377,22 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads topics from the API
+   * Loads topics from the API with current filters
    */
   loadTopics(): void {
     this.loading = true;
     this.error = null;
     
-    this.forumService.getTopics(this.currentPage, this.pageSize)
+    const tags = this.selectedTagFilter ? [this.selectedTagFilter] : undefined;
+    
+    this.forumService.getTopics(
+      this.currentPage, 
+      this.pageSize, 
+      tags, 
+      this.searchQuery || undefined, 
+      this.selectedAuthorId, 
+      this.sortBy
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -303,6 +424,22 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Loads top users
+   */
+  loadTopUsers(): void {
+    this.forumService.getTopUsers(5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (users) => {
+          this.topUsers = users;
+        },
+        error: (error) => {
+          console.error('Failed to load top users:', error);
+        }
+      });
+  }
+
+  /**
    * Handles tab change events
    */
   onTabChange(tab: string): void {
@@ -327,13 +464,21 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
 
   /**
    * Toggles thread expansion
+   * Only expands if there are comments to show
    */
   toggleThreadExpansion(topicId: string): void {
+    const topic = this.topics.find(t => t.id === topicId);
+    
     if (this.expandedThreads.has(topicId)) {
+      // Already expanded, collapse it
       this.expandedThreads.delete(topicId);
     } else {
-      this.expandedThreads.add(topicId);
-      this.loadThreadPosts(topicId);
+      // Only expand if there are comments (postCount > 1, because main post counts as 1)
+      if (topic && topic.postCount > 1) {
+        this.expandedThreads.add(topicId);
+        this.loadThreadPosts(topicId);
+      }
+      // If postCount is 0 or 1, don't expand (no replies to show)
     }
   }
 
@@ -341,7 +486,7 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
    * Loads posts for a specific thread
    */
   loadThreadPosts(topicId: string): Promise<void> {
-    console.log('Loading thread posts for topicId:', topicId);
+    console.log('📥 Loading thread posts for topicId:', topicId);
     this.threadLoading.add(topicId);
     this.threadErrors.delete(topicId);
     
@@ -350,13 +495,33 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (posts) => {
-            console.log('Loaded posts for topicId:', topicId, 'Posts:', posts);
+            console.log('📦 Loaded posts for topicId:', topicId);
+            console.log('  Total posts:', posts.length);
+            posts.forEach((post, index) => {
+              console.log(`  Post ${index}:`, {
+                id: post.id,
+                author: `${post.author.firstName} ${post.author.lastName}`,
+                repliesCount: post.replies?.length || 0,
+                content: post.content.substring(0, 50) + '...'
+              });
+              if (post.replies && post.replies.length > 0) {
+                console.log(`    Replies (${post.replies.length}):`);
+                post.replies.forEach((reply, rIndex) => {
+                  console.log(`      Reply ${rIndex}:`, {
+                    id: reply.id,
+                    author: `${reply.author.firstName} ${reply.author.lastName}`,
+                    parentAuthor: reply.parentAuthor ? `${reply.parentAuthor.firstName} ${reply.parentAuthor.lastName}` : 'none',
+                    content: reply.content.substring(0, 30) + '...'
+                  });
+                });
+              }
+            });
             this.threadPosts.set(topicId, posts);
             this.threadLoading.delete(topicId);
             resolve();
           },
           error: (error) => {
-            console.error('Error loading posts for topicId:', topicId, error);
+            console.error('❌ Error loading posts for topicId:', topicId, error);
             this.threadErrors.set(topicId, 'Failed to load posts');
             this.threadLoading.delete(topicId);
             reject(error);
@@ -367,13 +532,74 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
 
   /**
    * Handles thread like events
+   * Likes the main post of the thread
    */
   onThreadLike(topicId: string): void {
-    // Implement thread like logic
+    console.log('👍 Liking thread:', topicId);
+    
+    // Find the topic
+    const topic = this.topics.find(t => t.id === topicId);
+    console.log('Found topic:', topic);
+    console.log('Main post ID:', topic?.mainPostId);
+    
+    if (!topic || !topic.mainPostId || topic.mainPostId === '00000000-0000-0000-0000-000000000000') {
+      console.error('❌ Cannot like: Topic has no main post yet');
+      console.error('Topic details:', {
+        id: topic?.id,
+        title: topic?.title,
+        mainPostId: topic?.mainPostId,
+        postCount: topic?.postCount
+      });
+      return;
+    }
+
+    // Store original state for rollback on error
+    const originalLikedState = topic.isMainPostLikedByCurrentUser;
+    const originalLikeCount = topic.totalLikes;
+
+    // Optimistically update UI immediately
+    topic.isMainPostLikedByCurrentUser = !topic.isMainPostLikedByCurrentUser;
+    topic.totalLikes = topic.isMainPostLikedByCurrentUser ? topic.totalLikes + 1 : topic.totalLikes - 1;
+
+    // Toggle like based on original state
+    if (originalLikedState) {
+      // Unlike
+      this.forumService.unlikePost(topic.mainPostId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            console.log('✅ Thread unliked');
+            // UI already updated optimistically
+          },
+          error: (error) => {
+            console.error('❌ Error unliking thread:', error);
+            // Rollback optimistic update
+            topic.isMainPostLikedByCurrentUser = originalLikedState;
+            topic.totalLikes = originalLikeCount;
+          }
+        });
+    } else {
+      // Like
+      this.forumService.likePost(topic.mainPostId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            console.log('✅ Thread liked');
+            // UI already updated optimistically
+          },
+          error: (error) => {
+            console.error('❌ Error liking thread:', error);
+            // Rollback optimistic update
+            topic.isMainPostLikedByCurrentUser = originalLikedState;
+            topic.totalLikes = originalLikeCount;
+          }
+        });
+    }
   }
 
   /**
    * Handles thread reply events
+   * Always expands the thread and shows reply form
    */
   onThreadReply(topicId: string): void {
     if (this.expandedThreads.has(topicId)) {
@@ -386,9 +612,15 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      // Expand thread first, then open reply form
+      // Expand thread and open reply form (even if 0 replies)
       this.expandedThreads.add(topicId);
-      this.loadThreadPosts(topicId);
+      this.loadThreadPosts(topicId).then(() => {
+        const posts = this.threadPosts.get(topicId);
+        if (posts && posts.length > 0) {
+          // Open reply form for the first post (main post)
+          this.openReplyFormForPost(posts[0].id);
+        }
+      });
     }
   }
 
@@ -405,7 +637,78 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
    * Handles post like events
    */
   onPostLike(postId: string): void {
-    // Implement post like logic
+    console.log('👍 Liking post:', postId);
+    
+    // Find the topic this post belongs to
+    const topicId = this.getTopicIdFromPostId(postId);
+    if (!topicId) {
+      console.error('Could not find topic for post:', postId);
+      return;
+    }
+
+    const posts = this.threadPosts.get(topicId);
+    if (!posts) return;
+
+    // Find the post (could be main post or reply)
+    let targetPost: PostDto | undefined;
+    for (const post of posts) {
+      if (post.id === postId) {
+        targetPost = post;
+        break;
+      }
+      if (post.replies) {
+        targetPost = post.replies.find(r => r.id === postId);
+        if (targetPost) break;
+      }
+    }
+
+    if (!targetPost) {
+      console.error('Post not found:', postId);
+      return;
+    }
+
+    // Store original state for rollback on error
+    const originalLikedState = targetPost.isLikedByCurrentUser;
+    const originalLikeCount = targetPost.likeCount;
+
+    // Optimistically update UI immediately
+    targetPost.isLikedByCurrentUser = !targetPost.isLikedByCurrentUser;
+    targetPost.likeCount = targetPost.isLikedByCurrentUser ? targetPost.likeCount + 1 : targetPost.likeCount - 1;
+
+    // Toggle like based on original state
+    if (originalLikedState) {
+      // Unlike
+      this.forumService.unlikePost(postId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            console.log('✅ Post unliked');
+            // UI already updated optimistically
+          },
+          error: (error) => {
+            console.error('❌ Error unliking post:', error);
+            // Rollback optimistic update
+            targetPost!.isLikedByCurrentUser = originalLikedState;
+            targetPost!.likeCount = originalLikeCount;
+          }
+        });
+    } else {
+      // Like
+      this.forumService.likePost(postId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            console.log('✅ Post liked');
+            // UI already updated optimistically
+          },
+          error: (error) => {
+            console.error('❌ Error liking post:', error);
+            // Rollback optimistic update
+            targetPost!.isLikedByCurrentUser = originalLikedState;
+            targetPost!.likeCount = originalLikeCount;
+          }
+        });
+    }
   }
 
   /**
@@ -420,17 +723,25 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
    * Handles reply submission
    */
   onReplySubmit(event: {postId: string, content: string}): void {
-    console.log('Reply submit event:', event);
+    console.log('=== Reply Submit Event ===');
+    console.log('Replying to postId:', event.postId);
+    console.log('Content:', event.content);
+    console.log('Current threadPosts:', this.threadPosts);
+    
     this.replySubmitting.add(event.postId);
     
     // Get the topicId from the expanded threads
     const topicId = this.getTopicIdFromPostId(event.postId);
     console.log('Found topicId:', topicId);
+    
     if (!topicId) {
-      console.error('Could not find topicId for postId:', event.postId);
+      console.error('❌ Could not find topicId for postId:', event.postId);
+      console.error('Available topics:', Array.from(this.threadPosts.keys()));
       this.replySubmitting.delete(event.postId);
       return;
     }
+    
+    console.log('✅ Creating reply in topic:', topicId);
     
     this.forumService.createReply(topicId, event.postId, event.content)
       .pipe(takeUntil(this.destroy$))
@@ -438,6 +749,8 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
         next: (reply) => {
           console.log('Reply created successfully:', reply);
           this.replySubmitting.delete(event.postId);
+          // Close the reply form
+          this.activeReplyForm = null;
           // Refresh thread posts
           this.loadThreadPosts(topicId);
         },
@@ -453,7 +766,7 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
    * Handles topic click from sidebar
    */
   onTopicClick(topicName: string): void {
-    // Implement topic filtering
+    this.filterByTag(topicName);
   }
 
   /**
@@ -491,14 +804,81 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Gets the current user ID from auth store
+   */
+  getCurrentUserId(): string {
+    const user = this.authStore.currentUser;
+    return user?.id || '';
+  }
+
+  /**
+   * Handles post deletion
+   */
+  onPostDelete(postId: string): void {
+    this.forumService.deleteOwnPost(postId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          console.log('✅ Post deleted successfully');
+          // Find which topic this post belongs to
+          let topicId: string | null = null;
+          for (const [tid, posts] of this.threadPosts.entries()) {
+            const hasPost = posts.some(p => p.id === postId || p.replies?.some(r => r.id === postId));
+            if (hasPost) {
+              topicId = tid;
+              break;
+            }
+          }
+          
+          if (topicId) {
+            // Try to reload the thread
+            this.loadThreadPosts(topicId).catch(() => {
+              // If reload fails (e.g., main post was deleted), close the thread and reload topics
+              console.log('Thread no longer valid, reloading topics list');
+              this.expandedThreads.delete(topicId!);
+              this.threadPosts.delete(topicId!);
+              this.loadTopics();
+            });
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error deleting post:', error);
+          alert('Failed to delete post. Please try again.');
+        }
+      });
+  }
+
+  /**
    * Gets topic ID from post ID (helper method)
+   * Searches both top-level posts and nested replies
    */
   private getTopicIdFromPostId(postId: string): string | null {
+    console.log('🔍 Searching for postId:', postId);
+    
     for (const [topicId, posts] of this.threadPosts.entries()) {
-      if (posts.some(post => post.id === postId)) {
+      console.log(`  Checking topic ${topicId} with ${posts.length} posts`);
+      
+      // Check top-level posts (main post)
+      const mainPostMatch = posts.find(post => post.id === postId);
+      if (mainPostMatch) {
+        console.log('  ✅ Found in main posts');
         return topicId;
       }
+      
+      // Check nested replies (all replies are in the first post's replies array)
+      for (const post of posts) {
+        console.log(`    Post ${post.id} has ${post.replies?.length || 0} replies`);
+        if (post.replies && post.replies.length > 0) {
+          const replyMatch = post.replies.find(reply => reply.id === postId);
+          if (replyMatch) {
+            console.log('    ✅ Found in replies');
+            return topicId;
+          }
+        }
+      }
     }
+    
+    console.log('  ❌ Not found in any topic');
     return null;
   }
 
@@ -540,6 +920,99 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  /**
+   * Handles search input
+   */
+  onSearch(): void {
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Clears search query
+   */
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Handles sort change
+   */
+  onSortChange(sortBy: string): void {
+    this.sortBy = sortBy;
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Filters by author (when clicking on a user)
+   */
+  filterByAuthor(userId: string, userName: string): void {
+    this.selectedAuthorId = userId;
+    this.selectedAuthorName = userName;
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Clears author filter
+   */
+  clearAuthorFilter(): void {
+    this.selectedAuthorId = undefined;
+    this.selectedAuthorName = undefined;
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Filters by tag
+   */
+  filterByTag(tagName: string): void {
+    this.selectedTagFilter = tagName;
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Clears tag filter
+   */
+  clearTagFilter(): void {
+    this.selectedTagFilter = undefined;
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Clears all filters
+   */
+  clearAllFilters(): void {
+    this.searchQuery = '';
+    this.selectedAuthorId = undefined;
+    this.selectedAuthorName = undefined;
+    this.selectedTagFilter = undefined;
+    this.sortBy = 'recent';
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  /**
+   * Gets the label for the current sort option
+   */
+  getSortLabel(): string {
+    switch (this.sortBy) {
+      case 'oldest':
+        return 'Oldest First';
+      case 'popular':
+        return 'Most Popular';
+      case 'mostdiscussed':
+        return 'Most Discussed';
+      default:
+        return 'Most Recent';
     }
   }
 }

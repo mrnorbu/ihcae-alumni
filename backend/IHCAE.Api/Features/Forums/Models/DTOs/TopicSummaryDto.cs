@@ -48,6 +48,21 @@ public class TopicSummaryDto
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
+    /// Total number of likes across all posts in this topic
+    /// </summary>
+    public int TotalLikes { get; set; }
+
+    /// <summary>
+    /// ID of the main post (first post in the topic)
+    /// </summary>
+    public Guid MainPostId { get; set; }
+
+    /// <summary>
+    /// Whether the current user has liked the main post
+    /// </summary>
+    public bool IsMainPostLikedByCurrentUser { get; set; }
+
+    /// <summary>
     /// List of tags associated with the topic
     /// </summary>
     public List<TagDto> Tags { get; set; } = new List<TagDto>();

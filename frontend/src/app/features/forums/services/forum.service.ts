@@ -11,6 +11,7 @@ import type {
   UpdatePostRequest,
   PaginatedResult,
   TagDto,
+  TopUserDto,
 } from '../../../shared/models';
 
 /**
@@ -29,16 +30,34 @@ export class ForumService {
   /**
    * Gets a paginated list of discussion topics.
    * Returns topics sorted by pinned status and recent activity.
-   * Supports filtering by tags using OR logic.
+   * Supports filtering by tags, search, author, and sorting.
    */
-  getTopics(page: number = 1, pageSize: number = 20, tags?: string[]): Observable<PaginatedResult<TopicSummaryDto>> {
+  getTopics(
+    page: number = 1, 
+    pageSize: number = 20, 
+    tags?: string[], 
+    search?: string, 
+    authorId?: string, 
+    sortBy: string = 'recent'
+  ): Observable<PaginatedResult<TopicSummaryDto>> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('pageSize', pageSize.toString());
+      .set('pageSize', pageSize.toString())
+      .set('sortBy', sortBy);
 
     // Add tags filter if provided
     if (tags && tags.length > 0) {
       params = params.set('tags', tags.join(','));
+    }
+
+    // Add search filter if provided
+    if (search) {
+      params = params.set('search', search);
+    }
+
+    // Add author filter if provided
+    if (authorId) {
+      params = params.set('authorId', authorId);
     }
 
     return this.http.get<PaginatedResult<TopicSummaryDto>>(`${this.apiUrl}/topics`, { params });
@@ -130,6 +149,15 @@ export class ForumService {
   }
 
   /**
+   * Gets top users by engagement (likes received).
+   * Used for displaying top contributors in the sidebar.
+   */
+  getTopUsers(limit: number = 5): Observable<TopUserDto[]> {
+    const params = new HttpParams().set('limit', limit.toString());
+    return this.http.get<TopUserDto[]>(`${this.apiUrl}/top-users`, { params });
+  }
+
+  /**
    * Gets posts for a specific topic.
    * Returns all posts in the topic including replies.
    */
@@ -150,6 +178,14 @@ export class ForumService {
     };
     
     return this.createPost(topicId, request);
+  }
+
+  /**
+   * Deletes own post (user can only delete their own posts).
+   * Soft deletes the post.
+   */
+  deleteOwnPost(postId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/posts/${postId}`);
   }
 }
 

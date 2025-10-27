@@ -88,8 +88,8 @@ import {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <!-- News Card 1 -->
             <article class="card hover:shadow-lg transition-all group">
-              <div class="h-40 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center mb-4">
-                <lucide-icon [img]="sparklesIcon" [size]="40" class="text-white/80"></lucide-icon>
+              <div class="h-40 rounded-lg overflow-hidden mb-4">
+                <img src="images/news1.jpg" alt="Kanchenjunga Cleanup Initiative" class="w-full h-full object-cover">
               </div>
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
@@ -107,8 +107,8 @@ import {
 
             <!-- News Card 2 -->
             <article class="card hover:shadow-lg transition-all group">
-              <div class="h-40 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center mb-4">
-                <lucide-icon [img]="usersIcon" [size]="40" class="text-white/80"></lucide-icon>
+              <div class="h-40 rounded-lg overflow-hidden mb-4">
+                <img src="images/new2.jpg" alt="Sikkim Alumni Summit 2024" class="w-full h-full object-cover">
               </div>
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
@@ -126,8 +126,8 @@ import {
 
             <!-- News Card 3 -->
             <article class="card hover:shadow-lg transition-all group">
-              <div class="h-40 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center mb-4">
-                <lucide-icon [img]="awardIcon" [size]="40" class="text-white/80"></lucide-icon>
+              <div class="h-40 rounded-lg overflow-hidden mb-4">
+                <img src="images/new3.jpg" alt="First All-Female Team Summits" class="w-full h-full object-cover">
               </div>
               <div class="space-y-2">
                 <div class="flex items-center gap-2">

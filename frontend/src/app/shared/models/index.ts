@@ -177,6 +177,18 @@ export interface TagDto {
 }
 
 /**
+ * Top user model for forum engagement.
+ */
+export interface TopUserDto {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  profileImageUrl?: string;
+  totalLikes: number;
+  postCount: number;
+}
+
+/**
  * Author information for forum posts and topics.
  */
 export interface AuthorDto {
@@ -194,6 +206,7 @@ export interface PostDto {
   content: string;
   author: AuthorDto;
   parentPostId?: string;
+  parentAuthor?: AuthorDto;  // Author of the parent post (for "replying to" context)
   createdAt: Date;
   updatedAt?: Date;
   likeCount: number;
@@ -213,6 +226,9 @@ export interface TopicSummaryDto {
   isPinned: boolean;
   isLocked: boolean;
   createdAt: Date;
+  totalLikes: number;
+  mainPostId: string;
+  isMainPostLikedByCurrentUser: boolean;
   tags: TagDto[];
 }
 

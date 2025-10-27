@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Plus, ThumbsUp } from 'lucide-angular';
-import type { TopicSummaryDto, TagDto } from '../../../../shared/models';
+import type { TopicSummaryDto, TagDto, TopUserDto } from '../../../../shared/models';
 
 /**
  * Modern Forum Right Sidebar Component
@@ -39,7 +39,8 @@ import type { TopicSummaryDto, TagDto } from '../../../../shared/models';
           <div class="p-4 space-y-3">
             <div
               *ngFor="let user of getTopUsers()"
-              class="flex items-center gap-3"
+              (click)="onUserClick(user.userId, user.name)"
+              class="flex items-center gap-3 cursor-pointer hover:bg-neutral-50 rounded-md p-2 -m-2 transition-colors"
             >
               <!-- User Avatar -->
               <div class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-neutral-600">
@@ -56,16 +57,18 @@ import type { TopicSummaryDto, TagDto } from '../../../../shared/models';
               
               <!-- User Info -->
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-1">
-                  <span class="text-sm font-medium text-neutral-900 truncate">{{ user.name }}</span>
+                <div class="flex items-center gap-1 mb-0.5">
+                  <span class="text-sm font-medium text-neutral-900 truncate hover:text-blue-600">{{ user.name }}</span>
                   <div class="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
                 </div>
-              </div>
-              
-              <!-- Like Count -->
-              <div class="flex items-center gap-1 text-green-600">
-                <lucide-icon [img]="thumbsUpIcon" [size]="12"></lucide-icon>
-                <span class="text-xs font-medium">{{ user.likeCount }}</span>
+                <div class="flex items-center gap-2 text-xs text-neutral-500">
+                  <span>{{ user.topicCount }} topics</span>
+                  <span>•</span>
+                  <span class="flex items-center gap-1">
+                    <lucide-icon [img]="thumbsUpIcon" [size]="10"></lucide-icon>
+                    {{ user.likeCount }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -80,10 +83,10 @@ import type { TopicSummaryDto, TagDto } from '../../../../shared/models';
             <div
               *ngFor="let topic of getActiveTopics()"
               (click)="onTopicClick(topic.name)"
-              class="flex items-center justify-between cursor-pointer hover:bg-neutral-50 rounded-md p-2 transition-colors"
+              class="flex items-center justify-between cursor-pointer hover:bg-neutral-50 rounded-md p-2 transition-colors group"
             >
-              <span class="text-sm text-blue-600 font-medium">#{{ topic.name }}</span>
-              <span class="text-xs text-neutral-500">{{ topic.threadCount }} threads</span>
+              <span class="text-sm text-blue-600 font-medium group-hover:text-blue-700">#{{ topic.name }}</span>
+              <span class="text-xs text-neutral-500 group-hover:text-neutral-600">{{ topic.threadCount }} threads</span>
             </div>
           </div>
         </div>
@@ -95,9 +98,11 @@ import type { TopicSummaryDto, TagDto } from '../../../../shared/models';
 export class ModernForumSidebarComponent {
   @Input() topics: TopicSummaryDto[] = [];
   @Input() popularTags: TagDto[] = [];
+  @Input() topUsers: TopUserDto[] = [];
   
   @Output() startThreadClick = new EventEmitter<void>();
   @Output() topicClick = new EventEmitter<string>();
+  @Output() userClick = new EventEmitter<{userId: string, userName: string}>();
 
   // Lucide icons
   readonly plusIcon = Plus;
@@ -118,49 +123,38 @@ export class ModernForumSidebarComponent {
   }
 
   /**
-   * Gets top users for sidebar display
-   * Returns mock data for now - in real implementation, this would come from API
+   * Handles user click events
    */
-  getTopUsers(): Array<{name: string, profileImageUrl?: string, likeCount: string}> {
-    // Use stable like counts based on user names to prevent random changes
-    const users = [
-      { name: 'Milad Irani' },
-      { name: 'James Brown' },
-      { name: 'TheMMD' },
-      { name: 'Eli Williams' },
-      { name: 'Michel Polat' }
-    ];
-
-    return users.map(user => ({
-      ...user,
-      likeCount: this.getStableLikeCount(user.name)
-    }));
+  onUserClick(userId: string, userName: string): void {
+    this.userClick.emit({ userId, userName });
   }
 
   /**
-   * Gets stable like count based on user name
+   * Gets top users for sidebar display from real data
    */
-  private getStableLikeCount(name: string): string {
-    const hash = this.hashCode(name);
-    const count = Math.abs(hash % 2000) + 100; // Generate stable number between 100-2099
+  getTopUsers(): Array<{userId: string, name: string, profileImageUrl?: string, likeCount: string, topicCount: number}> {
+    if (this.topUsers && this.topUsers.length > 0) {
+      return this.topUsers.map(user => ({
+        userId: user.userId,
+        name: `${user.firstName} ${user.lastName}`,
+        profileImageUrl: user.profileImageUrl,
+        likeCount: this.formatLikeCount(user.totalLikes),
+        topicCount: user.postCount
+      }));
+    }
     
+    // Return empty array if no data
+    return [];
+  }
+
+  /**
+   * Formats like count for display (e.g., 1500 -> "1.5k")
+   */
+  private formatLikeCount(count: number): string {
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}k`;
     }
     return count.toString();
-  }
-
-  /**
-   * Simple hash function to generate stable numbers from strings
-   */
-  private hashCode(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash;
   }
 
   /**

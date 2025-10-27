@@ -28,6 +28,11 @@ public class PostDto
     public Guid? ParentPostId { get; set; }
 
     /// <summary>
+    /// Information about the parent post author (for "replying to" context)
+    /// </summary>
+    public AuthorDto? ParentAuthor { get; set; }
+
+    /// <summary>
     /// When the post was created
     /// </summary>
     public DateTime CreatedAt { get; set; }

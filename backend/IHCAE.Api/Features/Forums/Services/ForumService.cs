@@ -28,7 +28,7 @@ public class ForumService : IForumService
     /// Gets a paginated list of discussion topics sorted by recent activity.
     /// Pinned topics appear first, then sorted by most recent post activity.
     /// </summary>
-    public async Task<PaginatedResult<TopicSummaryDto>> GetTopicsAsync(int page = 1, int pageSize = 20, List<string>? tags = null)
+    public async Task<PaginatedResult<TopicSummaryDto>> GetTopicsAsync(Guid currentUserId, int page = 1, int pageSize = 20, List<string>? tags = null, string? search = null, Guid? authorId = null, string sortBy = "recent")
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 100) pageSize = 20;
@@ -48,11 +48,51 @@ public class ForumService : IForumService
             query = query.Where(t => t.TopicTags.Any(tt => normalizedTags.Contains(tt.Tag.Name.ToLower())));
         }
 
+        // Filter by search term (searches in title and post content)
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(t => 
+                t.Title.ToLower().Contains(searchLower) || 
+                t.Posts.Any(p => p.Content.ToLower().Contains(searchLower) && !p.IsDeleted)
+            );
+        }
+
+        // Filter by author
+        if (authorId.HasValue)
+        {
+            query = query.Where(t => t.CreatedBy.Id == authorId.Value);
+        }
+
         var totalCount = await query.CountAsync();
 
-        var topics = await query
-            .OrderByDescending(t => t.IsPinned)
-            .ThenByDescending(t => t.Posts.Max(p => (DateTime?)p.CreatedAt) ?? t.CreatedAt)
+        // Apply sorting based on sortBy parameter
+        IOrderedQueryable<DiscussionTopic> orderedQuery;
+        switch (sortBy.ToLower())
+        {
+            case "oldest":
+                orderedQuery = query
+                    .OrderByDescending(t => t.IsPinned)
+                    .ThenBy(t => t.CreatedAt);
+                break;
+            case "popular":
+                orderedQuery = query
+                    .OrderByDescending(t => t.IsPinned)
+                    .ThenByDescending(t => t.Posts.SelectMany(p => p.Likes).Count());
+                break;
+            case "mostdiscussed":
+                orderedQuery = query
+                    .OrderByDescending(t => t.IsPinned)
+                    .ThenByDescending(t => t.Posts.Count);
+                break;
+            default: // "recent"
+                orderedQuery = query
+                    .OrderByDescending(t => t.IsPinned)
+                    .ThenByDescending(t => t.Posts.Max(p => (DateTime?)p.CreatedAt) ?? t.CreatedAt);
+                break;
+        }
+
+        var topics = await orderedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(t => new TopicSummaryDto
@@ -71,6 +111,9 @@ public class ForumService : IForumService
                 IsPinned = t.IsPinned,
                 IsLocked = t.IsLocked,
                 CreatedAt = t.CreatedAt,
+                TotalLikes = 0, // Will be calculated separately to avoid loading all likes
+                MainPostId = Guid.Empty, // Will be set separately
+                IsMainPostLikedByCurrentUser = false, // Will be set separately
                 Tags = t.TopicTags.Select(tt => new TagDto
                 {
                     Id = tt.Tag.Id,
@@ -80,6 +123,28 @@ public class ForumService : IForumService
                 }).ToList()
             })
             .ToListAsync();
+
+        // Now enrich with like data and main post info for each topic
+        foreach (var topic in topics)
+        {
+            var mainPost = await _context.ForumPosts
+                .Include(p => p.Likes)
+                .Where(p => p.TopicId == topic.Id && p.ParentPostId == null && !p.IsDeleted)
+                .OrderBy(p => p.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (mainPost != null)
+            {
+                topic.MainPostId = mainPost.Id;
+                topic.IsMainPostLikedByCurrentUser = mainPost.Likes.Any(l => l.UserId == currentUserId);
+            }
+
+            // Calculate total likes for the topic
+            topic.TotalLikes = await _context.ForumPosts
+                .Where(p => p.TopicId == topic.Id && !p.IsDeleted)
+                .SelectMany(p => p.Likes)
+                .CountAsync();
+        }
 
         return new PaginatedResult<TopicSummaryDto>
         {
@@ -108,26 +173,47 @@ public class ForumService : IForumService
             throw new KeyNotFoundException($"Topic with ID {topicId} not found");
         }
 
-        // Load posts separately to avoid complex Include issues
-        var posts = await _context.ForumPosts
+        // Load the main post (first post in topic - the one without a parent)
+        var mainPost = await _context.ForumPosts
+            .AsNoTracking()
             .Include(p => p.Author)
                 .ThenInclude(a => a.AlumniProfile)
             .Include(p => p.Likes)
             .Where(p => p.TopicId == topicId && p.ParentPostId == null && !p.IsDeleted)
             .OrderBy(p => p.CreatedAt)
-            .ToListAsync();
+            .FirstOrDefaultAsync();
 
-        // Load replies for each post
-        var postIds = posts.Select(p => p.Id).ToList();
-        var replies = await _context.ForumPosts
+        if (mainPost == null)
+        {
+            throw new KeyNotFoundException($"No posts found for topic {topicId}");
+        }
+
+        // Load ALL replies (flattened) - regardless of which post they're replying to
+        // This includes replies to the main post AND replies to other replies
+        var allReplies = await _context.ForumPosts
+            .AsNoTracking() // Prevent tracking issues
             .Include(p => p.Author)
                 .ThenInclude(a => a.AlumniProfile)
             .Include(p => p.Likes)
-            .Where(p => postIds.Contains(p.ParentPostId!.Value) && !p.IsDeleted)
+            .Include(p => p.ParentPost) // Include parent for "replying to" context
+                .ThenInclude(pp => pp!.Author)
+                    .ThenInclude(a => a.AlumniProfile)
+            .Where(p => p.TopicId == topicId && p.ParentPostId.HasValue && !p.IsDeleted)
+            .OrderBy(p => p.CreatedAt) // Chronological order
             .ToListAsync();
+        
+        _logger.LogInformation("Loaded {ReplyCount} replies for topic {TopicId}", allReplies.Count, topicId);
+        foreach (var reply in allReplies)
+        {
+            _logger.LogInformation("Reply {ReplyId}: ParentPostId={ParentPostId}, ParentPost={HasParent}, ParentAuthor={HasParentAuthor}", 
+                reply.Id, reply.ParentPostId, reply.ParentPost != null, reply.ParentPost?.Author != null);
+        }
 
-        // Map posts to DTOs
-        var topLevelPosts = posts.Select(p => MapToPostDto(p, currentUserId, replies.Where(r => r.ParentPostId == p.Id).ToList())).ToList();
+        // Map main post with all replies flattened into a single list
+        var mainPostDto = MapToPostDto(mainPost, currentUserId);
+        mainPostDto.Replies = allReplies.Select(r => MapToPostDto(r, currentUserId)).ToList();
+
+        var topLevelPosts = new List<PostDto> { mainPostDto };
 
         return new TopicDetailDto
         {
@@ -228,6 +314,7 @@ public class ForumService : IForumService
         if (parentPostId.HasValue)
         {
             var parentPost = await _context.ForumPosts
+                .Include(p => p.Author) // Include author for reply context
                 .FirstOrDefaultAsync(p => p.Id == parentPostId.Value && p.TopicId == topicId);
 
             if (parentPost == null)
@@ -235,11 +322,8 @@ public class ForumService : IForumService
                 throw new KeyNotFoundException($"Parent post with ID {parentPostId} not found in this topic");
             }
 
-            // Prevent deeply nested replies (only 1 level allowed)
-            if (parentPost.ParentPostId.HasValue)
-            {
-                throw new InvalidOperationException("Cannot reply to a nested post. Maximum nesting level is 1.");
-            }
+            // Note: We now allow replying to any post (removed nesting limit)
+            // All replies will be flattened to single level in the UI with context
         }
 
         var post = new ForumPost
@@ -546,11 +630,9 @@ public class ForumService : IForumService
     /// <summary>
     /// Helper method to map ForumPost entity to PostDto.
     /// </summary>
-    private PostDto MapToPostDto(ForumPost post, Guid currentUserId, List<ForumPost>? replies = null)
+    private PostDto MapToPostDto(ForumPost post, Guid currentUserId)
     {
-        var postReplies = replies ?? post.Replies.Where(r => !r.IsDeleted).ToList();
-        
-        return new PostDto
+        var dto = new PostDto
         {
             Id = post.Id,
             Content = post.IsDeleted ? "[This post has been deleted]" : post.Content,
@@ -566,11 +648,52 @@ public class ForumService : IForumService
             UpdatedAt = post.UpdatedAt,
             LikeCount = post.Likes.Count,
             IsLikedByCurrentUser = post.Likes.Any(l => l.UserId == currentUserId),
-            Replies = postReplies
-                .OrderBy(r => r.CreatedAt)
-                .Select(r => MapToPostDto(r, currentUserId))
-                .ToList()
+            Replies = new List<PostDto>() // Replies will be added separately for flattened structure
         };
+
+        // Add parent author info if this is a reply (for "replying to" context)
+        if (post.ParentPost != null && post.ParentPost.Author != null)
+        {
+            dto.ParentAuthor = new AuthorDto
+            {
+                Id = post.ParentPost.Author.Id,
+                FirstName = post.ParentPost.Author.FirstName,
+                LastName = post.ParentPost.Author.LastName,
+                ProfileImageUrl = post.ParentPost.Author.AlumniProfile?.ProfileImageUrl
+            };
+        }
+
+        return dto;
+    }
+
+    /// <summary>
+    /// Gets top users by engagement (total likes received on their posts).
+    /// </summary>
+    public async Task<List<TopUserDto>> GetTopUsersAsync(int limit = 5)
+    {
+        var topUsers = await _context.ForumPosts
+            .Where(p => !p.IsDeleted)
+            .GroupBy(p => new
+            {
+                p.Author.Id,
+                p.Author.FirstName,
+                p.Author.LastName,
+                ProfileImageUrl = p.Author.AlumniProfile != null ? p.Author.AlumniProfile.ProfileImageUrl : null
+            })
+            .Select(g => new TopUserDto
+            {
+                UserId = g.Key.Id,
+                FirstName = g.Key.FirstName,
+                LastName = g.Key.LastName,
+                ProfileImageUrl = g.Key.ProfileImageUrl,
+                TotalLikes = g.Sum(p => p.Likes.Count),
+                PostCount = g.Count()
+            })
+            .OrderByDescending(u => u.TotalLikes)
+            .Take(limit)
+            .ToListAsync();
+
+        return topUsers;
     }
 }
 

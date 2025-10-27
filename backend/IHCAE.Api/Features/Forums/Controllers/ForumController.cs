@@ -34,15 +34,22 @@ public class ForumController : ControllerBase
     [HttpGet("topics")]
     [ProducesResponseType(typeof(PaginatedResult<TopicSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetTopics([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? tags = null)
+    public async Task<IActionResult> GetTopics(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 20, 
+        [FromQuery] string? tags = null,
+        [FromQuery] string? search = null,
+        [FromQuery] Guid? authorId = null,
+        [FromQuery] string sortBy = "recent")
     {
         try
         {
+            var userId = GetCurrentUserId();
             var tagList = string.IsNullOrWhiteSpace(tags) 
                 ? null 
                 : tags.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)).ToList();
             
-            var result = await _forumService.GetTopicsAsync(page, pageSize, tagList);
+            var result = await _forumService.GetTopicsAsync(userId, page, pageSize, tagList, search, authorId, sortBy);
             return Ok(result);
         }
         catch (Exception ex)
@@ -267,6 +274,26 @@ public class ForumController : ControllerBase
         {
             _logger.LogError(ex, "Error retrieving popular tags");
             return StatusCode(500, new ErrorResponse { Message = "An error occurred while retrieving popular tags." });
+        }
+    }
+
+    /// <summary>
+    /// Gets top users by engagement (likes received).
+    /// </summary>
+    [HttpGet("top-users")]
+    [ProducesResponseType(typeof(List<TopUserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetTopUsers([FromQuery] int limit = 5)
+    {
+        try
+        {
+            var topUsers = await _forumService.GetTopUsersAsync(limit);
+            return Ok(topUsers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving top users");
+            return StatusCode(500, new ErrorResponse { Message = "An error occurred while retrieving top users." });
         }
     }
 

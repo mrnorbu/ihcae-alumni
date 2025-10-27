@@ -25,5 +25,10 @@ public class ErrorResponse
     /// Timestamp when the error occurred.
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Detailed error information (only included in development mode).
+    /// </summary>
+    public string? Details { get; set; }
 }
 

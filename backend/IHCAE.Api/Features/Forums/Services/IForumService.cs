@@ -12,7 +12,7 @@ public interface IForumService
     /// <summary>
     /// Gets a paginated list of discussion topics.
     /// </summary>
-    Task<PaginatedResult<TopicSummaryDto>> GetTopicsAsync(int page = 1, int pageSize = 20, List<string>? tags = null);
+    Task<PaginatedResult<TopicSummaryDto>> GetTopicsAsync(Guid currentUserId, int page = 1, int pageSize = 20, List<string>? tags = null, string? search = null, Guid? authorId = null, string sortBy = "recent");
 
     /// <summary>
     /// Gets a single topic with all its posts.
@@ -68,4 +68,9 @@ public interface IForumService
     /// Deletes a post as admin with audit trail (soft delete).
     /// </summary>
     Task<bool> DeletePostAsAdminAsync(Guid postId, Guid adminUserId, string reason);
+
+    /// <summary>
+    /// Gets top users by engagement (likes received).
+    /// </summary>
+    Task<List<TopUserDto>> GetTopUsersAsync(int limit = 5);
 }
