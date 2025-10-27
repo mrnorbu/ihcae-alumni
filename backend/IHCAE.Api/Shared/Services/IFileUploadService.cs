@@ -42,5 +42,13 @@ public interface IFileUploadService
     /// <param name="maxSizeInMb">Maximum file size in megabytes (default: 5MB)</param>
     /// <returns>True if valid, throws exception otherwise</returns>
     void ValidateImageFile(IFormFile file, int maxSizeInMb = 5);
+    
+    /// <summary>
+    /// Gets the thumbnail URL for a content image.
+    /// Converts the full image URL to its thumbnail version.
+    /// </summary>
+    /// <param name="imageUrl">The full image URL</param>
+    /// <returns>Thumbnail URL</returns>
+    string GetThumbnailUrl(string imageUrl);
 }
 

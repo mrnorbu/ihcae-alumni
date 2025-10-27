@@ -12,6 +12,8 @@ using IHCAE.Api.Features.PasswordReset.Services;
 using IHCAE.Api.Features.Profile.Services;
 using IHCAE.Api.Features.Directory.Services;
 using IHCAE.Api.Features.Forums.Services;
+using IHCAE.Api.Features.News.Services;
+using IHCAE.Api.Features.Events.Services;
 using IHCAE.Api.Shared.Services;
 using IHCAE.Api.Shared.Middleware;
 
@@ -53,6 +55,9 @@ builder.Services.AddScoped<IDirectoryService, DirectoryService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IForumService, ForumService>();
+builder.Services.AddScoped<INewsService, NewsService>();
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IEventRegistrationService, EventRegistrationService>();
 
 // Seed Data Service
 builder.Services.AddHostedService<SeedDataService>();

@@ -1,0 +1,429 @@
+# Implementation Plan - News, Events & Success Stories
+
+## Additional Completed Work
+- ✅ **WebP Image Conversion**: Enhanced FileUploadService with automatic WebP conversion, thumbnail generation (400x300), and image resizing (max 1920x1080) using SixLabors.ImageSharp
+- ✅ **Sample Data Seeding**: Created migration with 3 news articles, 2 success stories, and 6 upcoming events with proper images
+- ✅ **Home Page Integration**: Integrated home page sections (News, Events, Success Stories) with backend APIs
+- ✅ **News-Events Page**: Created comprehensive news-events page at `/news-events` with tabs, filtering, and real-time data from database
+- ✅ **Image Fallback Handling**: Implemented graceful image error handling with gradient backgrounds and category-specific icons
+
+- [x] 1. Database schema and migrations
+  - Create database migration for NewsCategories, NewsArticles, EventCategories, Events, and EventRegistrations tables
+  - Add proper indexes for performance optimization
+  - Seed default categories for news and events
+  - Add ContentCreator role to the Roles table
+  - Seed sample news articles (3), success stories (2), and events (6) with images
+  - _Requirements: 1.1, 1.2, 2.1, 2.2, 14.1_
+
+- [x] 2. Backend: News entities and DTOs
+  - [x] 2.1 Create NewsArticle, NewsCategory entity models with proper relationships
+    - Define NewsArticle entity with all properties (Id, Title, Content, Excerpt, CategoryId, AuthorId, ImageUrl, Status, etc.)
+    - Define NewsCategory entity with Name, Slug, Description
+    - Configure ContentStatus enum (Draft, PendingReview, Published)
+    - Add navigation properties and relationships
+    - _Requirements: 1.2, 1.3, 1.4_
+  
+  - [x] 2.2 Create News DTOs for API requests and responses
+    - Create NewsArticleDto, NewsArticleSummaryDto for responses
+    - Create CreateNewsArticleRequest, UpdateNewsArticleRequest for inputs
+    - Create CreateSuccessStoryRequest for alumni submissions
+    - Create NewsCategoryDto for category responses
+    - _Requirements: 1.2, 11.2_
+
+- [x] 3. Backend: Events entities and DTOs
+  - [x] 3.1 Create Event, EventCategory, EventRegistration entity models
+    - Define Event entity with all properties (Id, Title, Description, Location, EventDate, Capacity, etc.)
+    - Define EventCategory entity with Name, Slug, Description
+    - Define EventRegistration entity with EventId, UserId, Name, Email, Phone, Status
+    - Configure RegistrationStatus enum (Confirmed, Cancelled, Waitlist)
+    - Add navigation properties and relationships
+    - _Requirements: 2.2, 2.3, 5.2, 5.3_
+  
+  - [x] 3.2 Create Events DTOs for API requests and responses
+    - Create EventDto, EventSummaryDto for responses
+    - Create CreateEventRequest, UpdateEventRequest for inputs
+    - Create EventRegistrationDto, RegisterForEventRequest
+    - Create EventCategoryDto for category responses
+    - _Requirements: 2.2, 5.2_
+
+- [x] 4. Backend: Update AppDbContext
+  - Add DbSet properties for NewsArticles, NewsCategories, Events, EventCategories, EventRegistrations
+  - Configure entity relationships using Fluent API in OnModelCreating
+  - Set up foreign keys, indexes, and constraints
+  - Configure cascade delete behaviors
+  - _Requirements: 1.1, 2.1, 5.1_
+
+- [x] 5. Backend: News service implementation
+  - [x] 5.1 Create INewsService interface with all method signatures
+    - Define methods for public viewing (GetPublishedArticlesAsync, GetArticleByIdAsync, GetSuccessStoriesAsync)
+    - Define methods for content creation (CreateArticleAsync, UpdateArticleAsync, DeleteArticleAsync)
+    - Define methods for admin operations (GetPendingArticlesAsync, ApproveArticleAsync, RejectArticleAsync)
+    - Define method for success story submission (SubmitSuccessStoryAsync)
+    - Define method for categories (GetCategoriesAsync)
+    - _Requirements: 1.1, 1.2, 3.1, 11.1, 12.1_
+  
+  - [x] 5.2 Implement NewsService with business logic
+    - Implement GetPublishedArticlesAsync with pagination, filtering, and search
+    - Implement GetArticleByIdAsync with view count increment
+    - Implement GetSuccessStoriesAsync filtering by Success Story category
+    - Implement CreateArticleAsync with role-based status setting (Admin: published, ContentCreator: pending_review)
+    - Implement UpdateArticleAsync with ownership validation
+    - Implement DeleteArticleAsync with authorization checks
+    - Implement GetPendingArticlesAsync for admin review
+    - Implement ApproveArticleAsync to change status to published
+    - Implement RejectArticleAsync with email notification
+    - Implement SubmitSuccessStoryAsync for alumni with pending_review status
+    - Implement GetCategoriesAsync to return all categories
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 3.1, 3.2, 3.3, 11.1, 11.2, 11.3, 12.1, 12.2, 12.3_
+
+- [x] 6. Backend: Events service implementation
+  - [x] 6.1 Create IEventService interface with all method signatures
+    - Define methods for public viewing (GetUpcomingEventsAsync, GetEventByIdAsync)
+    - Define methods for content creation (CreateEventAsync, UpdateEventAsync, DeleteEventAsync)
+    - Define methods for admin operations (GetPendingEventsAsync, ApproveEventAsync, RejectEventAsync)
+    - Define method for categories (GetCategoriesAsync)
+    - _Requirements: 2.1, 2.2, 4.1, 4.2_
+  
+  - [x] 6.2 Implement EventService with business logic
+    - Implement GetUpcomingEventsAsync with pagination, filtering by date/location/category
+    - Implement GetEventByIdAsync with full event details
+    - Implement CreateEventAsync with role-based status setting
+    - Implement UpdateEventAsync with ownership validation
+    - Implement DeleteEventAsync with registration count check
+    - Implement GetPendingEventsAsync for admin review
+    - Implement ApproveEventAsync to change status to published
+    - Implement RejectEventAsync with email notification
+    - Implement GetCategoriesAsync to return all categories
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 4.1, 4.2, 4.3, 4.4_
+
+- [x] 7. Backend: Event registration service implementation
+  - [x] 7.1 Create IEventRegistrationService interface
+    - Define RegisterForEventAsync method
+    - Define CheckIfRegisteredAsync method
+    - Define GetAvailableSpotsAsync method
+    - Define GetEventRegistrationsAsync method for admin
+    - Define ExportRegistrationsToCsvAsync method
+    - Define CancelRegistrationAsync method
+    - _Requirements: 5.1, 5.2, 5.3, 6.1, 6.2, 7.1, 7.2, 8.1_
+  
+  - [x] 7.2 Implement EventRegistrationService
+    - Implement RegisterForEventAsync with duplicate check, capacity validation, and email confirmation
+    - Implement CheckIfRegisteredAsync for duplicate prevention
+    - Implement GetAvailableSpotsAsync calculating remaining capacity
+    - Implement GetEventRegistrationsAsync with pagination for admin
+    - Implement ExportRegistrationsToCsvAsync generating CSV file
+    - Implement CancelRegistrationAsync for admin operations
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 8.4, 8.5_
+
+- [ ] 8. Backend: Content notification service
+  - Create IContentNotificationService interface for email notifications
+  - Implement SendSuccessStorySubmittedNotificationAsync to notify admins
+  - Implement SendSuccessStoryApprovedNotificationAsync to notify alumni
+  - Implement SendSuccessStoryRejectedNotificationAsync with rejection reason
+  - Implement SendEventRegistrationConfirmationAsync for registrants
+  - Implement SendContentSubmittedNotificationAsync for content creator submissions
+  - Implement SendContentApprovedNotificationAsync for content creator approvals
+  - _Requirements: 5.5, 12.4, 12.5_
+
+- [x] 9. Backend: News controllers
+  - [x] 9.1 Create NewsController for public endpoints
+    - Implement GET /api/v1/news endpoint with pagination, category filter, and search
+    - Implement GET /api/v1/news/{id} endpoint
+    - Implement GET /api/v1/news/success-stories endpoint
+    - Implement GET /api/v1/news/categories endpoint
+    - Add proper error handling and validation
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 10.1, 10.2, 13.1, 13.2, 13.3_
+  
+  - [x] 9.2 Create NewsManagementController for admin/content creator endpoints
+    - Implement POST /api/v1/news/management endpoint with [RequireRole("Admin", "ContentCreator")]
+    - Implement PUT /api/v1/news/management/{id} endpoint with ownership validation
+    - Implement DELETE /api/v1/news/management/{id} endpoint
+    - Implement GET /api/v1/news/management/pending endpoint with [RequireRole("Admin")]
+    - Implement POST /api/v1/news/management/{id}/approve endpoint with [RequireRole("Admin")]
+    - Implement POST /api/v1/news/management/{id}/reject endpoint with [RequireRole("Admin")]
+    - Implement POST /api/v1/news/success-story endpoint with [RequireRole("Alumni")]
+    - Add proper authorization checks and error handling
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 11.1, 11.2, 11.3, 11.4, 12.1, 12.2, 12.3, 12.4_
+
+- [x] 10. Backend: Events controllers
+  - [x] 10.1 Create EventsController for public endpoints
+    - Implement GET /api/v1/events endpoint with pagination and filters
+    - Implement GET /api/v1/events/{id} endpoint
+    - Implement POST /api/v1/events/{id}/register endpoint (no auth required)
+    - Implement GET /api/v1/events/{id}/check-registration endpoint
+    - Implement GET /api/v1/events/{id}/available-spots endpoint
+    - Implement GET /api/v1/events/categories endpoint
+    - Add proper error handling and validation
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 5.1, 5.2, 5.3, 6.1, 6.2, 8.1, 10.3, 10.4_
+  
+  - [x] 10.2 Create EventManagementController for admin/content creator endpoints
+    - Implement POST /api/v1/events/management endpoint with [RequireRole("Admin", "ContentCreator")]
+    - Implement PUT /api/v1/events/management/{id} endpoint with ownership validation
+    - Implement DELETE /api/v1/events/management/{id} endpoint with registration check
+    - Implement GET /api/v1/events/management/pending endpoint with [RequireRole("Admin")]
+    - Implement POST /api/v1/events/management/{id}/approve endpoint with [RequireRole("Admin")]
+    - Implement POST /api/v1/events/management/{id}/reject endpoint with [RequireRole("Admin")]
+    - Implement GET /api/v1/events/{id}/registrations endpoint with [RequireRole("Admin")]
+    - Implement GET /api/v1/events/{id}/registrations/export endpoint with [RequireRole("Admin")]
+    - Add proper authorization checks and error handling
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 7.1, 7.2, 7.3, 7.4, 7.5_
+
+- [x] 11. Backend: Register services in Program.cs
+  - Register INewsService and NewsService as scoped
+  - Register IEventService and EventService as scoped
+  - Register IEventRegistrationService and EventRegistrationService as scoped
+  - Register IContentNotificationService and ContentNotificationService as scoped
+  - _Requirements: All backend requirements_
+
+- [x] 12. Backend: Test all News APIs
+  - Test GET /api/v1/news with various filters and pagination
+  - Test GET /api/v1/news/{id} for published articles
+  - Test GET /api/v1/news/success-stories
+  - Test GET /api/v1/news/categories
+  - Test POST /api/v1/news/management as Admin (should publish directly)
+  - Test POST /api/v1/news/management as ContentCreator (should be pending_review)
+  - Test PUT /api/v1/news/management/{id} with ownership validation
+  - Test DELETE /api/v1/news/management/{id}
+  - Test GET /api/v1/news/management/pending as Admin
+  - Test POST /api/v1/news/management/{id}/approve as Admin
+  - Test POST /api/v1/news/management/{id}/reject as Admin
+  - Test POST /api/v1/news/success-story as Alumni
+  - Test authorization errors for unauthorized access
+  - Verify email notifications are sent
+  - _Requirements: All news-related requirements_
+
+- [x] 13. Backend: Test all Events APIs
+  - Test GET /api/v1/events with various filters
+  - Test GET /api/v1/events/{id}
+  - Test POST /api/v1/events/{id}/register without authentication
+  - Test POST /api/v1/events/{id}/register with authenticated user (pre-filled data)
+  - Test GET /api/v1/events/{id}/check-registration
+  - Test GET /api/v1/events/{id}/available-spots
+  - Test GET /api/v1/events/categories
+  - Test POST /api/v1/events/management as Admin and ContentCreator
+  - Test PUT /api/v1/events/management/{id}
+  - Test DELETE /api/v1/events/management/{id} with registrations
+  - Test GET /api/v1/events/management/pending
+  - Test POST /api/v1/events/management/{id}/approve
+  - Test POST /api/v1/events/management/{id}/reject
+  - Test GET /api/v1/events/{id}/registrations as Admin
+  - Test GET /api/v1/events/{id}/registrations/export CSV generation
+  - Test duplicate registration prevention
+  - Test capacity limits and event full scenarios
+  - Verify email confirmations are sent
+  - _Requirements: All events-related requirements_
+
+- [x] 14. Frontend: News models and interfaces
+  - Create TypeScript interfaces for NewsArticle, NewsArticleSummary, NewsCategory
+  - Create interfaces for CreateNewsArticleRequest, UpdateNewsArticleRequest
+  - Create interface for CreateSuccessStoryRequest
+  - Define ContentStatus enum
+  - _Requirements: 1.2, 3.1, 11.2_
+
+- [x] 15. Frontend: Events models and interfaces
+  - Create TypeScript interfaces for Event, EventSummary, EventCategory
+  - Create interfaces for CreateEventRequest, UpdateEventRequest
+  - Create interfaces for EventRegistration, RegisterForEventRequest
+  - Define RegistrationStatus enum
+  - _Requirements: 2.2, 4.1, 5.2_
+
+- [x] 16. Frontend: News service
+  - Create NewsService with HttpClient injection
+  - Implement getPublishedArticles method with pagination and filters
+  - Implement getArticleById method
+  - Implement getSuccessStories method
+  - Implement getCategories method
+  - Implement createArticle method for Admin/ContentCreator
+  - Implement updateArticle method
+  - Implement deleteArticle method
+  - Implement submitSuccessStory method for Alumni
+  - Implement getPendingArticles method for Admin
+  - Implement approveArticle method for Admin
+  - Implement rejectArticle method for Admin
+  - Add proper error handling
+  - _Requirements: 1.1, 3.1, 11.1, 12.1_
+
+- [x] 17. Frontend: Events service
+  - Create EventsService with HttpClient injection
+  - Implement getUpcomingEvents method with filters
+  - Implement getEventById method
+  - Implement registerForEvent method
+  - Implement checkIfRegistered method
+  - Implement getAvailableSpots method
+  - Implement getCategories method
+  - Implement createEvent method for Admin/ContentCreator
+  - Implement updateEvent method
+  - Implement deleteEvent method
+  - Implement getPendingEvents method for Admin
+  - Implement approveEvent method for Admin
+  - Implement rejectEvent method for Admin
+  - Implement getEventRegistrations method for Admin
+  - Implement exportRegistrationsCsv method for Admin
+  - Add proper error handling
+  - _Requirements: 2.1, 4.1, 5.1, 7.1_
+
+- [x] 18. Frontend: News list page component
+  - Create news-list container component with routing (integrated into news-events page)
+  - Implement pagination controls
+  - Implement category filter dropdown
+  - Implement search input with debounce
+  - Display news articles in grid/list layout
+  - Show article title, excerpt, thumbnail, publication date, and category
+  - Add click handler to navigate to article detail
+  - Handle loading and error states with image fallback
+  - Make responsive for mobile and desktop
+  - Integrated home page with latest news, events, and success stories
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 10.1, 10.2_
+
+- [ ] 19. Frontend: News detail page component
+  - Create news-detail container component with route parameter
+  - Fetch and display full article content
+  - Display article title, author, publication date, category, and image
+  - Render article content with proper formatting
+  - Add back navigation button
+  - Handle loading and error states (404 for not found)
+  - Make responsive for mobile and desktop
+  - _Requirements: 3.3_
+
+- [ ] 20. Frontend: Success stories showcase page
+  - Create success-stories container component
+  - Fetch success stories using getSuccessStories method
+  - Display stories in visually appealing grid layout
+  - Show story title, author name, graduation year, and image prominently
+  - Add click handler to navigate to full story detail
+  - Implement pagination
+  - Handle loading and error states
+  - Make responsive for mobile and desktop
+  - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
+
+- [ ] 21. Frontend: Submit success story page
+  - Create submit-success-story container component with [AlumniGuard]
+  - Create form with title, content (textarea), and image upload fields
+  - Implement image upload with preview
+  - Add form validation (required fields, image size/type)
+  - Submit form using submitSuccessStory method
+  - Show success message with "awaiting approval" notice
+  - Handle errors and display validation messages
+  - Make responsive for mobile and desktop
+  - _Requirements: 11.1, 11.2, 11.3, 11.4_
+
+- [ ] 22. Frontend: Events list page component
+  - Create events-list container component with routing
+  - Implement pagination controls
+  - Implement filters (category, location, date range)
+  - Display upcoming events in grid/list layout
+  - Show event title, date, time, location, and thumbnail
+  - Add click handler to navigate to event detail
+  - Handle loading and error states
+  - Make responsive for mobile and desktop
+  - _Requirements: 4.1, 4.2, 4.3, 4.4, 10.3_
+
+- [ ] 23. Frontend: Event detail page component
+  - Create event-detail container component with route parameter
+  - Fetch and display full event details
+  - Display event title, date, time, location, description, and image
+  - Show available spots if capacity is set
+  - Display registration button or "Event Full" message based on capacity
+  - Check if user is already registered and show "You are registered" message
+  - Add click handler to open registration form
+  - Handle loading and error states
+  - Make responsive for mobile and desktop
+  - _Requirements: 4.3, 5.1, 6.1, 6.2, 8.2_
+
+- [ ] 24. Frontend: Event registration form component
+  - Create registration-form component (can be modal or separate page)
+  - Pre-fill form fields if user is authenticated (name, email from profile)
+  - Collect name, email, and optional phone number
+  - Add form validation
+  - Check for duplicate registration before submission
+  - Submit registration using registerForEvent method
+  - Show confirmation message after successful registration
+  - Handle errors (duplicate, event full, validation)
+  - Make responsive for mobile and desktop
+  - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 8.1, 8.2, 8.3, 8.4_
+
+- [ ] 25. Frontend: Admin news management page
+  - Create news-management container component with [AdminGuard] or [ContentCreatorGuard]
+  - Display list of user's own articles (or all for Admin)
+  - Add "Create Article" button to open create form
+  - Show article status (draft, pending_review, published)
+  - Add edit and delete buttons for each article
+  - Implement create/edit form with title, content, category, image upload, and status selection
+  - For ContentCreator, disable direct publishing (only draft or submit for review)
+  - For Admin, allow direct publishing
+  - Handle form submission and validation
+  - Make responsive for mobile and desktop
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7_
+
+- [ ] 26. Frontend: Admin pending content review page
+  - Create pending-content-review container component with [AdminGuard]
+  - Display tabs for pending news articles and pending events
+  - Show list of pending articles with preview
+  - Add "Approve" and "Reject" buttons for each item
+  - Implement reject modal with reason input
+  - Call approveArticle/approveEvent or rejectArticle/rejectEvent methods
+  - Show success/error notifications
+  - Refresh list after approval/rejection
+  - Make responsive for mobile and desktop
+  - _Requirements: 12.1, 12.2, 12.3, 12.4_
+
+- [ ] 27. Frontend: Admin event management page
+  - Create event-management container component with [AdminGuard] or [ContentCreatorGuard]
+  - Display list of user's own events (or all for Admin)
+  - Add "Create Event" button to open create form
+  - Show event status (draft, pending_review, published)
+  - Add edit and delete buttons for each event
+  - Implement create/edit form with all event fields
+  - For ContentCreator, disable direct publishing
+  - For Admin, allow direct publishing
+  - Show warning when deleting event with registrations
+  - Handle form submission and validation
+  - Make responsive for mobile and desktop
+  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
+
+- [ ] 28. Frontend: Admin event registrations page
+  - Create event-registrations container component with [AdminGuard]
+  - Display list of registrations for a specific event
+  - Show registrant name, email, phone, registration date, and user type
+  - Display total registration count and remaining capacity
+  - Add "Export CSV" button to download registrations
+  - Implement pagination for large registration lists
+  - Handle loading and error states
+  - Make responsive for mobile and desktop
+  - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
+
+- [ ] 29. Frontend: Update navigation and routing
+  - Add "News" link to main navigation
+  - Add "Events" link to main navigation
+  - Add "Success Stories" link to main navigation
+  - Add "Submit Your Story" link for authenticated alumni
+  - Add "Content Management" section to admin navigation
+  - Configure routes for all new pages
+  - Apply appropriate guards (AuthGuard, AdminGuard, AlumniGuard)
+  - _Requirements: All frontend requirements_
+
+- [ ] 30. Frontend: Reusable components
+  - Create news-card component for displaying article summaries
+  - Create event-card component for displaying event summaries
+  - Create success-story-card component with prominent image display
+  - Create news-filters component for category and search
+  - Create event-filters component for category, location, and date range
+  - Create content-status-badge component to show draft/pending/published
+  - Make all components responsive
+  - _Requirements: 3.2, 4.2, 13.2_
+
+- [ ] 31. Integration testing and bug fixes
+  - Test complete news article workflow (create → pending → approve → publish)
+  - Test complete event workflow (create → pending → approve → publish → register)
+  - Test success story submission workflow (submit → pending → approve)
+  - Test role-based access control (Admin, ContentCreator, Alumni)
+  - Test event capacity limits and registration prevention
+  - Test duplicate registration prevention
+  - Test image uploads for news and events
+  - Test CSV export functionality
+  - Test email notifications
+  - Test search and filtering on all pages
+  - Test pagination on all list pages
+  - Test responsive design on mobile devices
+  - Fix any bugs discovered during testing
+  - _Requirements: All requirements_

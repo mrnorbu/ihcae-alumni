@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "T0Ft7igspUo=",
+  "dgSpecHash": "EqXBPPCHnQQ=",
   "success": true,
   "projectFilePath": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/IHCAE.Api.csproj",
   "expectedPackageFiles": [
@@ -56,6 +56,7 @@
     "/Users/sonamnorbu/.nuget/packages/serilog.sinks.console/6.0.0/serilog.sinks.console.6.0.0.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/serilog.sinks.debug/3.0.0/serilog.sinks.debug.3.0.0.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/serilog.sinks.file/6.0.0/serilog.sinks.file.6.0.0.nupkg.sha512",
+    "/Users/sonamnorbu/.nuget/packages/sixlabors.imagesharp/3.1.11/sixlabors.imagesharp.3.1.11.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/swashbuckle.aspnetcore/6.8.1/swashbuckle.aspnetcore.6.8.1.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/swashbuckle.aspnetcore.swagger/6.8.1/swashbuckle.aspnetcore.swagger.6.8.1.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.8.1/swashbuckle.aspnetcore.swaggergen.6.8.1.nupkg.sha512",

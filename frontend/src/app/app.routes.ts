@@ -105,6 +105,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/news-events/containers/news-events/news-events.component').then(m => m.NewsEventsComponent)
   },
   {
+    path: 'news/:id',
+    loadComponent: () => import('./features/news-events/containers/news-detail/news-detail.component').then(m => m.NewsDetailComponent)
+  },
+  {
+    path: 'events/:id',
+    loadComponent: () => import('./features/news-events/containers/event-detail/event-detail.component').then(m => m.EventDetailComponent)
+  },
+  {
+    path: 'events/:id/register',
+    loadComponent: () => import('./features/news-events/containers/event-registration/event-registration.component').then(m => m.EventRegistrationComponent)
+  },
+  {
     path: '**',
     redirectTo: '/home'
   }

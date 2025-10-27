@@ -1,8 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { UserAuthStore } from '../../core/state/user-auth.store';
 import { HeaderComponent, FooterComponent } from '../../shared/components';
+import { NewsService } from '../news-events/services/news.service';
+import { EventsService } from '../news-events/services/events.service';
+import type { NewsArticleSummary, EventSummary } from '../news-events/models';
 import { 
   LucideAngularModule, 
   Mountain, 
@@ -85,64 +88,52 @@ import {
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- News Card 1 -->
-            <article class="card hover:shadow-lg transition-all group">
-              <div class="h-40 rounded-lg overflow-hidden mb-4">
-                <img src="images/news1.jpg" alt="Kanchenjunga Cleanup Initiative" class="w-full h-full object-cover">
-              </div>
-              <div class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <span class="badge badge-primary">Conservation</span>
-                  <span class="text-xs text-neutral-500">Dec 15, 2024</span>
-                </div>
-                <h3 class="text-lg font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors">
-                  Kanchenjunga Cleanup Initiative
-                </h3>
-                <p class="text-sm text-neutral-600 leading-relaxed">
-                  Alumni-led project removes 2 tons of waste from Kanchenjunga Base Camp, setting new standards for sustainable mountaineering in Sikkim.
-                </p>
-              </div>
-            </article>
-
-            <!-- News Card 2 -->
-            <article class="card hover:shadow-lg transition-all group">
-              <div class="h-40 rounded-lg overflow-hidden mb-4">
-                <img src="images/new2.jpg" alt="Sikkim Alumni Summit 2024" class="w-full h-full object-cover">
-              </div>
-              <div class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <span class="badge badge-success">Community</span>
-                  <span class="text-xs text-neutral-500">Dec 12, 2024</span>
-                </div>
-                <h3 class="text-lg font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors">
-                  Sikkim Alumni Summit 2024
-                </h3>
-                <p class="text-sm text-neutral-600 leading-relaxed">
-                  Over 200 alumni from the Eastern Himalayas gathered in Gangtok to share experiences and plan future conservation projects.
-                </p>
-              </div>
-            </article>
-
-            <!-- News Card 3 -->
-            <article class="card hover:shadow-lg transition-all group">
-              <div class="h-40 rounded-lg overflow-hidden mb-4">
-                <img src="images/new3.jpg" alt="First All-Female Team Summits" class="w-full h-full object-cover">
-              </div>
-              <div class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <span class="badge badge-warning">Achievement</span>
-                  <span class="text-xs text-neutral-500">Dec 10, 2024</span>
-                </div>
-                <h3 class="text-lg font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors">
-                  First All-Female Team Summits
-                </h3>
-                <p class="text-sm text-neutral-600 leading-relaxed">
-                  IHCAE graduates lead historic Kanchenjunga expedition, demonstrating leadership skills and technical expertise.
-                </p>
-              </div>
-            </article>
-          </div>
+          @if (isLoadingNews()) {
+            <div class="flex justify-center items-center py-12">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            </div>
+          } @else if (latestNews().length === 0) {
+            <div class="text-center py-12">
+              <p class="text-neutral-600">No news articles available at the moment.</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              @for (article of latestNews(); track article.id) {
+                <article class="card hover:shadow-lg transition-all group cursor-pointer" [routerLink]="['/news', article.id]">
+                  <div class="h-40 rounded-lg overflow-hidden mb-4 relative">
+                    @if (article.thumbnailUrl) {
+                      <img 
+                        [src]="article.thumbnailUrl" 
+                        [alt]="article.title" 
+                        class="w-full h-full object-cover"
+                        (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'"
+                      >
+                    }
+                    <div 
+                      [style.display]="article.thumbnailUrl ? 'none' : 'flex'"
+                      class="w-full h-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center"
+                    >
+                      <lucide-icon [img]="newsIcon" [size]="48" class="text-white opacity-80"></lucide-icon>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                      <span [class]="'badge ' + getCategoryBadgeClass(article.category.slug)">
+                        {{ article.category.name || 'News' }}
+                      </span>
+                      <span class="text-xs text-neutral-500">{{ formatDate(article.publishedAt) }}</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors">
+                      {{ article.title }}
+                    </h3>
+                    <p class="text-sm text-neutral-600 leading-relaxed line-clamp-3">
+                      {{ article.excerpt }}
+                    </p>
+                  </div>
+                </article>
+              }
+            </div>
+          }
 
           <div class="text-center mt-8">
             <a 
@@ -171,151 +162,48 @@ import {
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Event 1 -->
-            <div class="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-start gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="calendarIcon" [size]="20" class="text-white"></lucide-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-sm font-semibold text-neutral-900 mb-1 line-clamp-2">Annual Alumni Reunion 2024</h3>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
-                    <span>Mar 15, 2024</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
-                    <span class="truncate">IHCAE Campus, Sikkim</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs text-primary-600 font-medium">150 attendees</span>
-                    <button class="text-xs text-primary-600 hover:text-primary-700 font-medium">Register →</button>
-                  </div>
-                </div>
-              </div>
+          @if (isLoadingEvents()) {
+            <div class="flex justify-center items-center py-12">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
             </div>
-
-            <!-- Event 2 -->
-            <div class="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-start gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="mountainIcon" [size]="20" class="text-white"></lucide-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-sm font-semibold text-neutral-900 mb-1 line-clamp-2">Mountain Safety Workshop</h3>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
-                    <span>Feb 20, 2024</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
-                    <span class="truncate">Training Center, Manali</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs text-primary-600 font-medium">30 attendees</span>
-                    <button class="text-xs text-primary-600 hover:text-primary-700 font-medium">Register →</button>
-                  </div>
-                </div>
-              </div>
+          } @else if (upcomingEvents().length === 0) {
+            <div class="text-center py-12">
+              <p class="text-neutral-600">No upcoming events at the moment.</p>
             </div>
-
-            <!-- Event 3 -->
-            <div class="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-start gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="globeIcon" [size]="20" class="text-white"></lucide-icon>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (event of upcomingEvents(); track event.id) {
+                <div class="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow cursor-pointer" [routerLink]="['/events', event.id]">
+                  <div class="flex items-start gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <lucide-icon [img]="calendarIcon" [size]="20" class="text-white"></lucide-icon>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-sm font-semibold text-neutral-900 mb-1 line-clamp-2">{{ event.title }}</h3>
+                      <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
+                        <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
+                        <span>{{ formatEventDate(event.eventDate) }}</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
+                        <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
+                        <span class="truncate">{{ event.location }}</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-primary-600 font-medium">
+                          @if (event.capacity) {
+                            {{ event.registrationCount }} / {{ event.capacity }} registered
+                          } @else {
+                            {{ event.registrationCount }} registered
+                          }
+                        </span>
+                        <span class="text-xs text-primary-600 hover:text-primary-700 font-medium">Register →</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-sm font-semibold text-neutral-900 mb-1 line-clamp-2">Eco-Tourism Conference 2024</h3>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
-                    <span>Apr 10, 2024</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
-                    <span class="truncate">Conference Hall, Gangtok</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs text-primary-600 font-medium">200 attendees</span>
-                    <button class="text-xs text-primary-600 hover:text-primary-700 font-medium">Register →</button>
-                  </div>
-                </div>
-              </div>
+              }
             </div>
-
-            <!-- Event 4 -->
-            <div class="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-start gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="awardIcon" [size]="20" class="text-white"></lucide-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-sm font-semibold text-neutral-900 mb-1 line-clamp-2">Adventure Sports Competition</h3>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
-                    <span>May 5, 2024</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
-                    <span class="truncate">Adventure Sports Complex</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs text-primary-600 font-medium">75 attendees</span>
-                    <button class="text-xs text-primary-600 hover:text-primary-700 font-medium">Register →</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Event 5 -->
-            <div class="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-start gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="usersIcon" [size]="20" class="text-white"></lucide-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-sm font-semibold text-neutral-900 mb-1 line-clamp-2">Conservation Workshop</h3>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
-                    <span>Jun 12, 2024</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
-                    <span class="truncate">Wildlife Sanctuary, Sikkim</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs text-primary-600 font-medium">45 attendees</span>
-                    <button class="text-xs text-primary-600 hover:text-primary-700 font-medium">Register →</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Event 6 -->
-            <div class="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-start gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="heartIcon" [size]="20" class="text-white"></lucide-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-sm font-semibold text-neutral-900 mb-1 line-clamp-2">Sustainable Tourism Summit</h3>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
-                    <span>Jul 18, 2024</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-neutral-600 mb-2">
-                    <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
-                    <span class="truncate">Hotel Mount View, Gangtok</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs text-primary-600 font-medium">120 attendees</span>
-                    <button class="text-xs text-primary-600 hover:text-primary-700 font-medium">Register →</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          }
 
           <div class="text-center mt-8">
             <a 
@@ -429,55 +317,51 @@ import {
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Success Story 1 -->
-            <div class="card hover:shadow-lg transition-all">
-              <div class="flex items-start gap-4">
-                <div class="w-16 h-16 bg-gradient-to-br from-primary-400 to-secondary-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="mountainIcon" [size]="24" class="text-white"></lucide-icon>
-                </div>
-                <div class="flex-1">
-                  <h3 class="text-lg font-semibold text-neutral-900 mb-2">From Student to Mountain Guide</h3>
-                  <p class="text-sm text-neutral-600 mb-3 leading-relaxed">
-                    Rajesh Kumar overcame challenges to become a certified mountain guide, now leading expeditions across the Himalayas.
-                  </p>
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-primary-600">Career Achievement</span>
-                    <a 
-                      routerLink="/success-stories" 
-                      class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                    >
-                      Read Story →
-                    </a>
+          @if (isLoadingStories()) {
+            <div class="flex justify-center items-center py-12">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            </div>
+          } @else if (successStories().length === 0) {
+            <div class="text-center py-12">
+              <p class="text-neutral-600">No success stories available at the moment.</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              @for (story of successStories(); track story.id) {
+                <div class="card hover:shadow-lg transition-all cursor-pointer" [routerLink]="['/news', story.id]">
+                  <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary-400 to-secondary-500 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                      @if (story.thumbnailUrl) {
+                        <img 
+                          [src]="story.thumbnailUrl" 
+                          [alt]="story.title" 
+                          class="w-full h-full object-cover"
+                          (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'"
+                        >
+                        <div style="display: none;" class="absolute inset-0 bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center">
+                          <lucide-icon [img]="awardIcon" [size]="24" class="text-white"></lucide-icon>
+                        </div>
+                      } @else {
+                        <lucide-icon [img]="awardIcon" [size]="24" class="text-white"></lucide-icon>
+                      }
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="text-lg font-semibold text-neutral-900 mb-2">{{ story.title }}</h3>
+                      <p class="text-sm text-neutral-600 mb-3 leading-relaxed line-clamp-2">
+                        {{ story.excerpt }}
+                      </p>
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-primary-600">{{ story.category.name || 'Success Story' }}</span>
+                        <span class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+                          Read Story →
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              }
             </div>
-
-            <!-- Success Story 2 -->
-            <div class="card hover:shadow-lg transition-all">
-              <div class="flex items-start gap-4">
-                <div class="w-16 h-16 bg-gradient-to-br from-success-400 to-info-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <lucide-icon [img]="heartIcon" [size]="24" class="text-white"></lucide-icon>
-                </div>
-                <div class="flex-1">
-                  <h3 class="text-lg font-semibold text-neutral-900 mb-2">Conservation Success</h3>
-                  <p class="text-sm text-neutral-600 mb-3 leading-relaxed">
-                    Priya Sharma led a conservation project that increased snow leopard population by 30% in the region.
-                  </p>
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-primary-600">Conservation Work</span>
-                    <a 
-                      routerLink="/success-stories" 
-                      class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                    >
-                      Read Story →
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          }
 
           <div class="text-center mt-8">
             <a 
@@ -524,8 +408,18 @@ import {
   `,
   styles: []
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   private authStore = inject(UserAuthStore);
+  private newsService = inject(NewsService);
+  private eventsService = inject(EventsService);
+
+  // Data signals
+  latestNews = signal<NewsArticleSummary[]>([]);
+  upcomingEvents = signal<EventSummary[]>([]);
+  successStories = signal<NewsArticleSummary[]>([]);
+  isLoadingNews = signal(true);
+  isLoadingEvents = signal(true);
+  isLoadingStories = signal(true);
 
   // Lucide icons
   readonly mountainIcon = Mountain;
@@ -541,4 +435,86 @@ export class HomeComponent {
   readonly calendarIcon = Calendar;
   readonly mapPinIcon = MapPin;
   readonly clockIcon = Clock;
+
+  ngOnInit(): void {
+    this.loadLatestNews();
+    this.loadUpcomingEvents();
+    this.loadSuccessStories();
+  }
+
+  private loadLatestNews(): void {
+    this.isLoadingNews.set(true);
+    this.newsService.getPublishedArticles(1, 3).subscribe({
+      next: (result) => {
+        this.latestNews.set(result.items);
+        this.isLoadingNews.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading news:', error);
+        this.isLoadingNews.set(false);
+      }
+    });
+  }
+
+  private loadUpcomingEvents(): void {
+    this.isLoadingEvents.set(true);
+    this.eventsService.getUpcomingEvents(1, 6).subscribe({
+      next: (result) => {
+        this.upcomingEvents.set(result.items);
+        this.isLoadingEvents.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading events:', error);
+        this.isLoadingEvents.set(false);
+      }
+    });
+  }
+
+  private loadSuccessStories(): void {
+    this.isLoadingStories.set(true);
+    this.newsService.getSuccessStories(1, 2).subscribe({
+      next: (result) => {
+        this.successStories.set(result.items);
+        this.isLoadingStories.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading success stories:', error);
+        this.isLoadingStories.set(false);
+      }
+    });
+  }
+
+  getCategoryBadgeClass(categorySlug?: string): string {
+    const categoryMap: Record<string, string> = {
+      'conservation': 'badge-primary',
+      'community': 'badge-success',
+      'achievement': 'badge-warning',
+      'announcement': 'badge-info',
+    };
+    return categoryMap[categorySlug || ''] || 'badge-primary';
+  }
+
+  formatDate(date: Date | undefined): string {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  }
+
+  formatEventDate(date: Date | undefined): string {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  }
+
+  onImageError(event: Event, fallbackSrc: string): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = fallbackSrc;
+    imgElement.onerror = null; // Prevent infinite loop
+  }
 }

@@ -14,10 +14,10 @@ import { Subscription } from 'rxjs';
     <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-200 transition-all duration-200" 
          [class.shadow-md]="scrolled">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-14">
+        <div class="flex justify-between items-center h-16">
           <!-- Logo -->
           <a routerLink="/" class="flex items-center gap-3 flex-shrink-0">
-            <img class="h-10 w-auto" src="images/logo.png" alt="IHCAE Sikkim Logo">
+            <img class="h-12 w-auto py-0 my-0" src="images/logo.png" alt="IHCAE Sikkim Logo">
             <div class="hidden md:block">
               <h1 class="text-lg font-bold text-neutral-900 leading-tight">IHCAE Alumni</h1>
               <p class="text-xs text-neutral-600">Sikkim, India</p>

@@ -4,6 +4,8 @@ using IHCAE.Api.Features.Alumni.Models.Entities;
 using IHCAE.Api.Features.EmailVerification.Models.Entities;
 using IHCAE.Api.Features.PasswordReset.Models.Entities;
 using IHCAE.Api.Features.Forums.Models.Entities;
+using IHCAE.Api.Features.News.Models.Entities;
+using IHCAE.Api.Features.Events.Models.Entities;
 using IHCAE.Api.Shared.Models;
 
 namespace IHCAE.Api.Shared.Data;
@@ -87,6 +89,31 @@ public class AppDbContext : DbContext
     /// DiscussionTopicTags table - many-to-many relationship between topics and tags
     /// </summary>
     public DbSet<DiscussionTopicTag> DiscussionTopicTags { get; set; } = null!;
+
+    /// <summary>
+    /// NewsCategories table - categories for news articles
+    /// </summary>
+    public DbSet<NewsCategory> NewsCategories { get; set; } = null!;
+
+    /// <summary>
+    /// NewsArticles table - news articles and success stories
+    /// </summary>
+    public DbSet<NewsArticle> NewsArticles { get; set; } = null!;
+
+    /// <summary>
+    /// EventCategories table - categories for events
+    /// </summary>
+    public DbSet<EventCategory> EventCategories { get; set; } = null!;
+
+    /// <summary>
+    /// Events table - events and activities
+    /// </summary>
+    public DbSet<Event> Events { get; set; } = null!;
+
+    /// <summary>
+    /// EventRegistrations table - registrations for events
+    /// </summary>
+    public DbSet<EventRegistration> EventRegistrations { get; set; } = null!;
 
     /// <summary>
     /// Configures entity relationships and constraints using Fluent API.
@@ -369,6 +396,134 @@ public class AppDbContext : DbContext
                   
             // Index for filtering by tag
             entity.HasIndex(e => e.TagId);
+        });
+
+        // Configure NewsCategory entity
+        modelBuilder.Entity<NewsCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Slug).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Unique constraints
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => e.Slug).IsUnique();
+        });
+
+        // Configure NewsArticle entity
+        modelBuilder.Entity<NewsArticle>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.Excerpt).HasMaxLength(500);
+            entity.Property(e => e.ImageUrl).HasMaxLength(1024);
+            entity.Property(e => e.ThumbnailUrl).HasMaxLength(1024);
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.ViewCount).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Foreign key to NewsCategory
+            entity.HasOne(e => e.Category)
+                  .WithMany()
+                  .HasForeignKey(e => e.CategoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
+                  
+            // Foreign key to User (author)
+            entity.HasOne(e => e.Author)
+                  .WithMany()
+                  .HasForeignKey(e => e.AuthorId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Indexes for performance
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.CategoryId);
+            entity.HasIndex(e => e.PublishedAt);
+            entity.HasIndex(e => e.AuthorId);
+        });
+
+        // Configure EventCategory entity
+        modelBuilder.Entity<EventCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Slug).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Unique constraints
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => e.Slug).IsUnique();
+        });
+
+        // Configure Event entity
+        modelBuilder.Entity<Event>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Description).IsRequired();
+            entity.Property(e => e.Location).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.ImageUrl).HasMaxLength(1024);
+            entity.Property(e => e.ThumbnailUrl).HasMaxLength(1024);
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Foreign key to EventCategory (optional)
+            entity.HasOne(e => e.Category)
+                  .WithMany()
+                  .HasForeignKey(e => e.CategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
+                  
+            // Foreign key to User (creator)
+            entity.HasOne(e => e.CreatedBy)
+                  .WithMany()
+                  .HasForeignKey(e => e.CreatedById)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Indexes for performance
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.EventDate);
+            entity.HasIndex(e => e.CategoryId);
+            entity.HasIndex(e => e.CreatedById);
+        });
+
+        // Configure EventRegistration entity
+        modelBuilder.Entity<EventRegistration>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.RegistrationDate).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            
+            // Foreign key to Event
+            entity.HasOne(e => e.Event)
+                  .WithMany(ev => ev.Registrations)
+                  .HasForeignKey(e => e.EventId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            // Foreign key to User (optional - null for public registrations)
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.SetNull);
+                  
+            // Unique constraint: one email per event
+            entity.HasIndex(e => new { e.EventId, e.Email }).IsUnique();
+            
+            // Indexes for performance
+            entity.HasIndex(e => e.EventId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.Email);
+            entity.HasIndex(e => e.Status);
         });
     }
 }
