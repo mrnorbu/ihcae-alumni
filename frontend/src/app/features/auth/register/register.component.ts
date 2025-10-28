@@ -12,10 +12,10 @@ import { HeaderComponent, FooterComponent } from '../../../shared/components';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent, FooterComponent],
   template: `
-    <div class="min-h-screen bg-white">
+    <div class="min-h-screen bg-white flex flex-col">
       <app-header></app-header>
       
-      <div class="flex pt-16">
+      <div class="flex flex-1 pt-16">
       <!-- Left Side - Brand Section -->
       <div class="hidden lg:flex lg:w-2/5 bg-gradient-brand relative overflow-hidden">
         <div class="absolute inset-0 bg-black bg-opacity-10"></div>
@@ -76,7 +76,7 @@ import { HeaderComponent, FooterComponent } from '../../../shared/components';
       </div>
 
       <!-- Right Side - Register Form -->
-      <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-neutral-50">
+      <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 bg-neutral-50">
         <div class="w-full max-w-md">
           <!-- Mobile Logo -->
           <div class="lg:hidden text-center mb-8">
@@ -258,6 +258,7 @@ import { HeaderComponent, FooterComponent } from '../../../shared/components';
             </a>
           </div>
         </div>
+      </div>
       </div>
       
       <app-footer></app-footer>
