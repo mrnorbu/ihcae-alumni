@@ -62,8 +62,8 @@ export const routes: Routes = [
     canActivate: [AdminGuard]
   },
   {
-    path: 'admin/content',
-    loadComponent: () => import('./features/admin/content-management/content-management.component').then(m => m.ContentManagementComponent),
+    path: 'admin/content-review',
+    loadComponent: () => import('./features/admin/content-review/content-review.component').then(m => m.ContentReviewComponent),
     canActivate: [AdminGuard]
   },
   {
@@ -115,6 +115,16 @@ export const routes: Routes = [
   {
     path: 'events/:id/register',
     loadComponent: () => import('./features/news-events/containers/event-registration/event-registration.component').then(m => m.EventRegistrationComponent)
+  },
+  {
+    path: 'content-management',
+    loadComponent: () => import('./features/content-management/content-management.component').then(m => m.ContentManagementComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'submit-success-story',
+    loadComponent: () => import('./features/news-events/containers/submit-success-story/submit-success-story.component').then(m => m.SubmitSuccessStoryComponent),
+    canActivate: [AlumniGuard]
   },
   {
     path: '**',

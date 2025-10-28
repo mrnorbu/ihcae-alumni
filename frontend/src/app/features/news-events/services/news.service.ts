@@ -108,7 +108,7 @@ export class NewsService {
    * Story will be pending review.
    */
   submitSuccessStory(request: CreateSuccessStoryRequest): Observable<NewsArticle> {
-    return this.http.post<NewsArticle>(`${this.apiUrl}/success-story`, request);
+    return this.http.post<NewsArticle>(`${this.managementApiUrl}/success-story`, request);
   }
 
   /**

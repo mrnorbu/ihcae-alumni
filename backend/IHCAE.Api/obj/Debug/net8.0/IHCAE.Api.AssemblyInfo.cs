@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IHCAE.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fdd6f0a27b307a3a43e5a393a8094965b8279f92")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4bcd89f91a64542d7a51f1849130204b9241e776")]
 [assembly: System.Reflection.AssemblyProductAttribute("IHCAE.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IHCAE.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

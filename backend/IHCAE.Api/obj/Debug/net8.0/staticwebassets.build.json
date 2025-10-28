@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "aOjn0zxImHzTWG9CW+cA4zK+JUIe7w7/DNUyrRSdzow=",
+  "Hash": "E6osuqD0UGB6rXLSP7kbwmrCP7ZGxMs5eCULy3vXnEo=",
   "Source": "IHCAE.Api",
   "BasePath": "_content/IHCAE.Api",
   "Mode": "Default",
@@ -15,5 +15,63 @@
       "Pattern": "**"
     }
   ],
-  "Assets": []
+  "Assets": [
+    {
+      "Identity": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/wwwroot/uploads/content/news/news1.jpg",
+      "SourceId": "IHCAE.Api",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/wwwroot/",
+      "BasePath": "_content/IHCAE.Api",
+      "RelativePath": "uploads/content/news/news1.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/content/news/news1.jpg"
+    },
+    {
+      "Identity": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/wwwroot/uploads/content/news/news2.jpg",
+      "SourceId": "IHCAE.Api",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/wwwroot/",
+      "BasePath": "_content/IHCAE.Api",
+      "RelativePath": "uploads/content/news/news2.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/content/news/news2.jpg"
+    },
+    {
+      "Identity": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/wwwroot/uploads/content/news/news3.jpg",
+      "SourceId": "IHCAE.Api",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/wwwroot/",
+      "BasePath": "_content/IHCAE.Api",
+      "RelativePath": "uploads/content/news/news3.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/content/news/news3.jpg"
+    }
+  ]
 }
