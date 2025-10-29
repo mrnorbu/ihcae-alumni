@@ -16,12 +16,14 @@ public class ForumService : IForumService
     private readonly AppDbContext _context;
     private readonly ILogger<ForumService> _logger;
     private readonly ITagService _tagService;
+    private readonly IUrlHelperService _urlHelperService;
 
-    public ForumService(AppDbContext context, ILogger<ForumService> logger, ITagService tagService)
+    public ForumService(AppDbContext context, ILogger<ForumService> logger, ITagService tagService, IUrlHelperService urlHelperService)
     {
         _context = context;
         _logger = logger;
         _tagService = tagService;
+        _urlHelperService = urlHelperService;
     }
 
     /// <summary>
@@ -92,10 +94,12 @@ public class ForumService : IForumService
                 break;
         }
 
-        var topics = await orderedQuery
+        var topicEntities = await orderedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(t => new TopicSummaryDto
+            .ToListAsync();
+
+        var topics = topicEntities.Select(t => new TopicSummaryDto
             {
                 Id = t.Id,
                 Title = t.Title,
@@ -104,7 +108,7 @@ public class ForumService : IForumService
                     Id = t.CreatedBy.Id,
                     FirstName = t.CreatedBy.FirstName,
                     LastName = t.CreatedBy.LastName,
-                    ProfileImageUrl = t.CreatedBy.AlumniProfile != null ? t.CreatedBy.AlumniProfile.ProfileImageUrl : null
+                    ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(t.CreatedBy.AlumniProfile?.ProfileImageUrl)
                 },
                 PostCount = t.Posts.Count,
                 LastReplyAt = t.Posts.Max(p => (DateTime?)p.CreatedAt),
@@ -122,7 +126,7 @@ public class ForumService : IForumService
                     UsageCount = tt.Tag.UsageCount
                 }).ToList()
             })
-            .ToListAsync();
+            .ToList();
 
         // Now enrich with like data and main post info for each topic
         foreach (var topic in topics)
@@ -224,7 +228,7 @@ public class ForumService : IForumService
                 Id = topic.CreatedBy.Id,
                 FirstName = topic.CreatedBy.FirstName,
                 LastName = topic.CreatedBy.LastName,
-                ProfileImageUrl = topic.CreatedBy.AlumniProfile?.ProfileImageUrl
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(topic.CreatedBy.AlumniProfile?.ProfileImageUrl)
             },
             IsPinned = topic.IsPinned,
             IsLocked = topic.IsLocked,
@@ -641,7 +645,7 @@ public class ForumService : IForumService
                 Id = post.Author.Id,
                 FirstName = post.Author.FirstName,
                 LastName = post.Author.LastName,
-                ProfileImageUrl = post.Author.AlumniProfile?.ProfileImageUrl
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(post.Author.AlumniProfile?.ProfileImageUrl)
             },
             ParentPostId = post.ParentPostId,
             CreatedAt = post.CreatedAt,
@@ -659,7 +663,7 @@ public class ForumService : IForumService
                 Id = post.ParentPost.Author.Id,
                 FirstName = post.ParentPost.Author.FirstName,
                 LastName = post.ParentPost.Author.LastName,
-                ProfileImageUrl = post.ParentPost.Author.AlumniProfile?.ProfileImageUrl
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(post.ParentPost.Author.AlumniProfile?.ProfileImageUrl)
             };
         }
 
@@ -671,7 +675,7 @@ public class ForumService : IForumService
     /// </summary>
     public async Task<List<TopUserDto>> GetTopUsersAsync(int limit = 5)
     {
-        var topUsers = await _context.ForumPosts
+        var topUsersData = await _context.ForumPosts
             .Where(p => !p.IsDeleted)
             .GroupBy(p => new
             {
@@ -680,7 +684,7 @@ public class ForumService : IForumService
                 p.Author.LastName,
                 ProfileImageUrl = p.Author.AlumniProfile != null ? p.Author.AlumniProfile.ProfileImageUrl : null
             })
-            .Select(g => new TopUserDto
+            .Select(g => new
             {
                 UserId = g.Key.Id,
                 FirstName = g.Key.FirstName,
@@ -692,6 +696,16 @@ public class ForumService : IForumService
             .OrderByDescending(u => u.TotalLikes)
             .Take(limit)
             .ToListAsync();
+
+        var topUsers = topUsersData.Select(u => new TopUserDto
+        {
+            UserId = u.UserId,
+            FirstName = u.FirstName,
+            LastName = u.LastName,
+            ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(u.ProfileImageUrl),
+            TotalLikes = u.TotalLikes,
+            PostCount = u.PostCount
+        }).ToList();
 
         return topUsers;
     }

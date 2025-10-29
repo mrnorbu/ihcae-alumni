@@ -16,12 +16,14 @@ public class NewsService : INewsService
     private readonly AppDbContext _context;
     private readonly ILogger<NewsService> _logger;
     private readonly IEmailService _emailService;
+    private readonly IUrlHelperService _urlHelperService;
 
-    public NewsService(AppDbContext context, ILogger<NewsService> logger, IEmailService emailService)
+    public NewsService(AppDbContext context, ILogger<NewsService> logger, IEmailService emailService, IUrlHelperService urlHelperService)
     {
         _context = context;
         _logger = logger;
         _emailService = emailService;
+        _urlHelperService = urlHelperService;
     }
 
     public async Task<PaginatedResult<NewsArticleSummaryDto>> GetPublishedArticlesAsync(
@@ -58,36 +60,37 @@ public class NewsService : INewsService
             .OrderByDescending(a => a.PublishedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(a => new NewsArticleSummaryDto
-            {
-                Id = a.Id,
-                Title = a.Title,
-                Excerpt = a.Excerpt,
-                Category = new NewsCategoryDto
-                {
-                    Id = a.Category.Id,
-                    Name = a.Category.Name,
-                    Slug = a.Category.Slug,
-                    Description = a.Category.Description
-                },
-                Author = new AuthorDto
-                {
-                    Id = a.Author.Id,
-                    FirstName = a.Author.FirstName,
-                    LastName = a.Author.LastName,
-                    ProfileImageUrl = a.Author.AlumniProfile != null ? a.Author.AlumniProfile.ProfileImageUrl : null
-                },
-                ThumbnailUrl = a.ThumbnailUrl,
-                Status = a.Status,
-                PublishedAt = a.PublishedAt,
-                CreatedAt = a.CreatedAt,
-                ViewCount = a.ViewCount
-            })
             .ToListAsync();
+
+        var articleDtos = articles.Select(a => new NewsArticleSummaryDto
+        {
+            Id = a.Id,
+            Title = a.Title,
+            Excerpt = a.Excerpt,
+            Category = new NewsCategoryDto
+            {
+                Id = a.Category.Id,
+                Name = a.Category.Name,
+                Slug = a.Category.Slug,
+                Description = a.Category.Description
+            },
+            Author = new AuthorDto
+            {
+                Id = a.Author.Id,
+                FirstName = a.Author.FirstName,
+                LastName = a.Author.LastName,
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(a.Author.AlumniProfile?.ProfileImageUrl)
+            },
+            ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(a.ThumbnailUrl),
+            Status = a.Status,
+            PublishedAt = a.PublishedAt,
+            CreatedAt = a.CreatedAt,
+            ViewCount = a.ViewCount
+        }).ToList();
 
         return new PaginatedResult<NewsArticleSummaryDto>
         {
-            Items = articles,
+            Items = articleDtos,
             TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
@@ -265,36 +268,37 @@ public class NewsService : INewsService
             .OrderBy(a => a.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(a => new NewsArticleSummaryDto
-            {
-                Id = a.Id,
-                Title = a.Title,
-                Excerpt = a.Excerpt,
-                Category = new NewsCategoryDto
-                {
-                    Id = a.Category.Id,
-                    Name = a.Category.Name,
-                    Slug = a.Category.Slug,
-                    Description = a.Category.Description
-                },
-                Author = new AuthorDto
-                {
-                    Id = a.Author.Id,
-                    FirstName = a.Author.FirstName,
-                    LastName = a.Author.LastName,
-                    ProfileImageUrl = a.Author.AlumniProfile != null ? a.Author.AlumniProfile.ProfileImageUrl : null
-                },
-                ThumbnailUrl = a.ThumbnailUrl,
-                Status = a.Status,
-                PublishedAt = a.PublishedAt,
-                CreatedAt = a.CreatedAt,
-                ViewCount = a.ViewCount
-            })
             .ToListAsync();
+
+        var articleDtos = articles.Select(a => new NewsArticleSummaryDto
+        {
+            Id = a.Id,
+            Title = a.Title,
+            Excerpt = a.Excerpt,
+            Category = new NewsCategoryDto
+            {
+                Id = a.Category.Id,
+                Name = a.Category.Name,
+                Slug = a.Category.Slug,
+                Description = a.Category.Description
+            },
+            Author = new AuthorDto
+            {
+                Id = a.Author.Id,
+                FirstName = a.Author.FirstName,
+                LastName = a.Author.LastName,
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(a.Author.AlumniProfile?.ProfileImageUrl)
+            },
+            ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(a.ThumbnailUrl),
+            Status = a.Status,
+            PublishedAt = a.PublishedAt,
+            CreatedAt = a.CreatedAt,
+            ViewCount = a.ViewCount
+        }).ToList();
 
         return new PaginatedResult<NewsArticleSummaryDto>
         {
-            Items = articles,
+            Items = articleDtos,
             TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
@@ -453,10 +457,10 @@ public class NewsService : INewsService
                 Id = article.Author.Id,
                 FirstName = article.Author.FirstName,
                 LastName = article.Author.LastName,
-                ProfileImageUrl = article.Author.AlumniProfile?.ProfileImageUrl
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(article.Author.AlumniProfile?.ProfileImageUrl)
             },
-            ImageUrl = article.ImageUrl,
-            ThumbnailUrl = article.ThumbnailUrl,
+            ImageUrl = _urlHelperService.GetAbsoluteUrl(article.ImageUrl),
+            ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(article.ThumbnailUrl),
             Status = article.Status,
             PublishedAt = article.PublishedAt,
             CreatedAt = article.CreatedAt,
@@ -484,9 +488,9 @@ public class NewsService : INewsService
                 Id = article.Author.Id,
                 FirstName = article.Author.FirstName,
                 LastName = article.Author.LastName,
-                ProfileImageUrl = article.Author.AlumniProfile?.ProfileImageUrl
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(article.Author.AlumniProfile?.ProfileImageUrl)
             },
-            ThumbnailUrl = article.ThumbnailUrl,
+            ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(article.ThumbnailUrl),
             Status = article.Status,
             PublishedAt = article.PublishedAt,
             CreatedAt = article.CreatedAt,

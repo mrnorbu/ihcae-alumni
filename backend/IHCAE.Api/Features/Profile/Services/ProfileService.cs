@@ -3,6 +3,7 @@ using IHCAE.Api.Features.Profile.Models.DTOs;
 using IHCAE.Api.Features.Auth.Repositories;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Shared.Data;
+using IHCAE.Api.Shared.Services;
 
 namespace IHCAE.Api.Features.Profile.Services;
 
@@ -16,6 +17,7 @@ public class ProfileService : IProfileService
     private readonly IUserRepository _userRepository;
     private readonly AppDbContext _context;
     private readonly ILogger<ProfileService> _logger;
+    private readonly IUrlHelperService _urlHelperService;
 
     /// <summary>
     /// Initializes the ProfileService with required dependencies.
@@ -23,14 +25,17 @@ public class ProfileService : IProfileService
     /// <param name="userRepository">Repository for User entity operations</param>
     /// <param name="context">Database context for AlumniProfile operations</param>
     /// <param name="logger">Logger for tracking profile operations</param>
+    /// <param name="urlHelperService">Service for converting relative URLs to absolute URLs</param>
     public ProfileService(
         IUserRepository userRepository,
         AppDbContext context,
-        ILogger<ProfileService> logger)
+        ILogger<ProfileService> logger,
+        IUrlHelperService urlHelperService)
     {
         _userRepository = userRepository;
         _context = context;
         _logger = logger;
+        _urlHelperService = urlHelperService;
     }
 
     /// <summary>
@@ -203,6 +208,9 @@ public class ProfileService : IProfileService
     /// <returns>ProfileDto containing all profile information</returns>
     private ProfileDto MapToProfileDto(User user)
     {
+        // Convert relative image URL to absolute URL
+        var profileImageUrl = _urlHelperService.GetAbsoluteUrl(user.AlumniProfile?.ProfileImageUrl);
+        
         return new ProfileDto
         {
             Id = user.Id,
@@ -210,7 +218,7 @@ public class ProfileService : IProfileService
             LastName = user.LastName,
             Email = user.Email,
             Phone = user.Phone,
-            ProfileImageUrl = user.AlumniProfile?.ProfileImageUrl,
+            ProfileImageUrl = profileImageUrl,
             GraduationYear = user.AlumniProfile?.GraduationYear,
             Course = user.AlumniProfile?.Course,
             Bio = user.AlumniProfile?.Bio,

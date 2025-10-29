@@ -17,12 +17,14 @@ public class EventService : IEventService
     private readonly AppDbContext _context;
     private readonly ILogger<EventService> _logger;
     private readonly IEmailService _emailService;
+    private readonly IUrlHelperService _urlHelperService;
 
-    public EventService(AppDbContext context, ILogger<EventService> logger, IEmailService emailService)
+    public EventService(AppDbContext context, ILogger<EventService> logger, IEmailService emailService, IUrlHelperService urlHelperService)
     {
         _context = context;
         _logger = logger;
         _emailService = emailService;
+        _urlHelperService = urlHelperService;
     }
 
     public async Task<PaginatedResult<EventSummaryDto>> GetUpcomingEventsAsync(
@@ -405,8 +407,8 @@ public class EventService : IEventService
             Location = eventEntity.Location,
             EventDate = eventEntity.EventDate,
             EventEndDate = eventEntity.EventEndDate,
-            ImageUrl = eventEntity.ImageUrl,
-            ThumbnailUrl = eventEntity.ThumbnailUrl,
+            ImageUrl = _urlHelperService.GetAbsoluteUrl(eventEntity.ImageUrl),
+            ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(eventEntity.ThumbnailUrl),
             Capacity = eventEntity.Capacity,
             RegistrationDeadline = eventEntity.RegistrationDeadline,
             CreatedBy = new AuthorDto
@@ -414,7 +416,7 @@ public class EventService : IEventService
                 Id = eventEntity.CreatedBy.Id,
                 FirstName = eventEntity.CreatedBy.FirstName,
                 LastName = eventEntity.CreatedBy.LastName,
-                ProfileImageUrl = eventEntity.CreatedBy.AlumniProfile?.ProfileImageUrl
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(eventEntity.CreatedBy.AlumniProfile?.ProfileImageUrl)
             },
             Status = eventEntity.Status,
             PublishedAt = eventEntity.PublishedAt,
@@ -444,7 +446,7 @@ public class EventService : IEventService
             Location = eventEntity.Location,
             EventDate = eventEntity.EventDate,
             EventEndDate = eventEntity.EventEndDate,
-            ThumbnailUrl = eventEntity.ThumbnailUrl,
+            ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(eventEntity.ThumbnailUrl),
             Capacity = eventEntity.Capacity,
             Status = eventEntity.Status,
             PublishedAt = eventEntity.PublishedAt,

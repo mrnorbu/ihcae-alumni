@@ -22,30 +22,34 @@ This document defines the requirements for Epic 4 & 5 (Combined): Content Manage
 
 ## Requirements
 
-### Requirement 1: Admin News Article Management
+### Requirement 1: Admin and Content Creator News Article Management
 
-**User Story:** As an administrator, I want to create, edit, and publish news articles with categories, so that I can keep the community informed about IHCAE updates, announcements, and success stories.
+**User Story:** As an administrator or content creator, I want to create, edit, and publish news articles with categories, so that I can keep the community informed about IHCAE updates, announcements, and success stories.
 
 #### Acceptance Criteria
 
-1. WHEN the Admin accesses the content management section, THE System SHALL display a news article management interface with options to create, edit, and delete articles
-2. WHEN the Admin creates a news article, THE System SHALL accept title, body content, category selection, optional image upload, and content status (draft or published)
-3. WHEN the Admin selects a category, THE System SHALL provide options including General News, Announcement, Success Story, and Achievement
-4. WHEN the Admin saves a news article as draft, THE System SHALL store the article without making it publicly visible
+1. WHEN the Admin or Content Creator accesses the content management section, THE System SHALL display a news article management interface with options to create, edit, and delete articles
+2. WHEN the Admin or Content Creator creates a news article, THE System SHALL accept title, body content, category selection, optional image upload, and content status (draft or published)
+3. WHEN the Admin or Content Creator selects a category, THE System SHALL provide options including General News, Announcement, Success Story, and Achievement
+4. WHEN the Admin or Content Creator saves a news article as draft, THE System SHALL store the article without making it publicly visible
 5. WHEN the Admin publishes a news article, THE System SHALL make the article visible on the public news page within 5 seconds
-6. WHEN the Admin edits an existing news article, THE System SHALL preserve the original creation timestamp and update the modification timestamp
+6. WHEN a Content Creator publishes a news article, THE System SHALL create the article with "pending review" status for Admin approval
+7. WHEN the Admin edits an existing news article, THE System SHALL preserve the original creation timestamp and update the modification timestamp
+8. WHEN a user without Admin or Content Creator role attempts to access content management, THE System SHALL deny access and return a 403 Forbidden error
 
-### Requirement 2: Admin Event Management
+### Requirement 2: Admin and Content Creator Event Management
 
-**User Story:** As an administrator, I want to create, edit, and publish event listings, so that I can promote upcoming IHCAE events to the community.
+**User Story:** As an administrator or content creator, I want to create, edit, and publish event listings, so that I can promote upcoming IHCAE events to the community.
 
 #### Acceptance Criteria
 
-1. WHEN the Admin accesses the content management section, THE System SHALL display an event management interface with options to create, edit, and delete events
-2. WHEN the Admin creates an event, THE System SHALL accept title, date, time, location, description, optional image, optional capacity limit, and content status
-3. WHEN the Admin sets an event capacity limit, THE System SHALL enforce the maximum number of registrations allowed
+1. WHEN the Admin or Content Creator accesses the content management section, THE System SHALL display an event management interface with options to create, edit, and delete events
+2. WHEN the Admin or Content Creator creates an event, THE System SHALL accept title, date, time, location, description, optional image, optional capacity limit, and content status
+3. WHEN the Admin or Content Creator sets an event capacity limit, THE System SHALL enforce the maximum number of registrations allowed
 4. WHEN the Admin publishes an event, THE System SHALL make the event visible on the public events page within 5 seconds
-5. WHEN the Admin deletes an event with existing registrations, THE System SHALL display a confirmation dialog showing the registration count
+5. WHEN a Content Creator publishes an event, THE System SHALL create the event with "pending review" status for Admin approval
+6. WHEN the Admin deletes an event with existing registrations, THE System SHALL display a confirmation dialog showing the registration count
+7. WHEN a user without Admin or Content Creator role attempts to create events, THE System SHALL deny access and return a 403 Forbidden error
 
 ### Requirement 3: Public News Viewing
 
@@ -179,3 +183,15 @@ This document defines the requirements for Epic 4 & 5 (Combined): Content Manage
 3. WHEN a Visitor clicks on a success story, THE System SHALL navigate to the full story detail page
 4. THE System SHALL display the alumni author's name and graduation year on each success story card
 5. THE System SHALL sort success stories by publication date in descending order
+
+### Requirement 14: Content Creator Role Management
+
+**User Story:** As an administrator, I want to assign and revoke Content Creator role to specific alumni, so that I can control who has permission to create news articles and events.
+
+#### Acceptance Criteria
+
+1. WHEN the Admin accesses user management, THE System SHALL provide an option to assign Content Creator role to any approved alumni
+2. WHEN the Admin assigns Content Creator role to a user, THE System SHALL grant the user access to content management features within 5 seconds
+3. WHEN the Admin revokes Content Creator role from a user, THE System SHALL immediately remove access to content management features
+4. WHEN a user has Content Creator role, THE System SHALL display content management navigation options in their dashboard
+5. THE System SHALL maintain an audit log of all Content Creator role assignments and revocations

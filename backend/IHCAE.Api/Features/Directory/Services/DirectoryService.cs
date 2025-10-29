@@ -3,6 +3,7 @@ using IHCAE.Api.Features.Auth.Repositories;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Shared.DTOs;
 using IHCAE.Api.Shared.Constants;
+using IHCAE.Api.Shared.Services;
 
 namespace IHCAE.Api.Features.Directory.Services;
 
@@ -16,18 +17,22 @@ public class DirectoryService : IDirectoryService
 {
     private readonly IUserRepository _userRepository;
     private readonly ILogger<DirectoryService> _logger;
+    private readonly IUrlHelperService _urlHelperService;
 
     /// <summary>
     /// Initializes the DirectoryService with required dependencies.
     /// </summary>
     /// <param name="userRepository">Repository for User entity operations</param>
     /// <param name="logger">Logger for tracking directory operations</param>
+    /// <param name="urlHelperService">Service for converting relative URLs to absolute URLs</param>
     public DirectoryService(
         IUserRepository userRepository,
-        ILogger<DirectoryService> logger)
+        ILogger<DirectoryService> logger,
+        IUrlHelperService urlHelperService)
     {
         _userRepository = userRepository;
         _logger = logger;
+        _urlHelperService = urlHelperService;
     }
 
     /// <summary>
@@ -130,7 +135,7 @@ public class DirectoryService : IDirectoryService
             Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            ProfileImageUrl = user.AlumniProfile?.ProfileImageUrl,
+            ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(user.AlumniProfile?.ProfileImageUrl),
             GraduationYear = user.AlumniProfile?.GraduationYear,
             Course = user.AlumniProfile?.Course,
             JobTitle = user.AlumniProfile?.JobTitle,
@@ -154,7 +159,7 @@ public class DirectoryService : IDirectoryService
             LastName = user.LastName,
             Email = user.Email,
             Phone = user.Phone,
-            ProfileImageUrl = user.AlumniProfile?.ProfileImageUrl,
+            ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(user.AlumniProfile?.ProfileImageUrl),
             GraduationYear = user.AlumniProfile?.GraduationYear,
             Course = user.AlumniProfile?.Course,
             Bio = user.AlumniProfile?.Bio,

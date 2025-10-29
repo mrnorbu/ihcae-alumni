@@ -44,6 +44,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Repository Registration
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+// HttpContextAccessor for accessing HTTP context in services
+builder.Services.AddHttpContextAccessor();
+
 // Service Registration
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -53,6 +56,7 @@ builder.Services.AddScoped<IAlumniImportService, AlumniImportService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IDirectoryService, DirectoryService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IForumService, ForumService>();
 builder.Services.AddScoped<INewsService, NewsService>();
