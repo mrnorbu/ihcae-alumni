@@ -24,7 +24,7 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
-      
+    
       <!-- Main Content -->
       <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
         <!-- Page Header -->
@@ -32,7 +32,7 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
           <h1 class="text-3xl font-bold text-neutral-900 mb-2">News & Events</h1>
           <p class="text-neutral-600">Stay updated with IHCAE news and upcoming events</p>
         </div>
-
+    
         <!-- Featured Event -->
         @if (featuredEvent()) {
           <div class="bg-white rounded-lg shadow-lg border border-neutral-200 p-8 mb-8">
@@ -64,12 +64,12 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
             </div>
           </div>
         }
-
+    
         <!-- Content Tabs -->
         <div class="bg-white rounded-lg shadow mb-6">
           <div class="border-b border-neutral-200">
             <nav class="flex space-x-8 px-6">
-              <button 
+              <button
                 (click)="setActiveTab('news')"
                 [class.tab-active]="activeTab() === 'news'"
                 [class.tab-inactive]="activeTab() !== 'news'"
@@ -77,7 +77,7 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
                 <lucide-icon [img]="newspaperIcon" [size]="18" class="mr-2"></lucide-icon>
                 News ({{ news().length }})
               </button>
-              <button 
+              <button
                 (click)="setActiveTab('events')"
                 [class.tab-active]="activeTab() === 'events'"
                 [class.tab-inactive]="activeTab() !== 'events'"
@@ -87,139 +87,137 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
               </button>
             </nav>
           </div>
-
+    
           <!-- News Tab Content -->
-          <div *ngIf="activeTab() === 'news'" class="p-6">
-            @if (isLoadingNews()) {
-              <div class="flex justify-center items-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-              </div>
-            } @else if (news().length === 0) {
-              <div class="text-center py-12">
-                <p class="text-neutral-600">No news articles available at the moment.</p>
-              </div>
-            } @else {
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @for (article of news(); track article.id; let i = $index) {
-                  <div class="bg-white border border-neutral-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" [routerLink]="['/news', article.id]">
-                    <!-- Article Image -->
-                    <div class="h-48 relative overflow-hidden">
-                      @if (article.thumbnailUrl) {
-                        <img 
-                          [src]="article.thumbnailUrl" 
-                          [alt]="article.title" 
-                          class="w-full h-full object-cover absolute inset-0"
-                          (error)="onImageError($event)"
-                        >
-                      }
-                      <!-- Fallback gradient with icon (shown when no image or image fails) -->
-                      <div 
-                        class="h-48 flex items-center justify-center absolute inset-0"
-                        [ngClass]="getNewsGradient(i)"
-                        [style.display]="article.thumbnailUrl ? 'none' : 'flex'"
-                      >
-                        <lucide-icon [img]="getNewsIcon(article.category.name)" [size]="48" class="text-white/80"></lucide-icon>
-                      </div>
-                    </div>
-                    
-                    <!-- Article Content -->
-                    <div class="p-6">
-                      <div class="flex items-center gap-2 mb-2">
-                        <span class="badge badge-primary">{{ article.category.name }}</span>
-                        <span class="text-xs text-neutral-500">{{ formatDate(article.publishedAt) }}</span>
-                      </div>
-                      
-                      <h3 class="text-lg font-semibold text-neutral-900 mb-2 line-clamp-2">{{ article.title }}</h3>
-                      <p class="text-neutral-600 mb-4 line-clamp-3">{{ article.excerpt }}</p>
-                      
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2 text-sm text-neutral-500">
-                          <lucide-icon [img]="eyeIcon" [size]="14"></lucide-icon>
-                          {{ article.viewCount }} views
+          @if (activeTab() === 'news') {
+            <div class="p-6">
+              @if (isLoadingNews()) {
+                <div class="flex justify-center items-center py-12">
+                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+              } @else if (news().length === 0) {
+                <div class="text-center py-12">
+                  <p class="text-neutral-600">No news articles available at the moment.</p>
+                </div>
+              } @else {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  @for (article of news(); track article.id; let i = $index) {
+                    <div class="bg-white border border-neutral-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" [routerLink]="['/news', article.id]">
+                      <!-- Article Image -->
+                      <div class="h-48 relative overflow-hidden">
+                        @if (article.thumbnailUrl) {
+                          <img
+                            [src]="article.thumbnailUrl"
+                            [alt]="article.title"
+                            class="w-full h-full object-cover absolute inset-0"
+                            (error)="onImageError($event)"
+                            >
+                        }
+                        <!-- Fallback gradient with icon (shown when no image or image fails) -->
+                        <div
+                          class="h-48 flex items-center justify-center absolute inset-0"
+                          [ngClass]="getNewsGradient(i)"
+                          [style.display]="article.thumbnailUrl ? 'none' : 'flex'"
+                          >
+                          <lucide-icon [img]="getNewsIcon(article.category.name)" [size]="48" class="text-white/80"></lucide-icon>
                         </div>
-                        <span class="btn-outline btn-sm">
-                          Read More →
-                        </span>
+                      </div>
+                      <!-- Article Content -->
+                      <div class="p-6">
+                        <div class="flex items-center gap-2 mb-2">
+                          <span class="badge badge-primary">{{ article.category.name }}</span>
+                          <span class="text-xs text-neutral-500">{{ formatDate(article.publishedAt) }}</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-neutral-900 mb-2 line-clamp-2">{{ article.title }}</h3>
+                        <p class="text-neutral-600 mb-4 line-clamp-3">{{ article.excerpt }}</p>
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-2 text-sm text-neutral-500">
+                            <lucide-icon [img]="eyeIcon" [size]="14"></lucide-icon>
+                            {{ article.viewCount }} views
+                          </div>
+                          <span class="btn-outline btn-sm">
+                            Read More →
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-
+                  }
+                </div>
+              }
+            </div>
+          }
+    
           <!-- Events Tab Content -->
-          <div *ngIf="activeTab() === 'events'" class="p-6">
-            @if (isLoadingEvents()) {
-              <div class="flex justify-center items-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-              </div>
-            } @else if (events().length === 0) {
-              <div class="text-center py-12">
-                <p class="text-neutral-600">No upcoming events at the moment.</p>
-              </div>
-            } @else {
-              <div class="space-y-6">
-                @for (event of events(); track event.id) {
-                  <div class="bg-white border border-neutral-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                          <h3 class="text-lg font-semibold text-neutral-900">{{ event.title }}</h3>
-                          @if (event.category) {
-                            <span class="badge badge-success">{{ event.category.name }}</span>
+          @if (activeTab() === 'events') {
+            <div class="p-6">
+              @if (isLoadingEvents()) {
+                <div class="flex justify-center items-center py-12">
+                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+              } @else if (events().length === 0) {
+                <div class="text-center py-12">
+                  <p class="text-neutral-600">No upcoming events at the moment.</p>
+                </div>
+              } @else {
+                <div class="space-y-6">
+                  @for (event of events(); track event.id) {
+                    <div class="bg-white border border-neutral-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                      <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                          <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-lg font-semibold text-neutral-900">{{ event.title }}</h3>
+                            @if (event.category) {
+                              <span class="badge badge-success">{{ event.category.name }}</span>
+                            }
+                          </div>
+                          <div class="flex items-center gap-4 text-sm text-neutral-600 mb-3">
+                            <div class="flex items-center gap-1">
+                              <lucide-icon [img]="calendarDaysIcon" [size]="14"></lucide-icon>
+                              {{ formatEventDate(event.eventDate) }}
+                            </div>
+                            <div class="flex items-center gap-1">
+                              <lucide-icon [img]="clockIcon" [size]="14"></lucide-icon>
+                              {{ formatEventTime(event.eventDate) }}
+                            </div>
+                            <div class="flex items-center gap-1">
+                              <lucide-icon [img]="mapPinIcon" [size]="14"></lucide-icon>
+                              {{ event.location }}
+                            </div>
+                            <div class="flex items-center gap-1">
+                              <lucide-icon [img]="usersIcon" [size]="14"></lucide-icon>
+                              {{ event.registrationCount }} registered
+                              @if (event.capacity) {
+                                / {{ event.capacity }}
+                              }
+                            </div>
+                          </div>
+                          @if (event.availableSpots !== null && event.availableSpots !== undefined) {
+                            <div class="mb-3">
+                              @if (event.availableSpots > 0) {
+                                <span class="text-sm text-success-600 font-medium">{{ event.availableSpots }} spots available</span>
+                              } @else {
+                                <span class="text-sm text-error-600 font-medium">Event Full</span>
+                              }
+                            </div>
                           }
                         </div>
-                        
-                        <div class="flex items-center gap-4 text-sm text-neutral-600 mb-3">
-                          <div class="flex items-center gap-1">
-                            <lucide-icon [img]="calendarDaysIcon" [size]="14"></lucide-icon>
-                            {{ formatEventDate(event.eventDate) }}
-                          </div>
-                          <div class="flex items-center gap-1">
-                            <lucide-icon [img]="clockIcon" [size]="14"></lucide-icon>
-                            {{ formatEventTime(event.eventDate) }}
-                          </div>
-                          <div class="flex items-center gap-1">
-                            <lucide-icon [img]="mapPinIcon" [size]="14"></lucide-icon>
-                            {{ event.location }}
-                          </div>
-                          <div class="flex items-center gap-1">
-                            <lucide-icon [img]="usersIcon" [size]="14"></lucide-icon>
-                            {{ event.registrationCount }} registered
-                            @if (event.capacity) {
-                              / {{ event.capacity }}
-                            }
-                          </div>
+                        <div class="flex flex-col gap-2 ml-6">
+                          <button class="btn-primary btn-sm" [routerLink]="['/events', event.id]">
+                            Register Now
+                          </button>
+                          <button class="btn-outline btn-sm" [routerLink]="['/events', event.id]">
+                            View Details
+                          </button>
                         </div>
-
-                        @if (event.availableSpots !== null && event.availableSpots !== undefined) {
-                          <div class="mb-3">
-                            @if (event.availableSpots > 0) {
-                              <span class="text-sm text-success-600 font-medium">{{ event.availableSpots }} spots available</span>
-                            } @else {
-                              <span class="text-sm text-error-600 font-medium">Event Full</span>
-                            }
-                          </div>
-                        }
-                      </div>
-
-                      <div class="flex flex-col gap-2 ml-6">
-                        <button class="btn-primary btn-sm" [routerLink]="['/events', event.id]">
-                          Register Now
-                        </button>
-                        <button class="btn-outline btn-sm" [routerLink]="['/events', event.id]">
-                          View Details
-                        </button>
                       </div>
                     </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
+                  }
+                </div>
+              }
+            </div>
+          }
         </div>
-
+    
         <!-- Newsletter Signup -->
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-primary-500">
           <div class="flex items-center justify-between">
@@ -236,10 +234,10 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
           </div>
         </div>
       </div>
-      
+    
       <app-footer></app-footer>
     </div>
-  `,
+    `,
   styles: []
 })
 export class NewsEventsComponent implements OnInit {

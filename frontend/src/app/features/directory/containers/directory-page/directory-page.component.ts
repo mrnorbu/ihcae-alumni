@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
@@ -50,21 +50,20 @@ import {
   selector: 'app-directory-page',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
-    HeaderComponent, 
-    FooterComponent, 
+    FormsModule,
+    RouterModule,
+    HeaderComponent,
+    FooterComponent,
     AlumniRowComponent,
-    AlumniRowSkeletonComponent, 
+    AlumniRowSkeletonComponent,
     LucideAngularModule
-  ],
+],
   template: `
     <!-- Main container with full height and neutral background -->
     <div class="min-h-screen bg-neutral-50">
       <!-- Header component with navigation and user menu -->
       <app-header></app-header>
-      
+    
       <!-- Main Content Container -->
       <!-- max-w-7xl: Wide container for directory grid -->
       <!-- pt-24: Top padding to account for fixed header -->
@@ -74,7 +73,7 @@ import {
           <h1 class="text-3xl font-bold text-neutral-900 mb-2">Alumni Directory</h1>
           <p class="text-neutral-600">Connect with fellow IHCAE alumni and professionals</p>
         </div>
-
+    
         <!-- Search and Filters Card -->
         <!-- Contains search input and filter dropdowns -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">
@@ -94,7 +93,7 @@ import {
                   type="text"
                   class="input-field pl-10"
                   placeholder="Search by name or email..."
-                />
+                  />
                 <!-- Search icon positioned absolutely inside input -->
                 <lucide-icon
                   [img]="searchIcon"
@@ -102,292 +101,338 @@ import {
                   class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
                 ></lucide-icon>
                 <!-- Clear search button -->
-                <button
-                  *ngIf="filters.search"
-                  (click)="clearSearch()"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-                  title="Clear search"
-                >
-                  <lucide-icon [img]="closeIcon" [size]="16"></lucide-icon>
-                </button>
+                @if (filters.search) {
+                  <button
+                    (click)="clearSearch()"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                    title="Clear search"
+                    >
+                    <lucide-icon [img]="closeIcon" [size]="16"></lucide-icon>
+                  </button>
+                }
               </div>
             </div>
-
+    
             <!-- Course Filter Dropdown -->
             <!-- Populated from availableCourses() signal -->
             <div>
               <label class="input-label flex items-center gap-2">
                 <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon>
                 Course
-                <span *ngIf="filters.course" class="badge badge-primary text-xs">Active</span>
+                @if (filters.course) {
+                  <span class="badge badge-primary text-xs">Active</span>
+                }
               </label>
               <select
                 [(ngModel)]="filters.course"
                 (ngModelChange)="onFilterChange()"
                 class="input-field"
                 [class.border-primary-500]="filters.course"
-              >
+                >
                 <option value="">All Courses</option>
-                <option *ngFor="let course of availableCourses()" [value]="course">
-                  {{ course }}
-                </option>
+                @for (course of availableCourses(); track course) {
+                  <option [value]="course">
+                    {{ course }}
+                  </option>
+                }
               </select>
             </div>
-
+    
             <!-- Graduation Year Filter Dropdown -->
             <!-- Populated from availableYears() signal (sorted newest first) -->
             <div>
               <label class="input-label flex items-center gap-2">
                 <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon>
                 Graduation Year
-                <span *ngIf="filters.graduationYear" class="badge badge-primary text-xs">Active</span>
+                @if (filters.graduationYear) {
+                  <span class="badge badge-primary text-xs">Active</span>
+                }
               </label>
               <select
                 [(ngModel)]="filters.graduationYear"
                 (ngModelChange)="onFilterChange()"
                 class="input-field"
                 [class.border-primary-500]="filters.graduationYear"
-              >
+                >
                 <option [ngValue]="undefined">All Years</option>
-                <option *ngFor="let year of availableYears()" [ngValue]="year">
-                  {{ year }}
-                </option>
+                @for (year of availableYears(); track year) {
+                  <option [ngValue]="year">
+                    {{ year }}
+                  </option>
+                }
               </select>
             </div>
           </div>
-
+    
           <!-- Active Filters Display -->
           <!-- Shows applied filters as removable pills -->
-          <div *ngIf="hasActiveFilters()" class="mt-4 pt-4 border-t border-neutral-200">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-sm text-neutral-600">Active filters:</span>
-              <!-- Search Filter Pill -->
-              <span *ngIf="filters.search" class="badge badge-primary inline-flex items-center gap-1">
-                Search: "{{ filters.search }}"
+          @if (hasActiveFilters()) {
+            <div class="mt-4 pt-4 border-t border-neutral-200">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm text-neutral-600">Active filters:</span>
+                <!-- Search Filter Pill -->
+                @if (filters.search) {
+                  <span class="badge badge-primary inline-flex items-center gap-1">
+                    Search: "{{ filters.search }}"
+                    <button
+                      (click)="clearSearch()"
+                      class="ml-1 hover:text-primary-900 transition-colors"
+                      title="Remove search filter"
+                      >
+                      <lucide-icon [img]="closeIcon" [size]="12"></lucide-icon>
+                    </button>
+                  </span>
+                }
+                <!-- Course Filter Pill -->
+                @if (filters.course) {
+                  <span class="badge badge-primary inline-flex items-center gap-1">
+                    Course: {{ filters.course }}
+                    <button
+                      (click)="clearCourseFilter()"
+                      class="ml-1 hover:text-primary-900 transition-colors"
+                      title="Remove course filter"
+                      >
+                      <lucide-icon [img]="closeIcon" [size]="12"></lucide-icon>
+                    </button>
+                  </span>
+                }
+                <!-- Year Filter Pill -->
+                @if (filters.graduationYear) {
+                  <span class="badge badge-primary inline-flex items-center gap-1">
+                    Year: {{ filters.graduationYear }}
+                    <button
+                      (click)="clearYearFilter()"
+                      class="ml-1 hover:text-primary-900 transition-colors"
+                      title="Remove year filter"
+                      >
+                      <lucide-icon [img]="closeIcon" [size]="12"></lucide-icon>
+                    </button>
+                  </span>
+                }
+                <!-- Clear All Button -->
                 <button
-                  (click)="clearSearch()"
-                  class="ml-1 hover:text-primary-900 transition-colors"
-                  title="Remove search filter"
-                >
-                  <lucide-icon [img]="closeIcon" [size]="12"></lucide-icon>
+                  (click)="clearFilters()"
+                  class="text-xs text-primary-600 hover:text-primary-700 underline"
+                  >
+                  Clear all
                 </button>
-              </span>
-              <!-- Course Filter Pill -->
-              <span *ngIf="filters.course" class="badge badge-primary inline-flex items-center gap-1">
-                Course: {{ filters.course }}
-                <button
-                  (click)="clearCourseFilter()"
-                  class="ml-1 hover:text-primary-900 transition-colors"
-                  title="Remove course filter"
-                >
-                  <lucide-icon [img]="closeIcon" [size]="12"></lucide-icon>
-                </button>
-              </span>
-              <!-- Year Filter Pill -->
-              <span *ngIf="filters.graduationYear" class="badge badge-primary inline-flex items-center gap-1">
-                Year: {{ filters.graduationYear }}
-                <button
-                  (click)="clearYearFilter()"
-                  class="ml-1 hover:text-primary-900 transition-colors"
-                  title="Remove year filter"
-                >
-                  <lucide-icon [img]="closeIcon" [size]="12"></lucide-icon>
-                </button>
-              </span>
-              <!-- Clear All Button -->
-              <button
-                (click)="clearFilters()"
-                class="text-xs text-primary-600 hover:text-primary-700 underline"
-              >
-                Clear all
-              </button>
+              </div>
             </div>
-          </div>
-
+          }
+    
           <!-- Results Count Display -->
           <!-- Shows total count and "filtered" indicator when filters applied -->
-          <div *ngIf="!isLoading()" class="mt-4 pt-4 border-t border-neutral-200">
-            <p class="text-sm text-neutral-600 flex items-center gap-2">
-              <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
-              Found {{ totalCount() }} alumni
-              <span *ngIf="filters.search || filters.course || filters.graduationYear" class="text-primary-600">
-                (filtered)
-              </span>
-            </p>
-          </div>
+          @if (!isLoading()) {
+            <div class="mt-4 pt-4 border-t border-neutral-200">
+              <p class="text-sm text-neutral-600 flex items-center gap-2">
+                <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
+                Found {{ totalCount() }} alumni
+                @if (filters.search || filters.course || filters.graduationYear) {
+                  <span class="text-primary-600">
+                    (filtered)
+                  </span>
+                }
+              </p>
+            </div>
+          }
         </div>
-
+    
         <!-- Loading State with Skeleton -->
         <!-- Shows skeleton rows while fetching data from API -->
-        <div *ngIf="isLoading()" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <app-alumni-row-skeleton *ngFor="let item of [1,2,3,4,5,6]"></app-alumni-row-skeleton>
-        </div>
-
+        @if (isLoading()) {
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            @for (item of [1,2,3,4,5,6]; track item) {
+              <app-alumni-row-skeleton></app-alumni-row-skeleton>
+            }
+          </div>
+        }
+    
         <!-- Alumni List -->
         <!-- Two-column grid layout with proper spacing -->
         <!-- Only shows when not loading and has data -->
-        <div *ngIf="!isLoading() && alumni().length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <app-alumni-row
-            *ngFor="let alumnus of alumni()"
-            [alumni]="alumnus"
-          ></app-alumni-row>
-        </div>
-
+        @if (!isLoading() && alumni().length > 0) {
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            @for (alumnus of alumni(); track alumnus) {
+              <app-alumni-row
+                [alumni]="alumnus"
+              ></app-alumni-row>
+            }
+          </div>
+        }
+    
         <!-- Enhanced Empty State -->
         <!-- Shows when no results found (either filtered or no data) -->
-        <div *ngIf="!isLoading() && alumni().length === 0" class="bg-white rounded-lg shadow p-8 sm:p-12 text-center">
-          <lucide-icon [img]="usersIcon" [size]="48" class="text-neutral-300 mx-auto mb-4"></lucide-icon>
-          
-          <!-- Different messages based on context -->
-          <h3 class="text-lg font-semibold text-neutral-900 mb-2">
-            <span *ngIf="filters.search || filters.course || filters.graduationYear">
-              No alumni match your search
-            </span>
-            <span *ngIf="!filters.search && !filters.course && !filters.graduationYear">
-              No alumni found
-            </span>
-          </h3>
-          
-          <p class="text-neutral-600 mb-6 max-w-md mx-auto">
-            <span *ngIf="filters.search || filters.course || filters.graduationYear">
-              Try adjusting your search criteria or filters to find more results.
-            </span>
-            <span *ngIf="!filters.search && !filters.course && !filters.graduationYear">
-              There are no alumni in the directory yet. Check back later or contact an administrator.
-            </span>
-          </p>
-
-          <!-- Helpful suggestions -->
-          <div *ngIf="filters.search || filters.course || filters.graduationYear" class="space-y-3 mb-6">
-            <div class="text-sm text-neutral-500">
-              <p class="font-medium mb-2">Try these suggestions:</p>
-              <ul class="text-left max-w-sm mx-auto space-y-1">
-                <li *ngIf="filters.search" class="flex items-center gap-2">
-                  <lucide-icon [img]="searchIcon" [size]="14"></lucide-icon>
-                  Check spelling in your search
-                </li>
-                <li *ngIf="filters.course" class="flex items-center gap-2">
-                  <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon>
-                  Try a different course filter
-                </li>
-                <li *ngIf="filters.graduationYear" class="flex items-center gap-2">
-                  <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon>
-                  Try a different graduation year
-                </li>
-                <li class="flex items-center gap-2">
-                  <lucide-icon [img]="usersIcon" [size]="14"></lucide-icon>
-                  Remove some filters to see more results
-                </li>
-              </ul>
+        @if (!isLoading() && alumni().length === 0) {
+          <div class="bg-white rounded-lg shadow p-8 sm:p-12 text-center">
+            <lucide-icon [img]="usersIcon" [size]="48" class="text-neutral-300 mx-auto mb-4"></lucide-icon>
+            <!-- Different messages based on context -->
+            <h3 class="text-lg font-semibold text-neutral-900 mb-2">
+              @if (filters.search || filters.course || filters.graduationYear) {
+                <span>
+                  No alumni match your search
+                </span>
+              }
+              @if (!filters.search && !filters.course && !filters.graduationYear) {
+                <span>
+                  No alumni found
+                </span>
+              }
+            </h3>
+            <p class="text-neutral-600 mb-6 max-w-md mx-auto">
+              @if (filters.search || filters.course || filters.graduationYear) {
+                <span>
+                  Try adjusting your search criteria or filters to find more results.
+                </span>
+              }
+              @if (!filters.search && !filters.course && !filters.graduationYear) {
+                <span>
+                  There are no alumni in the directory yet. Check back later or contact an administrator.
+                </span>
+              }
+            </p>
+            <!-- Helpful suggestions -->
+            @if (filters.search || filters.course || filters.graduationYear) {
+              <div class="space-y-3 mb-6">
+                <div class="text-sm text-neutral-500">
+                  <p class="font-medium mb-2">Try these suggestions:</p>
+                  <ul class="text-left max-w-sm mx-auto space-y-1">
+                    @if (filters.search) {
+                      <li class="flex items-center gap-2">
+                        <lucide-icon [img]="searchIcon" [size]="14"></lucide-icon>
+                        Check spelling in your search
+                      </li>
+                    }
+                    @if (filters.course) {
+                      <li class="flex items-center gap-2">
+                        <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon>
+                        Try a different course filter
+                      </li>
+                    }
+                    @if (filters.graduationYear) {
+                      <li class="flex items-center gap-2">
+                        <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon>
+                        Try a different graduation year
+                      </li>
+                    }
+                    <li class="flex items-center gap-2">
+                      <lucide-icon [img]="usersIcon" [size]="14"></lucide-icon>
+                      Remove some filters to see more results
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            }
+            <!-- Action buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              @if (filters.search || filters.course || filters.graduationYear) {
+                <button
+                  (click)="clearFilters()"
+                  class="btn-primary"
+                  >
+                  Clear All Filters
+                </button>
+              }
+              @if (!filters.search && !filters.course && !filters.graduationYear) {
+                <button
+                  (click)="loadDirectory()"
+                  class="btn-outline"
+                  >
+                  Refresh Directory
+                </button>
+              }
             </div>
           </div>
-
-          <!-- Action buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              *ngIf="filters.search || filters.course || filters.graduationYear"
-              (click)="clearFilters()"
-              class="btn-primary"
-            >
-              Clear All Filters
-            </button>
-            <button
-              *ngIf="!filters.search && !filters.course && !filters.graduationYear"
-              (click)="loadDirectory()"
-              class="btn-outline"
-            >
-              Refresh Directory
-            </button>
-          </div>
-        </div>
-
+        }
+    
         <!-- Enhanced Pagination Controls -->
         <!-- Only shows when there are multiple pages -->
-        <div *ngIf="!isLoading() && totalPages() > 1" class="bg-white rounded-lg shadow p-4">
-          <div class="flex items-center justify-between">
-            <!-- Page Information -->
-            <p class="text-sm text-neutral-600">
-              Showing {{ getStartItem() }} to {{ getEndItem() }} of {{ totalCount() }} alumni
-            </p>
-
-            <!-- Navigation Controls -->
-            <div class="flex items-center gap-2">
-              <!-- Previous Page Button -->
-              <button
-                (click)="previousPage()"
-                [disabled]="currentPage() === 1"
-                class="btn-outline btn-sm inline-flex items-center gap-2"
-                [class.opacity-50]="currentPage() === 1"
-                [class.cursor-not-allowed]="currentPage() === 1"
-              >
-                <lucide-icon [img]="prevIcon" [size]="16"></lucide-icon>
-                <span class="hidden sm:inline">Previous</span>
-              </button>
-
-              <!-- Page Numbers -->
-              <div class="flex items-center gap-1">
-                <!-- First page -->
+        @if (!isLoading() && totalPages() > 1) {
+          <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex items-center justify-between">
+              <!-- Page Information -->
+              <p class="text-sm text-neutral-600">
+                Showing {{ getStartItem() }} to {{ getEndItem() }} of {{ totalCount() }} alumni
+              </p>
+              <!-- Navigation Controls -->
+              <div class="flex items-center gap-2">
+                <!-- Previous Page Button -->
                 <button
-                  *ngIf="shouldShowFirstPage()"
-                  (click)="goToPage(1)"
-                  class="btn-outline btn-sm px-3 py-1.5 text-sm"
-                  [class.bg-primary-600]="currentPage() === 1"
-                  [class.text-white]="currentPage() === 1"
-                  [class.border-primary-600]="currentPage() === 1"
-                >
-                  1
+                  (click)="previousPage()"
+                  [disabled]="currentPage() === 1"
+                  class="btn-outline btn-sm inline-flex items-center gap-2"
+                  [class.opacity-50]="currentPage() === 1"
+                  [class.cursor-not-allowed]="currentPage() === 1"
+                  >
+                  <lucide-icon [img]="prevIcon" [size]="16"></lucide-icon>
+                  <span class="hidden sm:inline">Previous</span>
                 </button>
-                
-                <!-- Ellipsis -->
-                <span *ngIf="shouldShowFirstEllipsis()" class="px-2 text-neutral-500">...</span>
-                
-                <!-- Page range -->
+                <!-- Page Numbers -->
+                <div class="flex items-center gap-1">
+                  <!-- First page -->
+                  @if (shouldShowFirstPage()) {
+                    <button
+                      (click)="goToPage(1)"
+                      class="btn-outline btn-sm px-3 py-1.5 text-sm"
+                      [class.bg-primary-600]="currentPage() === 1"
+                      [class.text-white]="currentPage() === 1"
+                      [class.border-primary-600]="currentPage() === 1"
+                      >
+                      1
+                    </button>
+                  }
+                  <!-- Ellipsis -->
+                  @if (shouldShowFirstEllipsis()) {
+                    <span class="px-2 text-neutral-500">...</span>
+                  }
+                  <!-- Page range -->
+                  @for (page of getPageRange(); track page) {
+                    <button
+                      (click)="goToPage(page)"
+                      class="btn-outline btn-sm px-3 py-1.5 text-sm"
+                      [class.bg-primary-600]="currentPage() === page"
+                      [class.text-white]="currentPage() === page"
+                      [class.border-primary-600]="currentPage() === page"
+                      >
+                      {{ page }}
+                    </button>
+                  }
+                  <!-- Ellipsis -->
+                  @if (shouldShowLastEllipsis()) {
+                    <span class="px-2 text-neutral-500">...</span>
+                  }
+                  <!-- Last page -->
+                  @if (shouldShowLastPage()) {
+                    <button
+                      (click)="goToPage(totalPages())"
+                      class="btn-outline btn-sm px-3 py-1.5 text-sm"
+                      [class.bg-primary-600]="currentPage() === totalPages()"
+                      [class.text-white]="currentPage() === totalPages()"
+                      [class.border-primary-600]="currentPage() === totalPages()"
+                      >
+                      {{ totalPages() }}
+                    </button>
+                  }
+                </div>
+                <!-- Next Page Button -->
                 <button
-                  *ngFor="let page of getPageRange()"
-                  (click)="goToPage(page)"
-                  class="btn-outline btn-sm px-3 py-1.5 text-sm"
-                  [class.bg-primary-600]="currentPage() === page"
-                  [class.text-white]="currentPage() === page"
-                  [class.border-primary-600]="currentPage() === page"
-                >
-                  {{ page }}
-                </button>
-                
-                <!-- Ellipsis -->
-                <span *ngIf="shouldShowLastEllipsis()" class="px-2 text-neutral-500">...</span>
-                
-                <!-- Last page -->
-                <button
-                  *ngIf="shouldShowLastPage()"
-                  (click)="goToPage(totalPages())"
-                  class="btn-outline btn-sm px-3 py-1.5 text-sm"
-                  [class.bg-primary-600]="currentPage() === totalPages()"
-                  [class.text-white]="currentPage() === totalPages()"
-                  [class.border-primary-600]="currentPage() === totalPages()"
-                >
-                  {{ totalPages() }}
+                  (click)="nextPage()"
+                  [disabled]="currentPage() === totalPages()"
+                  class="btn-outline btn-sm inline-flex items-center gap-2"
+                  [class.opacity-50]="currentPage() === totalPages()"
+                  [class.cursor-not-allowed]="currentPage() === totalPages()"
+                  >
+                  <span class="hidden sm:inline">Next</span>
+                  <lucide-icon [img]="nextIcon" [size]="16"></lucide-icon>
                 </button>
               </div>
-
-              <!-- Next Page Button -->
-              <button
-                (click)="nextPage()"
-                [disabled]="currentPage() === totalPages()"
-                class="btn-outline btn-sm inline-flex items-center gap-2"
-                [class.opacity-50]="currentPage() === totalPages()"
-                [class.cursor-not-allowed]="currentPage() === totalPages()"
-              >
-                <span class="hidden sm:inline">Next</span>
-                <lucide-icon [img]="nextIcon" [size]="16"></lucide-icon>
-              </button>
             </div>
           </div>
-        </div>
+        }
       </div>
-      
+    
       <app-footer></app-footer>
     </div>
-  `,
+    `,
   styles: []
 })
 export class DirectoryPageComponent implements OnInit, OnDestroy {

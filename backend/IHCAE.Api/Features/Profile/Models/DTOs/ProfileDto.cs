@@ -44,7 +44,7 @@ public class ProfileDto
     /// Year the alumnus graduated from IHCAE
     /// Used for filtering and display in directory
     /// </summary>
-    public int? GraduationYear { get; set; }
+    public string? Batch { get; set; }
 
     /// <summary>
     /// Course/program the alumnus completed at IHCAE

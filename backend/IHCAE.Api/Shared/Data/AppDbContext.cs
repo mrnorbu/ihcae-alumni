@@ -136,7 +136,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Status).IsRequired();
             entity.Property(e => e.EmailVerified).HasDefaultValue(false);
             entity.Property(e => e.IsBanned).HasDefaultValue(false);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // Unique constraint on email
             entity.HasIndex(e => e.Email).IsUnique();
@@ -154,7 +154,7 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(255);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // Unique constraint on role name
             entity.HasIndex(e => e.Name).IsUnique();
@@ -164,7 +164,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<UserRole>(entity =>
         {
             entity.HasKey(e => new { e.UserId, e.RoleId });
-            entity.Property(e => e.AssignedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.AssignedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // Foreign key relationships
             entity.HasOne(e => e.User)
@@ -186,7 +186,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Course).HasMaxLength(255);
             entity.Property(e => e.JobTitle).HasMaxLength(255);
             entity.Property(e => e.Location).HasMaxLength(255);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // One-to-one relationship with User
             entity.HasOne(e => e.User)
@@ -196,7 +196,7 @@ public class AppDbContext : DbContext
                   
             // Indexes for search functionality
             entity.HasIndex(e => e.Course);
-            entity.HasIndex(e => e.GraduationYear);
+            entity.HasIndex(e => e.Batch);
         });
 
         // Configure AlumniDatabase entity
@@ -210,7 +210,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Course).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.Location).HasMaxLength(255);
-            entity.Property(e => e.ImportedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.ImportedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // Indexes for matching functionality
             entity.HasIndex(e => e.Email);
@@ -231,7 +231,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(255);
             entity.Property(e => e.ExpiresAt).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // Foreign key to User
             entity.HasOne(e => e.User)
@@ -251,7 +251,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(255);
             entity.Property(e => e.ExpiresAt).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // Foreign key to User
             entity.HasOne(e => e.User)
@@ -271,7 +271,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(255);
             entity.Property(e => e.ExpiresAt).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             
             // Foreign key to User
             entity.HasOne(e => e.User)

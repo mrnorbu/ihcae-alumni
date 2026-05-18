@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, CheckCircle, AlertCircle, Calendar, MapPin, Clock } from 'lucide-angular';
@@ -17,7 +17,7 @@ import type { Event } from '../../models';
 @Component({
   selector: 'app-event-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>

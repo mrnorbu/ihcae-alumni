@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { AlumniCard } from '../../services/directory.service';
 import { 
@@ -41,36 +41,38 @@ import {
 @Component({
   selector: 'app-alumni-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [RouterModule, LucideAngularModule],
   template: `
     <!-- Clickable card wrapper with router navigation -->
     <!-- group class enables hover effects on child elements -->
     <a
       [routerLink]="['/alumni', alumni.id]"
       class="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden group"
-    >
+      >
       <!-- Profile Image Section -->
       <!-- aspect-square: Maintains 1:1 ratio for consistent grid -->
       <div class="aspect-square bg-neutral-100 relative overflow-hidden">
         <!-- Profile Image (if available and not a Lucide icon URL) -->
-        <img
-          *ngIf="alumni.profileImageUrl && !isLucideIconUrl(alumni.profileImageUrl)"
-          [src]="alumni.profileImageUrl"
-          [alt]="alumni.firstName + ' ' + alumni.lastName"
-          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        @if (alumni.profileImageUrl && !isLucideIconUrl(alumni.profileImageUrl)) {
+          <img
+            [src]="alumni.profileImageUrl"
+            [alt]="alumni.firstName + ' ' + alumni.lastName"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+        }
         <!-- Fallback Initials Display -->
         <!-- Uses IHCAE brand colors for consistent branding -->
-        <div
-          *ngIf="!alumni.profileImageUrl || isLucideIconUrl(alumni.profileImageUrl)"
-          class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-secondary-100"
-        >
-          <span class="text-3xl font-bold text-primary-600">
-            {{ getInitials(alumni.firstName, alumni.lastName) }}
-          </span>
-        </div>
+        @if (!alumni.profileImageUrl || isLucideIconUrl(alumni.profileImageUrl)) {
+          <div
+            class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-secondary-100"
+            >
+            <span class="text-3xl font-bold text-primary-600">
+              {{ getInitials(alumni.firstName, alumni.lastName) }}
+            </span>
+          </div>
+        }
       </div>
-
+    
       <!-- Card Content Section -->
       <div class="p-4">
         <!-- Alumni Name -->
@@ -78,36 +80,44 @@ import {
         <h3 class="text-lg font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors mb-2">
           {{ alumni.firstName }} {{ alumni.lastName }}
         </h3>
-
+    
         <!-- Alumni Details -->
         <!-- Vertical spacing between detail items -->
         <div class="space-y-1.5">
           <!-- Job Title (if available) -->
-          <div *ngIf="alumni.jobTitle" class="flex items-center gap-2 text-sm text-neutral-600">
-            <lucide-icon [img]="briefcaseIcon" [size]="14" class="flex-shrink-0"></lucide-icon>
-            <span class="truncate">{{ alumni.jobTitle }}</span>
-          </div>
-
+          @if (alumni.jobTitle) {
+            <div class="flex items-center gap-2 text-sm text-neutral-600">
+              <lucide-icon [img]="briefcaseIcon" [size]="14" class="flex-shrink-0"></lucide-icon>
+              <span class="truncate">{{ alumni.jobTitle }}</span>
+            </div>
+          }
+    
           <!-- Location (if available) -->
-          <div *ngIf="alumni.location" class="flex items-center gap-2 text-sm text-neutral-600">
-            <lucide-icon [img]="locationIcon" [size]="14" class="flex-shrink-0"></lucide-icon>
-            <span class="truncate">{{ alumni.location }}</span>
-          </div>
-
+          @if (alumni.location) {
+            <div class="flex items-center gap-2 text-sm text-neutral-600">
+              <lucide-icon [img]="locationIcon" [size]="14" class="flex-shrink-0"></lucide-icon>
+              <span class="truncate">{{ alumni.location }}</span>
+            </div>
+          }
+    
           <!-- Course & Graduation Year (if available) -->
           <!-- Shows course, year, or both with bullet separator -->
-          <div *ngIf="alumni.course || alumni.graduationYear" class="flex items-center gap-2 text-sm text-neutral-600">
-            <lucide-icon [img]="gradIcon" [size]="14" class="flex-shrink-0"></lucide-icon>
-            <span class="truncate">
-              {{ alumni.course }}
-              <span *ngIf="alumni.course && alumni.graduationYear">•</span>
-              {{ alumni.graduationYear }}
-            </span>
-          </div>
+          @if (alumni.course || alumni.graduationYear) {
+            <div class="flex items-center gap-2 text-sm text-neutral-600">
+              <lucide-icon [img]="gradIcon" [size]="14" class="flex-shrink-0"></lucide-icon>
+              <span class="truncate">
+                {{ alumni.course }}
+                @if (alumni.course && alumni.graduationYear) {
+                  <span>•</span>
+                }
+                {{ alumni.graduationYear }}
+              </span>
+            </div>
+          }
         </div>
       </div>
     </a>
-  `,
+    `,
   styles: []
 })
 export class AlumniCardComponent {

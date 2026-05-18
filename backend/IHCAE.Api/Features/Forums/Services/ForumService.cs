@@ -17,13 +17,20 @@ public class ForumService : IForumService
     private readonly ILogger<ForumService> _logger;
     private readonly ITagService _tagService;
     private readonly IUrlHelperService _urlHelperService;
+    private readonly IEmailService _emailService;
 
-    public ForumService(AppDbContext context, ILogger<ForumService> logger, ITagService tagService, IUrlHelperService urlHelperService)
+    public ForumService(
+        AppDbContext context, 
+        ILogger<ForumService> logger, 
+        ITagService tagService, 
+        IUrlHelperService urlHelperService,
+        IEmailService emailService)
     {
         _context = context;
         _logger = logger;
         _tagService = tagService;
         _urlHelperService = urlHelperService;
+        _emailService = emailService;
     }
 
     /// <summary>
@@ -141,6 +148,9 @@ public class ForumService : IForumService
             {
                 topic.MainPostId = mainPost.Id;
                 topic.IsMainPostLikedByCurrentUser = mainPost.Likes.Any(l => l.UserId == currentUserId);
+                topic.Preview = mainPost.Content.Length > 200
+                    ? mainPost.Content[..200].TrimEnd() + "…"
+                    : mainPost.Content;
             }
 
             // Calculate total likes for the topic
@@ -350,7 +360,49 @@ public class ForumService : IForumService
             .Include(p => p.Author)
                 .ThenInclude(a => a.AlumniProfile)
             .Include(p => p.Likes)
+            .Include(p => p.Topic)
+                .ThenInclude(t => t.CreatedBy)
+            .Include(p => p.ParentPost)
+                .ThenInclude(pp => pp!.Author)
             .FirstOrDefaultAsync(p => p.Id == post.Id);
+
+        // Send email notification for new reply
+        if (createdPost != null)
+        {
+            var postLink = $"/forums/topic/{topicId}";
+            var authorName = $"{createdPost.Author.FirstName} {createdPost.Author.LastName}";
+
+            if (createdPost.ParentPost != null)
+            {
+                // Reply to a specific post
+                var parentAuthor = createdPost.ParentPost.Author;
+                if (parentAuthor.Id != userId)
+                {
+                    await _emailService.SendNewReplyNotificationAsync(
+                        parentAuthor.Email,
+                        parentAuthor.FirstName,
+                        createdPost.Topic.Title,
+                        authorName,
+                        postLink
+                    );
+                }
+            }
+            else
+            {
+                // General reply to the topic
+                var topicCreator = createdPost.Topic.CreatedBy;
+                if (topicCreator.Id != userId)
+                {
+                    await _emailService.SendNewReplyNotificationAsync(
+                        topicCreator.Email,
+                        topicCreator.FirstName,
+                        createdPost.Topic.Title,
+                        authorName,
+                        postLink
+                    );
+                }
+            }
+        }
 
         return MapToPostDto(createdPost!, userId);
     }
@@ -530,6 +582,7 @@ public class ForumService : IForumService
     public async Task<bool> DeleteTopicAsync(Guid topicId, Guid adminUserId)
     {
         var topic = await _context.DiscussionTopics
+            .Include(t => t.CreatedBy)
             .FirstOrDefaultAsync(t => t.Id == topicId);
 
         if (topic == null)
@@ -542,6 +595,18 @@ public class ForumService : IForumService
         await _context.SaveChangesAsync();
 
         _logger.LogWarning("Topic {TopicId} deleted by admin {AdminId}", topicId, adminUserId);
+
+        // Send email notification
+        if (topic.CreatedBy != null)
+        {
+            await _emailService.SendTopicModerationNotificationAsync(
+                topic.CreatedBy.Email,
+                topic.CreatedBy.FirstName,
+                topic.Title,
+                "deleted",
+                "Topic violated community guidelines or was removed by an administrator."
+            );
+        }
 
         return true;
     }
@@ -576,6 +641,7 @@ public class ForumService : IForumService
     public async Task<bool> ToggleLockTopicAsync(Guid topicId, Guid adminUserId)
     {
         var topic = await _context.DiscussionTopics
+            .Include(t => t.CreatedBy)
             .FirstOrDefaultAsync(t => t.Id == topicId);
 
         if (topic == null)
@@ -591,6 +657,18 @@ public class ForumService : IForumService
         _logger.LogInformation("Topic {TopicId} lock status toggled to {IsLocked} by admin {AdminId}", 
             topicId, topic.IsLocked, adminUserId);
 
+        // Send email notification if locked
+        if (topic.IsLocked && topic.CreatedBy != null)
+        {
+            await _emailService.SendTopicModerationNotificationAsync(
+                topic.CreatedBy.Email,
+                topic.CreatedBy.FirstName,
+                topic.Title,
+                "locked",
+                "Topic has been locked by an administrator. No further replies can be added."
+            );
+        }
+
         return topic.IsLocked;
     }
 
@@ -601,6 +679,8 @@ public class ForumService : IForumService
     {
         var post = await _context.ForumPosts
             .Include(p => p.Replies)
+            .Include(p => p.Topic)
+            .Include(p => p.Author)
             .FirstOrDefaultAsync(p => p.Id == postId);
 
         if (post == null)
@@ -627,6 +707,18 @@ public class ForumService : IForumService
 
         _logger.LogWarning("Post {PostId} and {ReplyCount} replies soft deleted by admin {AdminId} with reason: {Reason}", 
             postId, post.Replies.Count, adminUserId, reason);
+
+        // Send email notification
+        if (post.Author != null && post.Topic != null)
+        {
+            await _emailService.SendTopicModerationNotificationAsync(
+                post.Author.Email,
+                post.Author.FirstName,
+                post.Topic.Title,
+                "deleted",
+                reason
+            );
+        }
 
         return true;
     }

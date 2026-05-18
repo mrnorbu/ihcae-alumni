@@ -362,7 +362,7 @@ public class AdminController : ControllerBase
                 LastName = a.LastName,
                 Email = a.Email,
                 Course = a.Course,
-                GraduationYear = a.GraduationYear,
+                Batch = a.Batch,
                 Phone = a.Phone,
                 Location = a.Location,
                 MatchedUserId = a.MatchedUserId,
@@ -387,6 +387,59 @@ public class AdminController : ControllerBase
                 StatusCode = 500,
                 Message = "An error occurred while retrieving alumni records."
             });
+        }
+    }
+    /// <summary>
+    /// Bulk updates alumni database records.
+    /// </summary>
+    [HttpPut("alumni/bulk-update")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> BulkUpdateAlumni([FromBody] List<AlumniDatabaseDto> records)
+    {
+        try
+        {
+            if (records == null || !records.Any())
+            {
+                return BadRequest(new ErrorResponse { StatusCode = 400, Message = "No records provided." });
+            }
+
+            await _alumniImportService.UpdateAlumniRecordsAsync(records);
+            return Ok(new { Success = true, Message = "Records updated successfully." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating alumni records");
+            return StatusCode(500, new ErrorResponse { StatusCode = 500, Message = "An error occurred." });
+        }
+    }
+
+    /// <summary>
+    /// Bulk generates user accounts from alumni database records.
+    /// </summary>
+    [HttpPost("alumni/bulk-generate-accounts")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> BulkGenerateAccounts([FromBody] List<Guid> alumniIds)
+    {
+        try
+        {
+            if (alumniIds == null || !alumniIds.Any())
+            {
+                return BadRequest(new ErrorResponse { StatusCode = 400, Message = "No alumni IDs provided." });
+            }
+
+            int count = await _alumniImportService.BulkGenerateUserAccountsAsync(alumniIds);
+            
+            return Ok(new { 
+                Success = true, 
+                Message = $"Successfully generated {count} user accounts and sent invitation emails." 
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating user accounts");
+            return StatusCode(500, new ErrorResponse { StatusCode = 500, Message = "An error occurred generating accounts." });
         }
     }
 }

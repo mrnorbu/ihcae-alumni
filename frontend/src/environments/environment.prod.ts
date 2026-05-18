@@ -5,7 +5,7 @@
 
 export const environment = {
   production: true,
-  apiUrl: 'https://api.ihcae-alumni.com', // Production API URL
+  apiUrl: 'https://ihcae.argiasolutions.website', // Production API URL
   appName: 'IHCAE Alumni Network',
   version: '1.0.0',
   
@@ -28,7 +28,7 @@ export const environment = {
   fileUpload: {
     maxFileSize: 10 * 1024 * 1024, // 10MB
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'],
-    uploadUrl: 'https://api.ihcae-alumni.com/api/v1/files/upload'
+    uploadUrl: 'https://ihcae.argiasolutions.website/api/v1/files/upload'
   },
   
   // Pagination Defaults

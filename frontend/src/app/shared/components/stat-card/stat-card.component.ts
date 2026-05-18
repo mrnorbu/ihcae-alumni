@@ -33,32 +33,33 @@ import { LucideAngularModule, LucideIconData } from 'lucide-angular';
         <div
           class="stat-icon"
           [ngClass]="[iconBgClass]"
-        >
+          >
           <lucide-icon
             [img]="icon"
             [size]="iconSize"
             [ngClass]="[iconColorClass]"
           ></lucide-icon>
         </div>
-
+    
         <!-- Content -->
         <div class="flex-1">
           <p class="text-xs font-medium text-neutral-600">{{ label }}</p>
           <div class="flex items-baseline gap-2">
             <p class="text-2xl font-bold text-neutral-900">{{ value }}</p>
-            <span
-              *ngIf="trend"
-              class="text-xs font-medium"
-              [class.text-success-600]="trendPositive"
-              [class.text-error-600]="!trendPositive"
-            >
-              {{ trend }}
-            </span>
+            @if (trend) {
+              <span
+                class="text-xs font-medium"
+                [class.text-success-600]="trendPositive"
+                [class.text-error-600]="!trendPositive"
+                >
+                {{ trend }}
+              </span>
+            }
           </div>
         </div>
       </div>
     </div>
-  `,
+    `,
   styles: []
 })
 export class StatCardComponent {

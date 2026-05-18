@@ -1,0 +1,246 @@
+using System.Net.Http.Json;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using IHCAE.Api.IntegrationTests.Infrastructure;
+using IHCAE.Api.Shared.Data;
+using IHCAE.Api.Features.Auth.Models.Entities;
+using IHCAE.Api.Features.News.Models.Entities;
+using IHCAE.Api.Features.News.Models.DTOs;
+using IHCAE.Api.Shared.DTOs;
+
+namespace IHCAE.Api.IntegrationTests.Features.News;
+
+public class NewsTests : IntegrationTestBase
+{
+    public NewsTests(CustomWebApplicationFactory factory) : base(factory)
+    {
+    }
+
+    private async Task SeedNewsDataAsync(AppDbContext context, Guid authorId, Guid generalCategoryId, Guid successStoryCategoryId, Guid publishedArticleId, Guid successStoryArticleId)
+    {
+        // Add Author
+        var existingAuthor = await context.Users.FirstOrDefaultAsync(u => u.Email == "news.author@example.com");
+        if (existingAuthor == null)
+        {
+            var user = new User
+            {
+                Id = authorId,
+                FirstName = "News",
+                LastName = "Author",
+                Email = "news.author@example.com",
+                PasswordHash = "hashed",
+                Status = UserStatus.Approved,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.Users.Add(user);
+        }
+        else
+        {
+            authorId = existingAuthor.Id;
+        }
+
+        // Add Categories
+        var generalCategory = await context.NewsCategories.FirstOrDefaultAsync(c => c.Slug == "general-news");
+        if (generalCategory == null)
+        {
+            generalCategory = new NewsCategory
+            {
+                Id = generalCategoryId,
+                Name = "General News",
+                Slug = "general-news",
+                CreatedAt = DateTime.UtcNow
+            };
+            context.NewsCategories.Add(generalCategory);
+        }
+        else
+        {
+            generalCategoryId = generalCategory.Id;
+        }
+        
+        var successCategory = await context.NewsCategories.FirstOrDefaultAsync(c => c.Slug == "success-story");
+        if (successCategory == null)
+        {
+            successCategory = new NewsCategory
+            {
+                Id = successStoryCategoryId,
+                Name = "Success Stories",
+                Slug = "success-story",
+                CreatedAt = DateTime.UtcNow
+            };
+            context.NewsCategories.Add(successCategory);
+        }
+        else
+        {
+            successStoryCategoryId = successCategory.Id;
+        }
+
+        // Add Articles
+        if (!await context.NewsArticles.AnyAsync(a => a.Id == publishedArticleId))
+        {
+            context.NewsArticles.Add(new NewsArticle
+            {
+                Id = publishedArticleId,
+                Title = "Published General News",
+                Content = "Content of the general news",
+                CategoryId = generalCategoryId,
+                AuthorId = authorId,
+                Status = ContentStatus.Published,
+                PublishedAt = DateTime.UtcNow.AddDays(-1),
+                CreatedAt = DateTime.UtcNow.AddDays(-2),
+                ViewCount = 0
+            });
+        }
+
+        if (!await context.NewsArticles.AnyAsync(a => a.Id == successStoryArticleId))
+        {
+            context.NewsArticles.Add(new NewsArticle
+            {
+                Id = successStoryArticleId,
+                Title = "Published Success Story",
+                Content = "Content of the success story",
+                CategoryId = successStoryCategoryId,
+                AuthorId = authorId,
+                Status = ContentStatus.Published,
+                PublishedAt = DateTime.UtcNow.AddDays(-1),
+                CreatedAt = DateTime.UtcNow.AddDays(-2),
+                ViewCount = 0
+            });
+        }
+
+        // Add a draft article that shouldn't be returned by public endpoints
+        context.NewsArticles.Add(new NewsArticle
+        {
+            Id = Guid.NewGuid(),
+            Title = "Draft News",
+            Content = "Draft content",
+            CategoryId = generalCategoryId,
+            AuthorId = authorId,
+            Status = ContentStatus.Draft,
+            CreatedAt = DateTime.UtcNow,
+            ViewCount = 0
+        });
+
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task GetPublishedArticles_ReturnsOnlyPublishedArticles()
+    {
+        // Arrange
+        var authorId = Guid.NewGuid();
+        var generalCatId = Guid.NewGuid();
+        var successCatId = Guid.NewGuid();
+        var publishedId = Guid.NewGuid();
+        var successId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedNewsDataAsync(context, authorId, generalCatId, successCatId, publishedId, successId);
+        }
+
+        // Act
+        var response = await _client.GetAsync("/api/v1/news?page=1&pageSize=10");
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResult<NewsArticleSummaryDto>>();
+        
+        result.Should().NotBeNull();
+        result!.Items.Should().NotBeEmpty();
+        
+        // Ensure no draft items are returned
+        result.Items.Should().OnlyContain(a => a.Status == ContentStatus.Published);
+        
+        // Both published general news and published success story should be returned
+        result.Items.Should().Contain(a => a.Id == publishedId);
+        result.Items.Should().Contain(a => a.Id == successId);
+    }
+
+    [Fact]
+    public async Task GetArticleById_WithValidPublishedId_ReturnsArticle()
+    {
+        // Arrange
+        var authorId = Guid.NewGuid();
+        var generalCatId = Guid.NewGuid();
+        var successCatId = Guid.NewGuid();
+        var publishedId = Guid.NewGuid();
+        var successId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedNewsDataAsync(context, authorId, generalCatId, successCatId, publishedId, successId);
+        }
+
+        // Act
+        var response = await _client.GetAsync($"/api/v1/news/{publishedId}");
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var article = await response.Content.ReadFromJsonAsync<NewsArticleDto>();
+        
+        article.Should().NotBeNull();
+        article!.Id.Should().Be(publishedId);
+        article.Title.Should().Be("Published General News");
+    }
+
+    [Fact]
+    public async Task GetSuccessStories_ReturnsOnlySuccessStories()
+    {
+        // Arrange
+        var authorId = Guid.NewGuid();
+        var generalCatId = Guid.NewGuid();
+        var successCatId = Guid.NewGuid();
+        var publishedId = Guid.NewGuid();
+        var successId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedNewsDataAsync(context, authorId, generalCatId, successCatId, publishedId, successId);
+        }
+
+        // Act
+        var response = await _client.GetAsync("/api/v1/news/success-stories?page=1&pageSize=10");
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResult<NewsArticleSummaryDto>>();
+        
+        result.Should().NotBeNull();
+        result!.Items.Should().NotBeEmpty();
+        
+        // Ensure only success stories are returned
+        result.Items.Should().OnlyContain(a => a.Category.Slug == "success-story");
+        result.Items.Should().Contain(a => a.Id == successId);
+        result.Items.Should().NotContain(a => a.Id == publishedId); // Should not have general news
+    }
+
+    [Fact]
+    public async Task GetCategories_ReturnsAllCategories()
+    {
+        // Arrange
+        var authorId = Guid.NewGuid();
+        var generalCatId = Guid.NewGuid();
+        var successCatId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedNewsDataAsync(context, authorId, generalCatId, successCatId, Guid.NewGuid(), Guid.NewGuid());
+        }
+
+        // Act
+        var response = await _client.GetAsync("/api/v1/news/categories");
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var result = await response.Content.ReadFromJsonAsync<List<NewsCategoryDto>>();
+        
+        result.Should().NotBeNull();
+        result!.Should().Contain(c => c.Slug == "general-news");
+        result.Should().Contain(c => c.Slug == "success-story");
+    }
+}

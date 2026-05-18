@@ -63,6 +63,11 @@ public class TopicSummaryDto
     public bool IsMainPostLikedByCurrentUser { get; set; }
 
     /// <summary>
+    /// Short preview of the main post content (first 200 chars)
+    /// </summary>
+    public string? Preview { get; set; }
+
+    /// <summary>
     /// List of tags associated with the topic
     /// </summary>
     public List<TagDto> Tags { get; set; } = new List<TagDto>();

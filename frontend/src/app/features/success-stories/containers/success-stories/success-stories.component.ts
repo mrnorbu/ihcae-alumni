@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, Star, Calendar, MapPin, Award, Plus, Eye, Edit, Trash2, User } from 'lucide-angular';
@@ -19,7 +19,7 @@ import type { NewsArticleSummary } from '../../../news-events/models';
 @Component({
   selector: 'app-success-stories',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>

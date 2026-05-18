@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Calendar, MapPin, Clock, Users, AlertCircle, CheckCircle, Calendar as CalendarIcon } from 'lucide-angular';
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
@@ -16,7 +16,7 @@ import type { Event } from '../../models';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>

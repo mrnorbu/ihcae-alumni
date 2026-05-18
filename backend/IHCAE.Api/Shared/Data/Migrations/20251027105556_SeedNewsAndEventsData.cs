@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,6 +11,8 @@ namespace IHCAE.Api.Shared.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("SET FOREIGN_KEY_CHECKS=0;");
+            
             // Admin user ID
             var adminUserId = Guid.Parse("af33f3f4-0aea-4621-9722-1fedd1830e1b");
             
@@ -203,6 +205,8 @@ namespace IHCAE.Api.Shared.Data.Migrations
                     UTC_TIMESTAMP()
                 );
             ");
+            
+            migrationBuilder.Sql("SET FOREIGN_KEY_CHECKS=1;");
         }
 
         /// <inheritdoc />

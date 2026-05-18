@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, Plus, Edit, Trash2, Eye, Calendar, FileText, User, Building, MapPin, DollarSign, Clock, LogIn } from 'lucide-angular';
@@ -17,11 +17,11 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
 @Component({
   selector: 'app-job-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
-      
+    
       <!-- Main Content -->
       <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
         <!-- Back Button -->
@@ -30,7 +30,7 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
             ← Back to Jobs
           </button>
         </div>
-
+    
         <!-- Job Header -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
           <div class="flex items-start justify-between">
@@ -66,7 +66,7 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
             </div>
           </div>
         </div>
-
+    
         <!-- Job Content -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Main Content -->
@@ -78,30 +78,34 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
                 <p class="text-neutral-700 mb-4">{{ job().description }}</p>
                 <h3 class="text-md font-semibold text-neutral-900 mb-2">Key Responsibilities:</h3>
                 <ul class="list-disc list-inside text-neutral-700 mb-4">
-                  <li *ngFor="let responsibility of job().responsibilities">{{ responsibility }}</li>
+                  @for (responsibility of job().responsibilities; track responsibility) {
+                    <li>{{ responsibility }}</li>
+                  }
                 </ul>
                 <h3 class="text-md font-semibold text-neutral-900 mb-2">Requirements:</h3>
                 <ul class="list-disc list-inside text-neutral-700">
-                  <li *ngFor="let requirement of job().requirements">{{ requirement }}</li>
+                  @for (requirement of job().requirements; track requirement) {
+                    <li>{{ requirement }}</li>
+                  }
                 </ul>
               </div>
             </div>
-
+    
             <!-- Company Information -->
             <div class="bg-white rounded-lg shadow p-6">
               <h2 class="text-lg font-semibold text-neutral-900 mb-4">About {{ job().company }}</h2>
               <p class="text-neutral-700">{{ job().companyDescription }}</p>
             </div>
           </div>
-
+    
           <!-- Sidebar -->
           <div class="space-y-6">
             <!-- Application Form -->
             <div class="bg-white rounded-lg shadow p-6">
               <h3 class="text-lg font-semibold text-neutral-900 mb-4">Apply for this position</h3>
-              
+    
               <!-- For authenticated users -->
-              <ng-container *ngIf="authState.isAuthenticated">
+              @if (authState.isAuthenticated) {
                 <form class="space-y-4">
                   <div>
                     <label class="input-label">Full Name</label>
@@ -127,10 +131,10 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
                     Submit Application
                   </button>
                 </form>
-              </ng-container>
-              
+              }
+    
               <!-- For public users -->
-              <ng-container *ngIf="!authState.isAuthenticated">
+              @if (!authState.isAuthenticated) {
                 <div class="text-center py-8">
                   <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <lucide-icon [img]="loginIcon" [size]="24" class="text-primary-600"></lucide-icon>
@@ -149,9 +153,9 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
                     </button>
                   </div>
                 </div>
-              </ng-container>
+              }
             </div>
-
+    
             <!-- Job Details -->
             <div class="bg-white rounded-lg shadow p-6">
               <h3 class="text-lg font-semibold text-neutral-900 mb-4">Job Details</h3>
@@ -178,23 +182,25 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
                 </div>
               </div>
             </div>
-
+    
             <!-- Skills Required -->
             <div class="bg-white rounded-lg shadow p-6">
               <h3 class="text-lg font-semibold text-neutral-900 mb-4">Required Skills</h3>
               <div class="flex flex-wrap gap-2">
-                <span *ngFor="let skill of job().skills" class="badge badge-outline">
-                  {{ skill }}
-                </span>
+                @for (skill of job().skills; track skill) {
+                  <span class="badge badge-outline">
+                    {{ skill }}
+                  </span>
+                }
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+    
       <app-footer></app-footer>
     </div>
-  `,
+    `,
   styles: []
 })
 export class JobDetailComponent implements OnInit {

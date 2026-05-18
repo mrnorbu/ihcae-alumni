@@ -229,6 +229,7 @@ export interface TopicSummaryDto {
   totalLikes: number;
   mainPostId: string;
   isMainPostLikedByCurrentUser: boolean;
+  preview?: string;
   tags: TagDto[];
 }
 

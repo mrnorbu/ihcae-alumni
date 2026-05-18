@@ -1,368 +1,639 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { LucideAngularModule, Plus, Search, ArrowLeft, ThumbsUp, Reply, Send, Lock, Pin, Trash2, X, MessageCircle, Hash, Users, ChevronRight } from 'lucide-angular';
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
-import { ForumNavigationTabsComponent } from '../../components/forum-navigation-tabs/forum-navigation-tabs.component';
-import { ModernThreadCardComponent } from '../../components/modern-thread-card/modern-thread-card.component';
-import { ModernExpandedThreadComponent } from '../../components/modern-expanded-thread/modern-expanded-thread.component';
-import { ModernForumSidebarComponent } from '../../components/modern-forum-sidebar/modern-forum-sidebar.component';
 import { CreateTopicModalComponent } from '../../components/create-topic-modal/create-topic-modal.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { UserAuthStore } from '../../../../core/state/user-auth.store';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { ForumService } from '../../services/forum.service';
-import type { TopicSummaryDto, TagDto, PostDto, CreateTopicRequest, TopUserDto } from '../../../../shared/models';
+import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDetailDto, PostDto } from '../../../../shared/models';
 
-/**
- * Modern Forum List Component
- * 
- * Main container for the redesigned forum page with clean, minimalistic design.
- * Integrates all new components following the target design pattern.
- * 
- * @author IHCAE Development Team
- * @version 1.0.0
- */
 @Component({
   selector: 'app-modern-forum-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    HeaderComponent, 
-    FooterComponent,
-    ForumNavigationTabsComponent,
-    ModernThreadCardComponent,
-    ModernExpandedThreadComponent,
-    ModernForumSidebarComponent,
-    CreateTopicModalComponent
+    FormsModule, NgTemplateOutlet,
+    LucideAngularModule,
+    HeaderComponent, FooterComponent,
+    CreateTopicModalComponent, ConfirmationModalComponent
   ],
   template: `
-    <!-- Main container with full height and neutral background -->
-    <div class="min-h-screen bg-neutral-50 flex flex-col">
-      <!-- Header component with navigation and user menu -->
+    <div class="min-h-screen bg-neutral-50 flex flex-col page-fade-in">
       <app-header></app-header>
-      
-      <!-- Forum Navigation Tabs -->
-      <app-forum-navigation-tabs
-        [activeTab]="activeTab"
-        (tabChange)="onTabChange($event)"
-      ></app-forum-navigation-tabs>
-      
-      <!-- Main Content Container -->
-      <div class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex gap-6">
-          
-          <!-- Main Content Area -->
-          <div class="flex-1 min-w-0">
-            <!-- Threads Header with Filter Bar -->
-            <div class="bg-white rounded-lg shadow-sm border border-neutral-200 mb-4">
-              <div class="p-4 border-b border-neutral-200">
-                <h1 class="text-xl font-bold text-neutral-900">Threads</h1>
-              </div>
-              
-              <!-- Filter and Sort Bar -->
-              <div class="p-4 space-y-3">
-                <div class="flex items-center gap-4">
-                  <!-- Topic Dropdown -->
-                  <div class="relative">
-                    <button
-                      (click)="toggleTopicDropdown()"
-                      class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
-                      [class.bg-blue-50]="selectedTagFilter"
-                      [class.border-blue-300]="selectedTagFilter"
-                    >
-                      <span>{{ selectedTagFilter || 'Topic' }}</span>
-                      <i class="bi bi-chevron-down text-xs"></i>
+
+      <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 pt-20">
+        <div class="flex gap-5">
+
+          <!-- ═══ LEFT SIDEBAR ═══ -->
+          <aside class="w-48 flex-shrink-0 hidden lg:block">
+            <div class="sticky top-6 space-y-3">
+
+              <!-- New Thread -->
+              <button (click)="showCreateTopicModal = true"
+                class="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                <lucide-icon [img]="plusIcon" [size]="15"></lucide-icon>
+                New Thread
+              </button>
+
+              <!-- Navigation -->
+              <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                <button (click)="backToList(); clearAllFilters()"
+                  class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors"
+                  [class.bg-blue-50]="view === 'list' && !selectedTagFilter"
+                  [class.text-blue-700]="view === 'list' && !selectedTagFilter"
+                  [class.font-medium]="view === 'list' && !selectedTagFilter"
+                  [class.text-neutral-600]="view !== 'list' || !!selectedTagFilter"
+                  [class.hover:bg-neutral-50]="view !== 'list' || !!selectedTagFilter">
+                  <lucide-icon [img]="messageIcon" [size]="14"></lucide-icon>
+                  All Threads
+                </button>
+                <div class="border-t border-neutral-100 px-3 py-2">
+                  <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-1.5">Sort</p>
+                  @for (opt of sortOptions; track opt.value) {
+                    <button (click)="onSortChange(opt.value); backToList()"
+                      class="w-full text-left px-2 py-1.5 text-xs rounded transition-colors mb-0.5"
+                      [class.bg-blue-50]="sortBy === opt.value"
+                      [class.text-blue-700]="sortBy === opt.value"
+                      [class.text-neutral-600]="sortBy !== opt.value"
+                      [class.hover:bg-neutral-50]="sortBy !== opt.value">
+                      {{ opt.label }}
                     </button>
-                    
-                    <!-- Topic Dropdown Menu -->
-                    <div *ngIf="showTopicDropdown" class="absolute top-full left-0 mt-1 w-48 bg-white border border-neutral-200 rounded-md shadow-lg z-10">
-                      <button
-                        *ngIf="selectedTagFilter"
-                        (click)="clearTagFilter(); toggleTopicDropdown()"
-                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors border-b border-neutral-200"
-                      >
-                        <i class="bi bi-x-circle mr-2"></i>Clear Filter
-                      </button>
-                      <button
-                        *ngFor="let tag of popularTags.slice(0, 8)"
-                        (click)="filterByTag(tag.name); toggleTopicDropdown()"
-                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                        [class.bg-blue-50]="selectedTagFilter === tag.name"
-                      >
-                        {{ tag.name }}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <!-- Sort Dropdown -->
-                  <div class="relative">
-                    <button
-                      (click)="showSortDropdown = !showSortDropdown"
-                      class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
-                    >
-                      <i class="bi bi-list text-sm"></i>
-                      <span>{{ getSortLabel() }}</span>
-                      <i class="bi bi-chevron-down text-xs"></i>
-                    </button>
-                    
-                    <!-- Sort Dropdown Menu -->
-                    <div *ngIf="showSortDropdown" class="absolute top-full left-0 mt-1 w-48 bg-white border border-neutral-200 rounded-md shadow-lg z-10">
-                      <button
-                        (click)="onSortChange('recent'); showSortDropdown = false"
-                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                        [class.bg-blue-50]="sortBy === 'recent'"
-                      >
-                        Most Recent
-                      </button>
-                      <button
-                        (click)="onSortChange('oldest'); showSortDropdown = false"
-                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                        [class.bg-blue-50]="sortBy === 'oldest'"
-                      >
-                        Oldest First
-                      </button>
-                      <button
-                        (click)="onSortChange('popular'); showSortDropdown = false"
-                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                        [class.bg-blue-50]="sortBy === 'popular'"
-                      >
-                        Most Popular
-                      </button>
-                      <button
-                        (click)="onSortChange('mostdiscussed'); showSortDropdown = false"
-                        class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                        [class.bg-blue-50]="sortBy === 'mostdiscussed'"
-                      >
-                        Most Discussed
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <!-- Search Bar -->
-                  <div class="ml-auto flex items-center gap-2">
-                    <div class="relative">
-                      <input
-                        type="text"
-                        [(ngModel)]="searchQuery"
-                        (keyup.enter)="onSearch()"
-                        placeholder="Search discussions..."
-                        class="pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
-                      />
-                      <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
-                      <button
-                        *ngIf="searchQuery"
-                        (click)="clearSearch()"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                      >
-                        <i class="bi bi-x-circle"></i>
-                      </button>
-                    </div>
-                    <button
-                      (click)="onSearch()"
-                      class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Search
-                    </button>
-                  </div>
+                  }
                 </div>
-                
-                <!-- Active Filters Display -->
-                <div *ngIf="selectedAuthorName || selectedTagFilter || searchQuery" class="flex items-center gap-2 flex-wrap">
-                  <span class="text-sm text-neutral-600">Active filters:</span>
-                  
-                  <span *ngIf="selectedAuthorName" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
-                    Author: {{ selectedAuthorName }}
-                    <button (click)="clearAuthorFilter()" class="hover:text-blue-900">
-                      <i class="bi bi-x"></i>
+              </div>
+
+              <!-- Tags -->
+              <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                <div class="px-3 py-2 border-b border-neutral-100 flex items-center gap-2">
+                  <lucide-icon [img]="hashIcon" [size]="13" class="text-neutral-400"></lucide-icon>
+                  <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Topics</span>
+                </div>
+                <div class="py-1">
+                  @if (selectedTagFilter) {
+                    <button (click)="clearTagFilter(); backToList()"
+                      class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 transition-colors">
+                      <lucide-icon [img]="xIcon" [size]="12"></lucide-icon>
+                      Clear filter
                     </button>
-                  </span>
-                  
-                  <span *ngIf="selectedTagFilter" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
-                    Tag: {{ selectedTagFilter }}
-                    <button (click)="clearTagFilter()" class="hover:text-blue-900">
-                      <i class="bi bi-x"></i>
+                  }
+                  @for (tag of popularTags.slice(0, 12); track tag) {
+                    <button (click)="filterByTag(tag.name); backToList()"
+                      class="w-full flex items-center justify-between px-3 py-1.5 text-xs transition-colors"
+                      [class.bg-blue-50]="selectedTagFilter === tag.name"
+                      [class.text-blue-700]="selectedTagFilter === tag.name"
+                      [class.font-medium]="selectedTagFilter === tag.name"
+                      [class.text-neutral-600]="selectedTagFilter !== tag.name"
+                      [class.hover:bg-neutral-50]="selectedTagFilter !== tag.name">
+                      <span>#{{ tag.name }}</span>
+                      <span class="text-neutral-400">{{ tag.usageCount }}</span>
                     </button>
+                  }
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
+          <!-- ═══ MAIN CONTENT ═══ -->
+          <div class="flex-1 min-w-0">
+
+            <!-- ── PERSISTENT TOP BAR (always visible) ── -->
+            <div class="sticky top-20 z-20 bg-white rounded-lg border border-neutral-200 mb-3 px-4 py-3 flex items-center gap-3">
+              @if (view === 'detail') {
+                <button (click)="backToList()"
+                  class="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0 mr-1">
+                  <lucide-icon [img]="arrowLeftIcon" [size]="16"></lucide-icon>
+                  Forums
+                </button>
+                <span class="text-neutral-300">›</span>
+                <span class="text-sm text-neutral-600 truncate flex-1">{{ selectedTopic?.title }}</span>
+              }
+              @if (view === 'list') {
+                <div class="relative flex-1">
+                  <lucide-icon [img]="searchIcon" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
+                  <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                    placeholder="Search discussions..."
+                    class="w-full pl-9 pr-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <button (click)="onSearch()" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0">
+                  Search
+                </button>
+                @if (selectedAuthorName) {
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md flex-shrink-0">
+                    by {{ selectedAuthorName }}
+                    <button (click)="clearAuthorFilter()"><lucide-icon [img]="xIcon" [size]="11"></lucide-icon></button>
                   </span>
-                  
-                  <span *ngIf="searchQuery" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
-                    Search: "{{ searchQuery }}"
-                    <button (click)="clearSearch()" class="hover:text-blue-900">
-                      <i class="bi bi-x"></i>
-                    </button>
-                  </span>
-                  
-                  <button
-                    (click)="clearAllFilters()"
-                    class="text-xs text-blue-600 hover:text-blue-800 underline"
-                  >
-                    Clear all
+                }
+              }
+            </div>
+
+            @if (view === 'list' && selectedTagFilter) {
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-sm text-neutral-500">Showing:</span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                  #{{ selectedTagFilter }}
+                  <button (click)="clearTagFilter()"><lucide-icon [img]="xIcon" [size]="12"></lucide-icon></button>
+                </span>
+              </div>
+            }
+
+            <!-- ── LIST VIEW ── -->
+            @if (view === 'list') {
+
+              <!-- Loading -->
+              @if (loading) {
+                <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                  @for (i of [1,2,3,4,5]; track i) {
+                    <div class="p-4 border-b border-neutral-100 last:border-b-0 animate-pulse">
+                      <div class="flex gap-3">
+                        <div class="w-9 h-9 bg-neutral-200 rounded-full flex-shrink-0"></div>
+                        <div class="flex-1">
+                          <div class="h-3.5 bg-neutral-200 rounded w-1/4 mb-2"></div>
+                          <div class="h-5 bg-neutral-200 rounded w-3/4 mb-2"></div>
+                          <div class="h-3 bg-neutral-200 rounded w-1/3"></div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Error -->
+              @if (error) {
+                <div class="bg-white border border-red-200 rounded-lg p-4 text-sm text-red-700">{{ error }}</div>
+              }
+
+              <!-- Empty -->
+              @if (!loading && !error && topics.length === 0) {
+                <div class="bg-white rounded-lg border border-neutral-200 text-center py-16">
+                  <lucide-icon [img]="messageIcon" [size]="40" class="text-neutral-300 mb-4 mx-auto"></lucide-icon>
+                  <h3 class="text-base font-semibold text-neutral-700 mb-1">No threads yet</h3>
+                  <p class="text-sm text-neutral-400 mb-4">Be the first to start a discussion</p>
+                  <button (click)="showCreateTopicModal = true" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                    Start a Thread
                   </button>
                 </div>
-              </div>
-            </div>
+              }
 
-            <!-- Loading State -->
-            <div *ngIf="loading" class="space-y-3">
-              <div *ngFor="let i of [1,2,3,4,5]" class="bg-white border border-neutral-200 rounded-lg p-4 animate-pulse">
-                <div class="flex gap-4">
-                  <div class="w-10 h-10 bg-neutral-200 rounded-full"></div>
-                  <div class="flex-1">
-                    <div class="h-4 bg-neutral-200 rounded w-1/4 mb-2"></div>
-                    <div class="h-5 bg-neutral-200 rounded w-3/4 mb-2"></div>
-                    <div class="h-4 bg-neutral-200 rounded w-1/2 mb-2"></div>
-                    <div class="h-4 bg-neutral-200 rounded w-1/3"></div>
+              <!-- Thread list -->
+              @if (!loading && !error && topics.length > 0) {
+                <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                  @for (topic of topics; track topic.id) {
+                    <div class="flex items-start gap-3 px-4 py-4 border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors cursor-pointer group"
+                      (click)="openThread(topic.id)">
+                      <!-- Avatar -->
+                      <div class="w-9 h-9 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-neutral-600 mt-0.5">
+                        @if (topic.createdBy.profileImageUrl && !isPlaceholder(topic.createdBy.profileImageUrl)) {
+                          <img [src]="topic.createdBy.profileImageUrl" class="w-9 h-9 rounded-full object-cover" />
+                        } @else {
+                          {{ initials(topic.createdBy) }}
+                        }
+                      </div>
+                      <!-- Content -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5 mb-1">
+                          <button class="text-sm font-medium text-neutral-600 hover:text-blue-600 transition-colors"
+                            (click)="filterByAuthor(topic.createdBy.id, fullName(topic.createdBy)); $event.stopPropagation()">
+                            {{ fullName(topic.createdBy) }}
+                          </button>
+                          <span class="text-neutral-300 text-xs">•</span>
+                          <span class="text-xs text-neutral-400">{{ timeAgo(topic.lastReplyAt || topic.createdAt) }}</span>
+                          @if (topic.isPinned) {
+                            <lucide-icon [img]="pinIcon" [size]="12" class="text-amber-500"></lucide-icon>
+                          }
+                          @if (topic.isLocked) {
+                            <lucide-icon [img]="lockIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                          }
+                        </div>
+                        <h3 class="text-sm font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors leading-snug mb-1">{{ topic.title }}</h3>
+                        @if (topic.preview) {
+                          <p class="text-xs text-neutral-500 leading-relaxed line-clamp-2 mb-1.5">{{ topic.preview }}</p>
+                        }
+                        @if (topic.tags.length) {
+                          <div class="flex flex-wrap gap-1 mb-2">
+                            @for (tag of topic.tags.slice(0, 3); track tag) {
+                              <span class="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium">#{{ tag.name }}</span>
+                            }
+                          </div>
+                        }
+                        <div class="flex items-center gap-3">
+                          <span class="flex items-center gap-1 text-xs text-neutral-400">
+                            <lucide-icon [img]="messageIcon" [size]="12"></lucide-icon>
+                            {{ Math.max(0, (topic.postCount || 0) - 1) }}
+                          </span>
+                          <button class="flex items-center gap-1 text-xs transition-colors"
+                            [class.text-blue-600]="topic.isMainPostLikedByCurrentUser"
+                            [class.text-neutral-400]="!topic.isMainPostLikedByCurrentUser"
+                            (click)="onThreadLike(topic.id); $event.stopPropagation()">
+                            <lucide-icon [img]="thumbsUpIcon" [size]="12"></lucide-icon>
+                            {{ topic.totalLikes }}
+                          </button>
+                        </div>
+                      </div>
+                      <lucide-icon [img]="chevronRightIcon" [size]="16" class="text-neutral-300 group-hover:text-blue-400 transition-colors flex-shrink-0 mt-2"></lucide-icon>
+                    </div>
+                  }
+                </div>
+
+                <!-- Pagination -->
+                @if (totalPages > 1) {
+                  <div class="flex justify-center items-center gap-2 mt-4">
+                    <button (click)="previousPage()" [disabled]="currentPage === 1"
+                      class="px-3 py-1.5 text-xs border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                      Previous
+                    </button>
+                    @for (page of pageNumbers; track page) {
+                      <button (click)="goToPage(page)"
+                        class="px-3 py-1.5 text-xs border border-neutral-300 rounded-md transition-colors"
+                        [class.bg-blue-600]="page === currentPage"
+                        [class.text-white]="page === currentPage">
+                        {{ page }}
+                      </button>
+                    }
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                      class="px-3 py-1.5 text-xs border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                      Next
+                    </button>
+                  </div>
+                }
+              }
+            }
+
+            <!-- ── DETAIL VIEW ── -->
+            @if (view === 'detail') {
+
+              @if (topicLoading) {
+                <div class="bg-white rounded-xl border border-neutral-200 p-6 animate-pulse space-y-4">
+                  <div class="h-6 bg-neutral-200 rounded w-2/3"></div>
+                  <div class="h-4 bg-neutral-200 rounded w-1/3"></div>
+                  <div class="space-y-2 pt-4 border-t border-neutral-100">
+                    <div class="h-4 bg-neutral-200 rounded w-full"></div>
+                    <div class="h-4 bg-neutral-200 rounded w-5/6"></div>
+                  </div>
+                </div>
+              }
+
+              @if (topicError) {
+                <div class="bg-white rounded-xl border border-red-200 p-6 text-center">
+                  <p class="text-red-600 text-sm mb-3">{{ topicError }}</p>
+                  <button (click)="retryLoadThread()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Try Again</button>
+                </div>
+              }
+
+              @if (!topicLoading && !topicError && selectedTopic && detailMainPost) {
+                <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+
+                  <!-- Thread header -->
+                  <div class="px-6 pt-5 pb-4 border-b border-neutral-100">
+                    <div class="flex items-start gap-2 mb-1.5">
+                      @if (selectedTopic.isPinned) {
+                        <lucide-icon [img]="pinIcon" [size]="14" class="text-amber-500 mt-1 flex-shrink-0"></lucide-icon>
+                      }
+                      @if (selectedTopic.isLocked) {
+                        <lucide-icon [img]="lockIcon" [size]="14" class="text-neutral-400 mt-1 flex-shrink-0"></lucide-icon>
+                      }
+                      <h1 class="text-xl font-bold text-neutral-900 leading-tight">{{ selectedTopic.title }}</h1>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="text-sm text-neutral-500">by <span class="font-medium text-neutral-700">{{ fullName(selectedTopic.createdBy) }}</span></span>
+                      <span class="text-neutral-300 text-xs">•</span>
+                      <span class="text-sm text-neutral-400">{{ timeAgo(selectedTopic.createdAt) }}</span>
+                      @for (tag of selectedTopic.tags; track tag) {
+                        <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">#{{ tag.name }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  @if (selectedTopic.isLocked) {
+                    <div class="flex items-center gap-2 px-6 py-2.5 bg-amber-50 border-b border-amber-100 text-xs text-amber-700">
+                      <lucide-icon [img]="lockIcon" [size]="13"></lucide-icon>
+                      This topic is locked. No new replies can be posted.
+                    </div>
+                  }
+
+                  <!-- Original post -->
+                  <div class="px-6 py-5">
+                    <div class="flex items-start gap-3">
+                      <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-sm font-bold text-blue-700">
+                        @if (detailMainPost.author.profileImageUrl && !isPlaceholder(detailMainPost.author.profileImageUrl)) {
+                          <img [src]="detailMainPost.author.profileImageUrl" class="w-9 h-9 rounded-full object-cover" />
+                        } @else {
+                          {{ initials(detailMainPost.author) }}
+                        }
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1.5">
+                          <span class="font-semibold text-neutral-900 text-sm">{{ fullName(detailMainPost.author) }}</span>
+                          <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">Original Post</span>
+                          <span class="text-xs text-neutral-400 ml-auto">{{ timeAgo(detailMainPost.createdAt) }}</span>
+                        </div>
+                        <div class="text-neutral-800 text-sm leading-relaxed whitespace-pre-wrap">{{ detailMainPost.content }}</div>
+                        <div class="flex items-center gap-4 mt-3">
+                          <button (click)="togglePostLike(detailMainPost)"
+                            class="flex items-center gap-1.5 text-xs transition-colors"
+                            [class.text-blue-600]="detailMainPost.isLikedByCurrentUser"
+                            [class.text-neutral-500]="!detailMainPost.isLikedByCurrentUser">
+                            <lucide-icon [img]="thumbsUpIcon" [size]="13"></lucide-icon>
+                            <span>{{ detailMainPost.likeCount }}</span>
+                          </button>
+                          @if (!selectedTopic.isLocked) {
+                            <button (click)="openReplyForm(detailMainPost.id)"
+                              class="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-blue-600 transition-colors">
+                              <lucide-icon [img]="replyIcon" [size]="13"></lucide-icon>
+                              Reply
+                            </button>
+                          }
+                          <span class="text-xs text-neutral-400 ml-auto">{{ detailAllReplies.length }} {{ detailAllReplies.length === 1 ? 'reply' : 'replies' }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Inline reply form on original post -->
+                  @if (activeReplyForm === detailMainPost.id && !selectedTopic.isLocked) {
+                    <div class="px-6 py-4 bg-neutral-50 border-t border-neutral-100">
+                      <ng-container *ngTemplateOutlet="replyFormTpl; context: { postId: detailMainPost.id, name: fullName(detailMainPost.author) }"></ng-container>
+                    </div>
+                  }
+
+                  <!-- Replies -->
+                  @if (detailAllReplies.length > 0) {
+                    <div class="border-t border-neutral-200">
+                      <div class="px-6 py-2 text-xs font-semibold text-neutral-400 uppercase tracking-wide bg-neutral-50 border-b border-neutral-100">
+                        {{ detailAllReplies.length }} {{ detailAllReplies.length === 1 ? 'Reply' : 'Replies' }}
+                      </div>
+
+                      @for (reply of detailDirectReplies; track reply.id) {
+                        <div class="border-b border-neutral-100 last:border-b-0">
+                          <div class="px-6 py-4">
+                            <div class="flex items-start gap-3">
+                              <div class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-neutral-600">
+                                @if (reply.author.profileImageUrl && !isPlaceholder(reply.author.profileImageUrl)) {
+                                  <img [src]="reply.author.profileImageUrl" class="w-8 h-8 rounded-full object-cover" />
+                                } @else {
+                                  {{ initials(reply.author) }}
+                                }
+                              </div>
+                              <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                  <span class="font-medium text-neutral-900 text-sm">{{ fullName(reply.author) }}</span>
+                                  <span class="text-xs text-neutral-400">{{ timeAgo(reply.createdAt) }}</span>
+                                </div>
+                                <div class="text-neutral-700 text-sm leading-relaxed whitespace-pre-wrap">{{ reply.content }}</div>
+                                <div class="flex items-center gap-4 mt-2.5">
+                                  <button (click)="togglePostLike(reply)"
+                                    class="flex items-center gap-1.5 text-xs transition-colors"
+                                    [class.text-blue-600]="reply.isLikedByCurrentUser"
+                                    [class.text-neutral-500]="!reply.isLikedByCurrentUser">
+                                    <lucide-icon [img]="thumbsUpIcon" [size]="12"></lucide-icon>
+                                    <span>{{ reply.likeCount }}</span>
+                                  </button>
+                                  @if (!selectedTopic.isLocked) {
+                                    <button (click)="openReplyForm(reply.id)"
+                                      class="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-blue-600 transition-colors">
+                                      <lucide-icon [img]="replyIcon" [size]="12"></lucide-icon>
+                                      Reply
+                                    </button>
+                                  }
+                                  @if (isCurrentUser(reply.author.id)) {
+                                    <button (click)="confirmDeleteReply(reply.id)"
+                                      class="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 ml-auto">
+                                      <lucide-icon [img]="trashIcon" [size]="12"></lucide-icon>
+                                      Delete
+                                    </button>
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Reply form for this reply -->
+                          @if (activeReplyForm === reply.id && !selectedTopic.isLocked) {
+                            <div class="px-6 pb-4 pl-16 bg-neutral-50">
+                              <ng-container *ngTemplateOutlet="replyFormTpl; context: { postId: reply.id, name: fullName(reply.author) }"></ng-container>
+                            </div>
+                          }
+
+                          <!-- Nested replies (indented, right after parent) -->
+                          @for (nested of getNestedReplies(reply.id); track nested.id) {
+                            <div class="pl-16 pr-6 py-3 bg-neutral-50 border-t border-neutral-100">
+                              <div class="flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-neutral-500">
+                                  {{ initials(nested.author) }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                  <div class="flex items-center gap-2 mb-0.5">
+                                    <span class="font-medium text-neutral-900 text-xs">{{ fullName(nested.author) }}</span>
+                                    @if (nested.parentAuthor) {
+                                      <span class="text-xs text-blue-500">↩ {{ fullName(nested.parentAuthor) }}</span>
+                                    }
+                                    <span class="text-xs text-neutral-400 ml-auto">{{ timeAgo(nested.createdAt) }}</span>
+                                  </div>
+                                  <div class="text-neutral-700 text-sm leading-relaxed">{{ nested.content }}</div>
+                                  <div class="flex items-center gap-3 mt-1.5">
+                                    <button (click)="togglePostLike(nested)"
+                                      class="flex items-center gap-1.5 text-xs transition-colors"
+                                      [class.text-blue-600]="nested.isLikedByCurrentUser"
+                                      [class.text-neutral-400]="!nested.isLikedByCurrentUser">
+                                      <lucide-icon [img]="thumbsUpIcon" [size]="12"></lucide-icon>
+                                      <span>{{ nested.likeCount }}</span>
+                                    </button>
+                                    @if (isCurrentUser(nested.author.id)) {
+                                      <button (click)="confirmDeleteReply(nested.id)"
+                                        class="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 ml-auto">
+                                        <lucide-icon [img]="trashIcon" [size]="12"></lucide-icon>
+                                        Delete
+                                      </button>
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <!-- Bottom reply box -->
+                  @if (!selectedTopic.isLocked && activeReplyForm === null) {
+                    <div class="px-6 py-5 border-t border-neutral-200 bg-neutral-50">
+                      <textarea [(ngModel)]="replyText" rows="3" placeholder="Write a reply..."
+                        class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"></textarea>
+                      <div class="flex justify-end mt-2">
+                        <button (click)="submitReply(detailMainPost.id)"
+                          [disabled]="!replyText.trim() || replySubmitting"
+                          class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                          <lucide-icon [img]="sendIcon" [size]="14"></lucide-icon>
+                          {{ replySubmitting ? 'Posting...' : 'Post Reply' }}
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                </div>
+              }
+            }
+
+          </div><!-- end main content -->
+
+          <!-- ═══ RIGHT SIDEBAR ═══ -->
+          <aside class="w-56 flex-shrink-0 hidden xl:block">
+            <div class="sticky top-6 space-y-4">
+
+              <!-- Top Users -->
+              <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                <div class="px-4 py-3 border-b border-neutral-100 flex items-center gap-2">
+                  <lucide-icon [img]="usersIcon" [size]="14" class="text-neutral-400"></lucide-icon>
+                  <span class="text-sm font-semibold text-neutral-700">Top Users</span>
+                </div>
+                <div class="p-3 space-y-2">
+                  @if (topUsers.length === 0) {
+                    <p class="text-xs text-neutral-400 text-center py-2">No data yet</p>
+                  }
+                  @for (user of topUsers; track user.userId) {
+                    <div class="flex items-center gap-2.5 py-1">
+                      <div class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-neutral-600">
+                        @if (user.profileImageUrl && !isPlaceholder(user.profileImageUrl)) {
+                          <img [src]="user.profileImageUrl" class="w-8 h-8 rounded-full object-cover" />
+                        } @else {
+                          {{ user.firstName.charAt(0) + user.lastName.charAt(0) }}
+                        }
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-xs font-medium text-neutral-800 truncate">{{ user.firstName }} {{ user.lastName }}</div>
+                        <div class="text-xs text-neutral-400">{{ user.postCount }} posts · {{ user.totalLikes }} likes</div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Forum Stats -->
+              <div class="bg-white rounded-lg border border-neutral-200 p-4">
+                <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">Forum Stats</p>
+                <div class="space-y-2">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-neutral-500">Total Threads</span>
+                    <span class="font-medium text-neutral-800">{{ totalThreadCount }}</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-neutral-500">Active Tags</span>
+                    <span class="font-medium text-neutral-800">{{ popularTags.length }}</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-neutral-500">Contributors</span>
+                    <span class="font-medium text-neutral-800">{{ topUsers.length }}+</span>
                   </div>
                 </div>
               </div>
+
             </div>
+          </aside>
 
-            <!-- Error State -->
-            <div *ngIf="error" class="bg-white border border-red-200 rounded-lg p-4">
-              <div class="flex items-center gap-2 text-red-800">
-                <i class="bi bi-exclamation-triangle text-lg"></i>
-                <p class="text-sm">{{ error }}</p>
-              </div>
-            </div>
-
-            <!-- Empty State -->
-            <div *ngIf="!loading && !error && topics.length === 0" class="bg-white rounded-lg shadow-sm border border-neutral-200 text-center py-12">
-              <i class="bi bi-chat-left-text text-6xl text-neutral-300 mb-4"></i>
-              <h3 class="text-lg font-semibold text-neutral-900 mb-2">No threads yet</h3>
-              <p class="text-neutral-500 mb-4">Be the first to start a discussion!</p>
-              <button
-                (click)="navigateToCreateTopic()"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                Create First Thread
-              </button>
-            </div>
-
-            <!-- Threads List -->
-            <div *ngIf="!loading && !error && topics.length > 0" class="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
-              <div *ngFor="let topic of topics; let i = index">
-                <!-- Thread Card -->
-                <app-modern-thread-card
-                  [topic]="topic"
-                  (commentsClick)="toggleThreadExpansion($event)"
-                  (likeClick)="onThreadLike($event)"
-                  (replyClick)="onThreadReply($event)"
-                  (authorClick)="filterByAuthor($event.userId, $event.userName)"
-                ></app-modern-thread-card>
-
-                <!-- Expanded Thread Content -->
-                <app-modern-expanded-thread
-                  *ngIf="expandedThreads.has(topic.id)"
-                  [topic]="topic"
-                  [posts]="threadPosts.get(topic.id) || []"
-                  [loading]="threadLoading.has(topic.id)"
-                  [error]="threadErrors.get(topic.id) || null"
-                  [replySubmitting]="replySubmitting"
-                  [activeReplyForm]="activeReplyForm"
-                  [currentUserId]="getCurrentUserId()"
-                  (postLike)="onPostLike($event)"
-                  (replySubmit)="onReplySubmit($event)"
-                  (postDelete)="onPostDelete($event)"
-                  (retryClick)="loadThreadPosts(topic.id)"
-                  (collapseClick)="onThreadCollapse(topic.id)"
-                ></app-modern-expanded-thread>
-              </div>
-            </div>
-
-            <!-- Pagination -->
-            <div *ngIf="!loading && !error && totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
-              <button
-                (click)="previousPage()"
-                [disabled]="currentPage === 1"
-                class="px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-
-              <div class="flex items-center gap-1">
-                <button
-                  *ngFor="let page of getPageNumbers()"
-                  (click)="goToPage(page)"
-                  [class.bg-blue-600]="page === currentPage"
-                  [class.text-white]="page === currentPage"
-                  [class.hover:bg-neutral-50]="page !== currentPage"
-                  class="px-3 py-2 text-sm border border-neutral-300 rounded-md transition-colors"
-                >
-                  {{ page }}
-                </button>
-              </div>
-
-              <button
-                (click)="nextPage()"
-                [disabled]="currentPage === totalPages"
-                class="px-3 py-2 text-sm border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-          
-          <!-- Right Sidebar -->
-          <app-modern-forum-sidebar
-            [topics]="topics"
-            [popularTags]="popularTags"
-            [topUsers]="topUsers"
-            (startThreadClick)="navigateToCreateTopic()"
-            (topicClick)="onTopicClick($event)"
-            (userClick)="filterByAuthor($event.userId, $event.userName)"
-          ></app-modern-forum-sidebar>
         </div>
       </div>
-      
-      <!-- Footer component -->
+
       <app-footer></app-footer>
-      
-      <!-- Create Topic Modal -->
+
+      <!-- Shared reply form template -->
+      <ng-template #replyFormTpl let-postId="postId" let-name="name">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-medium text-neutral-500">Replying to {{ name }}</span>
+          <button (click)="closeReplyForm()" class="text-neutral-400 hover:text-neutral-600">
+            <lucide-icon [img]="xIcon" [size]="14"></lucide-icon>
+          </button>
+        </div>
+        <textarea [(ngModel)]="replyText" rows="2" placeholder="Write your reply..."
+          class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"></textarea>
+        <div class="flex gap-2 mt-2">
+          <button (click)="submitReply(postId)" [disabled]="!replyText.trim() || replySubmitting"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            <lucide-icon [img]="sendIcon" [size]="12"></lucide-icon>
+            {{ replySubmitting ? 'Posting...' : 'Reply' }}
+          </button>
+          <button (click)="closeReplyForm()" class="px-3 py-1.5 text-xs border border-neutral-200 rounded-lg hover:bg-neutral-50 bg-white transition-colors">Cancel</button>
+        </div>
+      </ng-template>
+
       <app-create-topic-modal
         [isVisible]="showCreateTopicModal"
         (submit)="onCreateTopicSubmit($event)"
-        (cancel)="onCreateTopicCancel()"
+        (cancel)="showCreateTopicModal = false"
       ></app-create-topic-modal>
+
+      <app-confirmation-modal
+        [isVisible]="showDeleteModal"
+        title="Delete Reply"
+        message="Are you sure you want to delete this reply?"
+        confirmText="Delete"
+        (confirm)="deleteReply()"
+        (cancel)="showDeleteModal = false"
+      ></app-confirmation-modal>
     </div>
   `,
   styles: []
 })
 export class ModernForumListComponent implements OnInit, OnDestroy {
-  // Component state
-  activeTab: string = 'community';
-  loading: boolean = false;
+  // List state
+  view: 'list' | 'detail' = 'list';
+  loading = false;
   error: string | null = null;
-  showTopicDropdown: boolean = false;
-  showSortDropdown: boolean = false;
-  showCreateTopicModal: boolean = false;
-  
-  // Data
+  showCreateTopicModal = false;
   topics: TopicSummaryDto[] = [];
   popularTags: TagDto[] = [];
   topUsers: TopUserDto[] = [];
-  expandedThreads: Set<string> = new Set();
-  threadPosts: Map<string, PostDto[]> = new Map();
-  threadLoading: Set<string> = new Set();
-  threadErrors: Map<string, string> = new Map();
-  replySubmitting: Set<string> = new Set();
-  activeReplyForm: string | null = null;
-  
-  // Pagination
-  currentPage: number = 1;
-  totalPages: number = 1;
-  pageSize: number = 10;
-  
-  // Filtering and Sorting
-  searchQuery: string = '';
+  totalThreadCount = 0;
+  currentPage = 1;
+  totalPages = 1;
+  pageSize = 15;
+  searchQuery = '';
   selectedAuthorId?: string;
   selectedAuthorName?: string;
-  sortBy: string = 'recent';
+  sortBy = 'recent';
   selectedTagFilter?: string;
-  
-  // Services
+
+  // Detail state
+  selectedTopicId: string | null = null;
+  selectedTopic: TopicDetailDto | null = null;
+  detailMainPost: PostDto | null = null;
+  topicLoading = false;
+  topicError: string | null = null;
+  activeReplyForm: string | null = null;
+  replyText = '';
+  replySubmitting = false;
+  showDeleteModal = false;
+  replyToDelete: string | null = null;
+
+  readonly Math = Math;
+  readonly plusIcon = Plus;
+  readonly searchIcon = Search;
+  readonly arrowLeftIcon = ArrowLeft;
+  readonly thumbsUpIcon = ThumbsUp;
+  readonly replyIcon = Reply;
+  readonly sendIcon = Send;
+  readonly lockIcon = Lock;
+  readonly pinIcon = Pin;
+  readonly trashIcon = Trash2;
+  readonly xIcon = X;
+  readonly messageIcon = MessageCircle;
+  readonly hashIcon = Hash;
+  readonly usersIcon = Users;
+  readonly chevronRightIcon = ChevronRight;
+
+  readonly sortOptions = [
+    { value: 'recent', label: 'Most Recent' },
+    { value: 'oldest', label: 'Oldest First' },
+    { value: 'popular', label: 'Most Popular' },
+    { value: 'mostdiscussed', label: 'Most Discussed' },
+  ];
+
   private authStore = inject(UserAuthStore);
   private forumService = inject(ForumService);
-  private router = inject(Router);
+  private notificationService = inject(NotificationService);
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
@@ -376,643 +647,220 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Loads topics from the API with current filters
-   */
-  loadTopics(): void {
-    this.loading = true;
-    this.error = null;
-    
-    const tags = this.selectedTagFilter ? [this.selectedTagFilter] : undefined;
-    
-    this.forumService.getTopics(
-      this.currentPage, 
-      this.pageSize, 
-      tags, 
-      this.searchQuery || undefined, 
-      this.selectedAuthorId, 
-      this.sortBy
-    )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.topics = response.items;
-          this.totalPages = response.totalPages;
-          this.loading = false;
-        },
-        error: (error) => {
-          this.error = 'Failed to load topics. Please try again.';
-          this.loading = false;
-        }
-      });
-  }
+  // ── Computed ──────────────────────────────────────────────
 
-  /**
-   * Loads popular tags
-   */
-  loadPopularTags(): void {
-    this.forumService.getPopularTags()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (tags) => {
-          this.popularTags = tags;
-        },
-        error: (error) => {
-          console.error('Failed to load popular tags:', error);
-        }
-      });
-  }
-
-  /**
-   * Loads top users
-   */
-  loadTopUsers(): void {
-    this.forumService.getTopUsers(5)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (users) => {
-          this.topUsers = users;
-        },
-        error: (error) => {
-          console.error('Failed to load top users:', error);
-        }
-      });
-  }
-
-  /**
-   * Handles tab change events
-   */
-  onTabChange(tab: string): void {
-    this.activeTab = tab;
-    // Handle different tab logic here
-  }
-
-  /**
-   * Toggles topic dropdown
-   */
-  toggleTopicDropdown(): void {
-    this.showTopicDropdown = !this.showTopicDropdown;
-  }
-
-  /**
-   * Selects a topic filter
-   */
-  selectTopic(topicName: string): void {
-    this.showTopicDropdown = false;
-    // Implement topic filtering logic
-  }
-
-  /**
-   * Toggles thread expansion
-   * Only expands if there are comments to show
-   */
-  toggleThreadExpansion(topicId: string): void {
-    const topic = this.topics.find(t => t.id === topicId);
-    
-    if (this.expandedThreads.has(topicId)) {
-      // Already expanded, collapse it
-      this.expandedThreads.delete(topicId);
-    } else {
-      // Only expand if there are comments (postCount > 1, because main post counts as 1)
-      if (topic && topic.postCount > 1) {
-        this.expandedThreads.add(topicId);
-        this.loadThreadPosts(topicId);
-      }
-      // If postCount is 0 or 1, don't expand (no replies to show)
-    }
-  }
-
-  /**
-   * Loads posts for a specific thread
-   */
-  loadThreadPosts(topicId: string): Promise<void> {
-    console.log('📥 Loading thread posts for topicId:', topicId);
-    this.threadLoading.add(topicId);
-    this.threadErrors.delete(topicId);
-    
-    return new Promise((resolve, reject) => {
-      this.forumService.getTopicPosts(topicId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (posts) => {
-            console.log('📦 Loaded posts for topicId:', topicId);
-            console.log('  Total posts:', posts.length);
-            posts.forEach((post, index) => {
-              console.log(`  Post ${index}:`, {
-                id: post.id,
-                author: `${post.author.firstName} ${post.author.lastName}`,
-                repliesCount: post.replies?.length || 0,
-                content: post.content.substring(0, 50) + '...'
-              });
-              if (post.replies && post.replies.length > 0) {
-                console.log(`    Replies (${post.replies.length}):`);
-                post.replies.forEach((reply, rIndex) => {
-                  console.log(`      Reply ${rIndex}:`, {
-                    id: reply.id,
-                    author: `${reply.author.firstName} ${reply.author.lastName}`,
-                    parentAuthor: reply.parentAuthor ? `${reply.parentAuthor.firstName} ${reply.parentAuthor.lastName}` : 'none',
-                    content: reply.content.substring(0, 30) + '...'
-                  });
-                });
-              }
-            });
-            this.threadPosts.set(topicId, posts);
-            this.threadLoading.delete(topicId);
-            resolve();
-          },
-          error: (error) => {
-            console.error('❌ Error loading posts for topicId:', topicId, error);
-            this.threadErrors.set(topicId, 'Failed to load posts');
-            this.threadLoading.delete(topicId);
-            reject(error);
-          }
-        });
-    });
-  }
-
-  /**
-   * Handles thread like events
-   * Likes the main post of the thread
-   */
-  onThreadLike(topicId: string): void {
-    console.log('👍 Liking thread:', topicId);
-    
-    // Find the topic
-    const topic = this.topics.find(t => t.id === topicId);
-    console.log('Found topic:', topic);
-    console.log('Main post ID:', topic?.mainPostId);
-    
-    if (!topic || !topic.mainPostId || topic.mainPostId === '00000000-0000-0000-0000-000000000000') {
-      console.error('❌ Cannot like: Topic has no main post yet');
-      console.error('Topic details:', {
-        id: topic?.id,
-        title: topic?.title,
-        mainPostId: topic?.mainPostId,
-        postCount: topic?.postCount
-      });
-      return;
-    }
-
-    // Store original state for rollback on error
-    const originalLikedState = topic.isMainPostLikedByCurrentUser;
-    const originalLikeCount = topic.totalLikes;
-
-    // Optimistically update UI immediately
-    topic.isMainPostLikedByCurrentUser = !topic.isMainPostLikedByCurrentUser;
-    topic.totalLikes = topic.isMainPostLikedByCurrentUser ? topic.totalLikes + 1 : topic.totalLikes - 1;
-
-    // Toggle like based on original state
-    if (originalLikedState) {
-      // Unlike
-      this.forumService.unlikePost(topic.mainPostId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            console.log('✅ Thread unliked');
-            // UI already updated optimistically
-          },
-          error: (error) => {
-            console.error('❌ Error unliking thread:', error);
-            // Rollback optimistic update
-            topic.isMainPostLikedByCurrentUser = originalLikedState;
-            topic.totalLikes = originalLikeCount;
-          }
-        });
-    } else {
-      // Like
-      this.forumService.likePost(topic.mainPostId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            console.log('✅ Thread liked');
-            // UI already updated optimistically
-          },
-          error: (error) => {
-            console.error('❌ Error liking thread:', error);
-            // Rollback optimistic update
-            topic.isMainPostLikedByCurrentUser = originalLikedState;
-            topic.totalLikes = originalLikeCount;
-          }
-        });
-    }
-  }
-
-  /**
-   * Handles thread reply events
-   * Always expands the thread and shows reply form
-   */
-  onThreadReply(topicId: string): void {
-    if (this.expandedThreads.has(topicId)) {
-      // If thread is already expanded, open reply form for first post
-      this.loadThreadPosts(topicId).then(() => {
-        const posts = this.threadPosts.get(topicId);
-        if (posts && posts.length > 0) {
-          // Open reply form for the first post (main post)
-          this.openReplyFormForPost(posts[0].id);
-        }
-      });
-    } else {
-      // Expand thread and open reply form (even if 0 replies)
-      this.expandedThreads.add(topicId);
-      this.loadThreadPosts(topicId).then(() => {
-        const posts = this.threadPosts.get(topicId);
-        if (posts && posts.length > 0) {
-          // Open reply form for the first post (main post)
-          this.openReplyFormForPost(posts[0].id);
-        }
-      });
-    }
-  }
-
-  /**
-   * Opens reply form for a specific post
-   */
-  private openReplyFormForPost(postId: string): void {
-    // This will be handled by the expanded thread component
-    // We need to emit an event to the expanded thread component
-    this.activeReplyForm = postId;
-  }
-
-  /**
-   * Handles post like events
-   */
-  onPostLike(postId: string): void {
-    console.log('👍 Liking post:', postId);
-    
-    // Find the topic this post belongs to
-    const topicId = this.getTopicIdFromPostId(postId);
-    if (!topicId) {
-      console.error('Could not find topic for post:', postId);
-      return;
-    }
-
-    const posts = this.threadPosts.get(topicId);
-    if (!posts) return;
-
-    // Find the post (could be main post or reply)
-    let targetPost: PostDto | undefined;
-    for (const post of posts) {
-      if (post.id === postId) {
-        targetPost = post;
-        break;
-      }
-      if (post.replies) {
-        targetPost = post.replies.find(r => r.id === postId);
-        if (targetPost) break;
-      }
-    }
-
-    if (!targetPost) {
-      console.error('Post not found:', postId);
-      return;
-    }
-
-    // Store original state for rollback on error
-    const originalLikedState = targetPost.isLikedByCurrentUser;
-    const originalLikeCount = targetPost.likeCount;
-
-    // Optimistically update UI immediately
-    targetPost.isLikedByCurrentUser = !targetPost.isLikedByCurrentUser;
-    targetPost.likeCount = targetPost.isLikedByCurrentUser ? targetPost.likeCount + 1 : targetPost.likeCount - 1;
-
-    // Toggle like based on original state
-    if (originalLikedState) {
-      // Unlike
-      this.forumService.unlikePost(postId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            console.log('✅ Post unliked');
-            // UI already updated optimistically
-          },
-          error: (error) => {
-            console.error('❌ Error unliking post:', error);
-            // Rollback optimistic update
-            targetPost!.isLikedByCurrentUser = originalLikedState;
-            targetPost!.likeCount = originalLikeCount;
-          }
-        });
-    } else {
-      // Like
-      this.forumService.likePost(postId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            console.log('✅ Post liked');
-            // UI already updated optimistically
-          },
-          error: (error) => {
-            console.error('❌ Error liking post:', error);
-            // Rollback optimistic update
-            targetPost!.isLikedByCurrentUser = originalLikedState;
-            targetPost!.likeCount = originalLikeCount;
-          }
-        });
-    }
-  }
-
-  /**
-   * Handles thread collapse
-   */
-  onThreadCollapse(topicId: string): void {
-    this.expandedThreads.delete(topicId);
-    this.activeReplyForm = null;
-  }
-
-  /**
-   * Handles reply submission
-   */
-  onReplySubmit(event: {postId: string, content: string}): void {
-    console.log('=== Reply Submit Event ===');
-    console.log('Replying to postId:', event.postId);
-    console.log('Content:', event.content);
-    console.log('Current threadPosts:', this.threadPosts);
-    
-    this.replySubmitting.add(event.postId);
-    
-    // Get the topicId from the expanded threads
-    const topicId = this.getTopicIdFromPostId(event.postId);
-    console.log('Found topicId:', topicId);
-    
-    if (!topicId) {
-      console.error('❌ Could not find topicId for postId:', event.postId);
-      console.error('Available topics:', Array.from(this.threadPosts.keys()));
-      this.replySubmitting.delete(event.postId);
-      return;
-    }
-    
-    console.log('✅ Creating reply in topic:', topicId);
-    
-    this.forumService.createReply(topicId, event.postId, event.content)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (reply) => {
-          console.log('Reply created successfully:', reply);
-          this.replySubmitting.delete(event.postId);
-          // Close the reply form
-          this.activeReplyForm = null;
-          // Refresh thread posts
-          this.loadThreadPosts(topicId);
-        },
-        error: (error) => {
-          console.error('Error creating reply:', error);
-          this.replySubmitting.delete(event.postId);
-          // Handle error
-        }
-      });
-  }
-
-  /**
-   * Handles topic click from sidebar
-   */
-  onTopicClick(topicName: string): void {
-    this.filterByTag(topicName);
-  }
-
-  /**
-   * Navigates to create topic page
-   */
-  navigateToCreateTopic(): void {
-    this.showCreateTopicModal = true;
-  }
-
-  /**
-   * Handles create topic modal submission
-   */
-  onCreateTopicSubmit(request: CreateTopicRequest): void {
-    this.forumService.createTopic(request)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (topic) => {
-          console.log('Topic created successfully:', topic);
-          this.showCreateTopicModal = false;
-          // Refresh topics list
-          this.loadTopics();
-        },
-        error: (error) => {
-          console.error('Error creating topic:', error);
-          // Handle error - could show a toast notification
-        }
-      });
-  }
-
-  /**
-   * Handles create topic modal cancellation
-   */
-  onCreateTopicCancel(): void {
-    this.showCreateTopicModal = false;
-  }
-
-  /**
-   * Gets the current user ID from auth store
-   */
-  getCurrentUserId(): string {
-    const user = this.authStore.currentUser;
-    return user?.id || '';
-  }
-
-  /**
-   * Handles post deletion
-   */
-  onPostDelete(postId: string): void {
-    this.forumService.deleteOwnPost(postId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          console.log('✅ Post deleted successfully');
-          // Find which topic this post belongs to
-          let topicId: string | null = null;
-          for (const [tid, posts] of this.threadPosts.entries()) {
-            const hasPost = posts.some(p => p.id === postId || p.replies?.some(r => r.id === postId));
-            if (hasPost) {
-              topicId = tid;
-              break;
-            }
-          }
-          
-          if (topicId) {
-            // Try to reload the thread
-            this.loadThreadPosts(topicId).catch(() => {
-              // If reload fails (e.g., main post was deleted), close the thread and reload topics
-              console.log('Thread no longer valid, reloading topics list');
-              this.expandedThreads.delete(topicId!);
-              this.threadPosts.delete(topicId!);
-              this.loadTopics();
-            });
-          }
-        },
-        error: (error) => {
-          console.error('❌ Error deleting post:', error);
-          alert('Failed to delete post. Please try again.');
-        }
-      });
-  }
-
-  /**
-   * Gets topic ID from post ID (helper method)
-   * Searches both top-level posts and nested replies
-   */
-  private getTopicIdFromPostId(postId: string): string | null {
-    console.log('🔍 Searching for postId:', postId);
-    
-    for (const [topicId, posts] of this.threadPosts.entries()) {
-      console.log(`  Checking topic ${topicId} with ${posts.length} posts`);
-      
-      // Check top-level posts (main post)
-      const mainPostMatch = posts.find(post => post.id === postId);
-      if (mainPostMatch) {
-        console.log('  ✅ Found in main posts');
-        return topicId;
-      }
-      
-      // Check nested replies (all replies are in the first post's replies array)
-      for (const post of posts) {
-        console.log(`    Post ${post.id} has ${post.replies?.length || 0} replies`);
-        if (post.replies && post.replies.length > 0) {
-          const replyMatch = post.replies.find(reply => reply.id === postId);
-          if (replyMatch) {
-            console.log('    ✅ Found in replies');
-            return topicId;
-          }
-        }
-      }
-    }
-    
-    console.log('  ❌ Not found in any topic');
-    return null;
-  }
-
-  /**
-   * Gets page numbers for pagination
-   */
-  getPageNumbers(): number[] {
+  get pageNumbers(): number[] {
     const pages: number[] = [];
     const start = Math.max(1, this.currentPage - 2);
     const end = Math.min(this.totalPages, this.currentPage + 2);
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
+    for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   }
 
-  /**
-   * Goes to a specific page
-   */
-  goToPage(page: number): void {
-    this.currentPage = page;
-    this.loadTopics();
-  }
-
-  /**
-   * Goes to previous page
-   */
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
+  get detailAllReplies(): PostDto[] {
+    if (!this.detailMainPost) return [];
+    const flat: PostDto[] = [];
+    for (const r of this.detailMainPost.replies) {
+      flat.push(r);
+      if (r.replies?.length) flat.push(...r.replies);
     }
+    return flat;
   }
 
-  /**
-   * Goes to next page
-   */
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.goToPage(this.currentPage + 1);
-    }
+  get detailDirectReplies(): PostDto[] {
+    if (!this.detailMainPost) return [];
+    const nestedIds = new Set(
+      this.detailMainPost.replies.flatMap(r => (r.replies ?? []).map(n => n.id))
+    );
+    return this.detailMainPost.replies.filter(r => !nestedIds.has(r.id));
   }
 
-  /**
-   * Handles search input
-   */
-  onSearch(): void {
-    this.currentPage = 1;
-    this.loadTopics();
+  getNestedReplies(parentId: string): PostDto[] {
+    if (!this.detailMainPost) return [];
+    const parent = this.detailMainPost.replies.find(r => r.id === parentId);
+    const fromParent = parent?.replies ?? [];
+    const fromFlat = this.detailMainPost.replies.filter(r => r.parentPostId === parentId);
+    const seen = new Set(fromParent.map(r => r.id));
+    return [...fromParent, ...fromFlat.filter(r => !seen.has(r.id))];
   }
 
-  /**
-   * Clears search query
-   */
-  clearSearch(): void {
-    this.searchQuery = '';
-    this.currentPage = 1;
-    this.loadTopics();
+  // ── List actions ──────────────────────────────────────────
+
+  loadTopics(): void {
+    this.loading = true;
+    this.error = null;
+    const tags = this.selectedTagFilter ? [this.selectedTagFilter] : undefined;
+    this.forumService.getTopics(this.currentPage, this.pageSize, tags, this.searchQuery || undefined, this.selectedAuthorId, this.sortBy)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => { this.topics = res.items; this.totalPages = res.totalPages; this.totalThreadCount = res.totalCount; this.loading = false; },
+        error: () => { this.error = 'Failed to load topics.'; this.loading = false; }
+      });
   }
 
-  /**
-   * Handles sort change
-   */
-  onSortChange(sortBy: string): void {
-    this.sortBy = sortBy;
-    this.currentPage = 1;
-    this.loadTopics();
+  loadPopularTags(): void {
+    this.forumService.getPopularTags(20).pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (tags) => { this.popularTags = tags; } });
   }
 
-  /**
-   * Filters by author (when clicking on a user)
-   */
-  filterByAuthor(userId: string, userName: string): void {
-    this.selectedAuthorId = userId;
-    this.selectedAuthorName = userName;
-    this.currentPage = 1;
-    this.loadTopics();
+  loadTopUsers(): void {
+    this.forumService.getTopUsers(5).pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (users) => { this.topUsers = users; } });
   }
 
-  /**
-   * Clears author filter
-   */
-  clearAuthorFilter(): void {
-    this.selectedAuthorId = undefined;
-    this.selectedAuthorName = undefined;
-    this.currentPage = 1;
-    this.loadTopics();
+  onSearch(): void { this.currentPage = 1; this.loadTopics(); }
+  clearSearch(): void { this.searchQuery = ''; this.currentPage = 1; this.loadTopics(); }
+  onSortChange(s: string): void { this.sortBy = s; this.currentPage = 1; this.loadTopics(); }
+  filterByTag(tag: string): void { this.selectedTagFilter = tag; this.currentPage = 1; this.loadTopics(); }
+  clearTagFilter(): void { this.selectedTagFilter = undefined; this.currentPage = 1; this.loadTopics(); }
+  filterByAuthor(userId: string, name: string): void { this.selectedAuthorId = userId; this.selectedAuthorName = name; this.currentPage = 1; this.loadTopics(); }
+  clearAuthorFilter(): void { this.selectedAuthorId = undefined; this.selectedAuthorName = undefined; this.currentPage = 1; this.loadTopics(); }
+  clearAllFilters(): void { this.searchQuery = ''; this.selectedAuthorId = undefined; this.selectedAuthorName = undefined; this.selectedTagFilter = undefined; this.sortBy = 'recent'; this.currentPage = 1; this.loadTopics(); }
+  goToPage(page: number): void { this.currentPage = page; this.loadTopics(); }
+  previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  nextPage(): void { if (this.currentPage < this.totalPages) this.goToPage(this.currentPage + 1); }
+
+  onThreadLike(topicId: string): void {
+    const topic = this.topics.find(t => t.id === topicId);
+    if (!topic || !topic.mainPostId || topic.mainPostId === '00000000-0000-0000-0000-000000000000') return;
+    const wasLiked = topic.isMainPostLikedByCurrentUser;
+    topic.isMainPostLikedByCurrentUser = !wasLiked;
+    topic.totalLikes += wasLiked ? -1 : 1;
+    const action$ = wasLiked ? this.forumService.unlikePost(topic.mainPostId) : this.forumService.likePost(topic.mainPostId);
+    action$.pipe(takeUntil(this.destroy$)).subscribe({
+      error: () => { topic.isMainPostLikedByCurrentUser = wasLiked; topic.totalLikes += wasLiked ? 1 : -1; }
+    });
   }
 
-  /**
-   * Filters by tag
-   */
-  filterByTag(tagName: string): void {
-    this.selectedTagFilter = tagName;
-    this.currentPage = 1;
-    this.loadTopics();
+  onCreateTopicSubmit(request: CreateTopicRequest): void {
+    this.forumService.createTopic(request).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (created) => {
+        this.showCreateTopicModal = false;
+        this.notificationService.showSuccess('Created', 'Your thread has been posted');
+        this.openThread(created.id);
+      },
+      error: () => {
+        this.showCreateTopicModal = false;
+        this.notificationService.showError('Error', 'Failed to create topic.');
+      }
+    });
   }
 
-  /**
-   * Clears tag filter
-   */
-  clearTagFilter(): void {
-    this.selectedTagFilter = undefined;
-    this.currentPage = 1;
-    this.loadTopics();
+  // ── Detail actions ────────────────────────────────────────
+
+  openThread(topicId: string): void {
+    this.view = 'detail';
+    this.selectedTopicId = topicId;
+    this.topicLoading = true;
+    this.topicError = null;
+    this.selectedTopic = null;
+    this.detailMainPost = null;
+    this.activeReplyForm = null;
+    this.replyText = '';
+    this.forumService.getTopicById(topicId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (topic) => {
+        this.selectedTopic = topic;
+        this.detailMainPost = topic.posts[0] ?? null;
+        this.topicLoading = false;
+      },
+      error: () => { this.topicError = 'Could not load this thread.'; this.topicLoading = false; }
+    });
   }
 
-  /**
-   * Clears all filters
-   */
-  clearAllFilters(): void {
-    this.searchQuery = '';
-    this.selectedAuthorId = undefined;
-    this.selectedAuthorName = undefined;
-    this.selectedTagFilter = undefined;
-    this.sortBy = 'recent';
-    this.currentPage = 1;
-    this.loadTopics();
+  retryLoadThread(): void {
+    if (this.selectedTopicId) this.openThread(this.selectedTopicId);
   }
 
-  /**
-   * Gets the label for the current sort option
-   */
-  getSortLabel(): string {
-    switch (this.sortBy) {
-      case 'oldest':
-        return 'Oldest First';
-      case 'popular':
-        return 'Most Popular';
-      case 'mostdiscussed':
-        return 'Most Discussed';
-      default:
-        return 'Most Recent';
-    }
+  backToList(): void {
+    this.view = 'list';
+    this.selectedTopic = null;
+    this.detailMainPost = null;
+    this.selectedTopicId = null;
+    this.activeReplyForm = null;
+    this.replyText = '';
+  }
+
+  openReplyForm(postId: string): void { this.activeReplyForm = postId; this.replyText = ''; }
+  closeReplyForm(): void { this.activeReplyForm = null; this.replyText = ''; }
+
+  submitReply(postId: string): void {
+    if (!this.replyText.trim() || !this.selectedTopic || !this.detailMainPost) return;
+    this.replySubmitting = true;
+    this.forumService.createReply(this.selectedTopic.id, postId, this.replyText)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (newPost) => {
+          this.replySubmitting = false;
+          this.replyText = '';
+          this.activeReplyForm = null;
+          if (postId === this.detailMainPost!.id) {
+            this.detailMainPost!.replies.push(newPost);
+          } else {
+            const parent = this.detailMainPost!.replies.find(r => r.id === postId);
+            if (parent) { parent.replies = parent.replies ?? []; parent.replies.push(newPost); }
+            else { this.detailMainPost!.replies.push(newPost); }
+          }
+        },
+        error: () => { this.replySubmitting = false; this.notificationService.showError('Error', 'Failed to post reply.'); }
+      });
+  }
+
+  togglePostLike(post: PostDto): void {
+    const wasLiked = post.isLikedByCurrentUser;
+    post.isLikedByCurrentUser = !wasLiked;
+    post.likeCount += wasLiked ? -1 : 1;
+    const action$ = wasLiked ? this.forumService.unlikePost(post.id) : this.forumService.likePost(post.id);
+    action$.pipe(takeUntil(this.destroy$)).subscribe({
+      error: () => { post.isLikedByCurrentUser = wasLiked; post.likeCount += wasLiked ? 1 : -1; }
+    });
+  }
+
+  confirmDeleteReply(postId: string): void { this.replyToDelete = postId; this.showDeleteModal = true; }
+
+  deleteReply(): void {
+    if (!this.replyToDelete || !this.detailMainPost) return;
+    const id = this.replyToDelete;
+    this.forumService.deleteOwnPost(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.showDeleteModal = false;
+        this.replyToDelete = null;
+        this.detailMainPost!.replies = this.detailMainPost!.replies.filter(r => r.id !== id);
+        for (const r of this.detailMainPost!.replies) {
+          if (r.replies?.length) r.replies = r.replies.filter(n => n.id !== id);
+        }
+      },
+      error: () => { this.showDeleteModal = false; this.notificationService.showError('Error', 'Failed to delete reply.'); }
+    });
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+
+  fullName(a: { firstName: string; lastName: string }): string {
+    return `${a.firstName} ${a.lastName}`;
+  }
+
+  initials(a: { firstName: string; lastName: string }): string {
+    return (a.firstName.charAt(0) + a.lastName.charAt(0)).toUpperCase();
+  }
+
+  isPlaceholder(url: string): boolean {
+    return url.includes('lucide') || url.includes('placeholder') || url.includes('default');
+  }
+
+  isCurrentUser(userId: string): boolean {
+    return this.authStore.currentUser?.id === userId;
+  }
+
+  timeAgo(date: Date | string): string {
+    const d = new Date(date);
+    const diffMs = Date.now() - d.getTime();
+    const m = Math.floor(diffMs / 60000);
+    const h = Math.floor(m / 60);
+    const days = Math.floor(h / 24);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    if (h < 24) return `${h}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return d.toLocaleDateString();
   }
 }

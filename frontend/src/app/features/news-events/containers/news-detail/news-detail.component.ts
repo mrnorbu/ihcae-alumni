@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Calendar, User, Eye, Share2, Newspaper } from 'lucide-angular';
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
@@ -15,7 +15,7 @@ import type { NewsArticle } from '../../models';
 @Component({
   selector: 'app-news-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>

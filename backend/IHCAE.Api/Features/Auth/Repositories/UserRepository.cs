@@ -161,7 +161,7 @@ public class UserRepository : IUserRepository
     public async Task<(IEnumerable<User> Users, int TotalCount)> GetApprovedAlumniAsync(
         string? searchTerm = null,
         string? course = null,
-        int? graduationYear = null,
+        string? batch = null,
         int page = 1,
         int pageSize = 20)
     {
@@ -192,10 +192,10 @@ public class UserRepository : IUserRepository
         }
 
         // Apply graduation year filter
-        if (graduationYear.HasValue)
+        if (batch != null)
         {
             query = query.Where(u => u.AlumniProfile != null && 
-                                   u.AlumniProfile.GraduationYear == graduationYear.Value);
+                                   u.AlumniProfile.Batch == batch);
         }
 
         // Get total count before pagination

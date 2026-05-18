@@ -16,16 +16,19 @@ public class AlumniImportService : IAlumniImportService
 {
     private readonly AppDbContext _context;
     private readonly ILogger<AlumniImportService> _logger;
+    private readonly IHCAE.Api.Shared.Services.IEmailService _emailService;
 
     /// <summary>
     /// Initializes a new instance of the AlumniImportService.
     /// </summary>
     /// <param name="context">The database context</param>
     /// <param name="logger">Logger for import operations</param>
-    public AlumniImportService(AppDbContext context, ILogger<AlumniImportService> logger)
+    /// <param name="emailService">Email service</param>
+    public AlumniImportService(AppDbContext context, ILogger<AlumniImportService> logger, IHCAE.Api.Shared.Services.IEmailService emailService)
     {
         _context = context;
         _logger = logger;
+        _emailService = emailService;
     }
 
     /// <summary>
@@ -47,7 +50,7 @@ public class AlumniImportService : IAlumniImportService
         var headers = lines[0].Split(',').Select(h => h.Trim().ToLower()).ToArray();
         result.TotalRecords = lines.Length - 1; // Exclude header
 
-        // Expected CSV format: FirstName,LastName,Email,Course,GraduationYear,Phone,Location
+        // Expected CSV format: FirstName,LastName,Email,Course,Batch,Phone,Location
         var firstNameIndex = Array.IndexOf(headers, "firstname");
         var lastNameIndex = Array.IndexOf(headers, "lastname");
         var emailIndex = Array.IndexOf(headers, "email");
@@ -59,7 +62,7 @@ public class AlumniImportService : IAlumniImportService
         }
 
         var courseIndex = Array.IndexOf(headers, "course");
-        var yearIndex = Array.IndexOf(headers, "graduationyear");
+        var yearIndex = Array.IndexOf(headers, "batch");
         var phoneIndex = Array.IndexOf(headers, "phone");
         var locationIndex = Array.IndexOf(headers, "location");
 
@@ -105,7 +108,7 @@ public class AlumniImportService : IAlumniImportService
                     LastName = lastName,
                     Email = email,
                     Course = courseIndex >= 0 && courseIndex < values.Length ? values[courseIndex]?.Trim() : null,
-                    GraduationYear = yearIndex >= 0 && yearIndex < values.Length && int.TryParse(values[yearIndex]?.Trim(), out var year) ? year : null,
+                    Batch = yearIndex >= 0 && yearIndex < values.Length ? values[yearIndex]?.Trim() : null,
                     Phone = phoneIndex >= 0 && phoneIndex < values.Length ? values[phoneIndex]?.Trim() : null,
                     Location = locationIndex >= 0 && locationIndex < values.Length ? values[locationIndex]?.Trim() : null,
                     ImportedAt = DateTime.UtcNow
@@ -256,5 +259,154 @@ public class AlumniImportService : IAlumniImportService
 
         return result.ToArray();
     }
-}
+    /// <summary>
+    /// Updates multiple alumni database records at once.
+    /// </summary>
+    /// <param name="records">The list of updated records</param>
+    public async Task UpdateAlumniRecordsAsync(IEnumerable<AlumniDatabaseDto> records)
+    {
+        foreach (var record in records)
+        {
+            var existing = await _context.AlumniDatabase.FindAsync(record.Id);
+            if (existing != null)
+            {
+                existing.FirstName = record.FirstName;
+                existing.LastName = record.LastName;
+                existing.Email = record.Email.ToLower();
+                existing.Course = record.Course;
+                existing.Batch = record.Batch;
+                existing.Phone = record.Phone;
+                existing.Location = record.Location;
+            }
+        }
+        await _context.SaveChangesAsync();
+    }
 
+    /// <summary>
+    /// Generates user accounts for the specified alumni records.
+    /// </summary>
+    /// <param name="alumniIds">The list of alumni IDs</param>
+    /// <returns>The number of accounts generated</returns>
+    public async Task<int> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds)
+    {
+        int generatedCount = 0;
+        
+        
+        foreach (var id in alumniIds)
+        {
+            var alumni = await _context.AlumniDatabase.FindAsync(id);
+            if (alumni == null || alumni.MatchedUserId != null) continue;
+
+            // Check if user already exists
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == alumni.Email);
+            if (existingUser != null)
+            {
+                // Just link it
+                alumni.MatchedUserId = existingUser.Id;
+                continue;
+            }
+
+            // Create User
+            var user = new IHCAE.Api.Features.Auth.Models.Entities.User
+            {
+                Id = Guid.NewGuid(),
+                FirstName = alumni.FirstName,
+                LastName = alumni.LastName,
+                Email = alumni.Email,
+                // Assign a temporary unguessable password hash, they will set it via the setup link
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString(), 12),
+                Status = IHCAE.Api.Features.Auth.Models.Entities.UserStatus.Approved,
+                EmailVerified = true, // Consider verified since admin imported
+                IsBanned = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+
+            // Create AlumniProfile
+            var profile = new IHCAE.Api.Features.Auth.Models.Entities.AlumniProfile
+            {
+                UserId = user.Id,
+                Course = alumni.Course,
+                Batch = alumni.Batch,
+                
+                Location = alumni.Location,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            _context.AlumniProfiles.Add(profile);
+            
+            // Assign Alumni role
+            var alumniRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Alumni");
+            if (alumniRole != null)
+            {
+                _context.UserRoles.Add(new IHCAE.Api.Shared.Models.UserRole
+                {
+                    UserId = user.Id,
+                    RoleId = alumniRole.Id
+                });
+            }
+
+            alumni.MatchedUserId = user.Id;
+
+            // Generate Setup Token (Password Reset Token)
+            var token = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+            var tokenHash = Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
+
+            var resetToken = new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                TokenHash = tokenHash,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7), // Give them 7 days to setup
+                IsUsed = false
+            };
+
+            _context.PasswordResetTokens.Add(resetToken);
+            
+            await _context.SaveChangesAsync();
+
+            // Send Setup Email
+            if (_emailService != null)
+            {
+                var setupUrl = $"http://localhost:4200/reset-password?token={Uri.EscapeDataString(token)}&setup=true";
+                var emailBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #059669, #047857); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .button {{ display: inline-block; background: #059669; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🏔️ Welcome to IHCAE Alumni Network</h1>
+            <p>Your Account is Ready</p>
+        </div>
+        <div class='content'>
+            <h2>Hello {user.FirstName},</h2>
+            <p>We are excited to invite you to the new IHCAE Alumni Network!</p>
+            <p>An account has been created for you using your past enrollment records. To claim your account and join the community, please click the button below to set up your password:</p>
+            <div style='text-align: center;'>
+                <a href='{setupUrl}' class='button'>Claim My Account</a>
+            </div>
+            <p>This link will expire in 7 days.</p>
+        </div>
+    </div>
+</body>
+</html>";
+                await _emailService.SendEmailAsync(user.Email, "Welcome to IHCAE Alumni Network - Claim Your Account", emailBody);
+            }
+
+            generatedCount++;
+        }
+
+        return generatedCount;
+    }
+}

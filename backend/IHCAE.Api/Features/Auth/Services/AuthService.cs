@@ -100,7 +100,7 @@ public class AuthService : IAuthService
         {
             UserId = createdUser.Id,
             Course = matchingAlumni?.Course,
-            GraduationYear = matchingAlumni?.GraduationYear,
+            Batch = matchingAlumni?.Batch,
             CreatedAt = DateTime.UtcNow
         };
 

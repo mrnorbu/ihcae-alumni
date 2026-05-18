@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IHCAE Operations Command Center | Prototype</title>
+    <meta
+      name="description"
+      content="IHCAE operations dashboard prototype focused on batch readiness, admissions, hostel, equipment, safety, payments, and certificates."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="admin-page">
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <a class="admin-brand" href="admin-dashboard.html">
+          <img class="admin-brand-mark" src="logo.png" alt="IHCAE Sikkim emblem" />
+          <span>
+            <strong>IHCAE Console</strong>
+            <small>Batch operations</small>
+          </span>
+        </a>
+
+        <nav class="admin-nav" aria-label="Admin navigation">
+          <a class="active" href="admin-dashboard.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14v15H5z" /></svg>
+            <span>Today</span>
+          </a>
+          <a href="admin-applications.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6l1 2h3v14H5V6h3zM8 11h8M8 15h5" /></svg>
+            <span>Applications</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M6 12h12M8 17h8" /></svg>
+            <span>Batches</span>
+          </a>
+          <a href="admin-brochure.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16H6zM9 4v16M15 4v16M6 9h12M6 15h12" /></svg>
+            <span>Brochures</span>
+          </a>
+          <a href="admin-media.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h3l2-2h4l2 2h3v12H5zM9 14a3 3 0 1 0 6 0 3 3 0 0 0-6 0z" /></svg>
+            <span>Media QR</span>
+          </a>
+          <a href="admin-hostel.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16v7M4 19V8h6a4 4 0 0 1 4 4M4 15h16" /></svg>
+            <span>Hostel</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8l7-4 7 4v8l-7 4-7-4zM5 8l7 4 7-4M12 12v8" /></svg>
+            <span>Equipment</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6zM9 12l2 2 4-5" /></svg>
+            <span>Safety</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v16l-5-3-5 3zM9 8h6M9 12h4" /></svg>
+            <span>Certificates</span>
+          </a>
+          <a href="admin-reports.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V5M9 19v-7M14 19V8M19 19v-4M4 19h17" /></svg>
+            <span>Reports</span>
+          </a>
+          <a href="index.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></svg>
+            <span>Public Site</span>
+          </a>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-topbar ops-topbar">
+          <div>
+            <h1>Operations</h1>
+            <p>AMC Summer 2026 starts in 5 days · 4 items blocking</p>
+          </div>
+          <div class="admin-topbar-actions">
+            <select class="admin-select" aria-label="Select operating season">
+              <option>Summer 2026</option>
+              <option>Winter 2026</option>
+              <option>All active batches</option>
+            </select>
+            <input
+              class="admin-search"
+              type="search"
+              placeholder="Search applicant, batch, room, gear ID..."
+              aria-label="Search operations"
+            />
+          </div>
+        </header>
+
+        <section class="ops-summary" aria-label="Batch operations summary">
+          <article>
+            <div class="summary-card-head">
+              <span class="summary-icon summary-blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4 9h16M5 5h14v15H5z"/></svg>
+              </span>
+              <strong>Upcoming batches</strong>
+            </div>
+            <span class="summary-value">3</span>
+            <p><em>Next 30 days</em> need readiness review</p>
+          </article>
+          <article>
+            <div class="summary-card-head">
+              <span class="summary-icon summary-lime" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 4h6l1 2h3v14H5V6h3zM8 11h8M8 15h5"/></svg>
+              </span>
+              <strong>Applications</strong>
+            </div>
+            <span class="summary-value">42</span>
+            <p><em>18 documents</em> waiting for staff check</p>
+          </article>
+          <article>
+            <div class="summary-card-head">
+              <span class="summary-icon summary-gold" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 12h16v7M4 19V8h6a4 4 0 0 1 4 4M4 15h16"/></svg>
+              </span>
+              <strong>Hostel beds</strong>
+            </div>
+            <span class="summary-value">18</span>
+            <p><em>Before Friday</em> for AMC Summer</p>
+          </article>
+          <article>
+            <div class="summary-card-head">
+              <span class="summary-icon summary-violet" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M5 8l7-4 7 4v8l-7 4-7-4zM5 8l7 4 7-4M12 12v8"/></svg>
+              </span>
+              <strong>Gear issue</strong>
+            </div>
+            <span class="summary-value">27</span>
+            <p><em>Pending items</em> for equipment store</p>
+          </article>
+        </section>
+
+        <section class="ops-layout">
+          <article class="admin-panel batch-readiness-panel">
+            <div class="admin-panel-head">
+              <div>
+                <h2>Upcoming Batch Readiness</h2>
+                <p>Admissions, payments, hostel, equipment, instructors, and safety in one view.</p>
+              </div>
+              <div class="admin-chip-row">
+                <button class="admin-chip active" type="button">Needs action</button>
+                <button class="admin-chip" type="button">All batches</button>
+              </div>
+            </div>
+
+            <div class="batch-list" aria-label="Batch readiness list">
+              <details class="batch-card" open>
+                <summary>
+                  <span class="batch-summary-main">
+                    <strong>AMC Summer 2026</strong>
+                    <small>Starts 02 Jun · Advanced Mountaineering</small>
+                  </span>
+                  <span class="batch-alerts">
+                    <span class="status-pill status-green">28 / 32 seats</span>
+                    <span class="status-pill status-amber">9 unpaid</span>
+                    <span class="status-pill status-amber">12 docs</span>
+                  </span>
+                  <span class="batch-toggle">Details</span>
+                </summary>
+                <div class="batch-detail-grid">
+                  <div><span>Roster</span><strong>28 of 32 confirmed</strong></div>
+                  <div><span>Payments</span><strong>9 unpaid after approval</strong></div>
+                  <div><span>Medical</span><strong>12 documents to check</strong></div>
+                  <div><span>Hostel</span><strong>18 beds pending</strong></div>
+                  <div><span>Gear</span><strong>27 items to issue</strong></div>
+                  <div><span>Safety</span><strong>Briefing not scheduled</strong></div>
+                </div>
+                <a class="batch-open" href="#">Open batch workspace</a>
+              </details>
+
+              <details class="batch-card">
+                <summary>
+                  <span class="batch-summary-main">
+                    <strong>BMC Batch 06</strong>
+                    <small>Starts 18 May · Basic Mountaineering</small>
+                  </span>
+                  <span class="batch-alerts">
+                    <span class="status-pill status-green">46 / 48 seats</span>
+                    <span class="status-pill status-green">Payments clear</span>
+                    <span class="status-pill status-amber">5 docs</span>
+                  </span>
+                  <span class="batch-toggle">Details</span>
+                </summary>
+                <div class="batch-detail-grid">
+                  <div><span>Roster</span><strong>46 of 48 confirmed</strong></div>
+                  <div><span>Payments</span><strong>Clear</strong></div>
+                  <div><span>Medical</span><strong>5 documents to check</strong></div>
+                  <div><span>Hostel</span><strong>Allocated</strong></div>
+                  <div><span>Gear</span><strong>8 items to issue</strong></div>
+                  <div><span>Safety</span><strong>Briefing scheduled</strong></div>
+                </div>
+                <a class="batch-open" href="#">Open batch workspace</a>
+              </details>
+
+              <details class="batch-card">
+                <summary>
+                  <span class="batch-summary-main">
+                    <strong>Skiing Winter Prep</strong>
+                    <small>Starts 12 Dec · Seasonal training</small>
+                  </span>
+                  <span class="batch-alerts">
+                    <span class="status-pill status-amber">18 / 30 seats</span>
+                    <span class="status-pill status-amber">6 pending</span>
+                    <span class="status-pill status-green">Gear ready</span>
+                  </span>
+                  <span class="batch-toggle">Details</span>
+                </summary>
+                <div class="batch-detail-grid">
+                  <div><span>Roster</span><strong>18 of 30 confirmed</strong></div>
+                  <div><span>Payments</span><strong>6 pending</strong></div>
+                  <div><span>Medical</span><strong>Clear</strong></div>
+                  <div><span>Hostel</span><strong>Not required</strong></div>
+                  <div><span>Gear</span><strong>Ready</strong></div>
+                  <div><span>Safety</span><strong>Winter SOP attached</strong></div>
+                </div>
+                <a class="batch-open" href="#">Open batch workspace</a>
+              </details>
+            </div>
+          </article>
+
+          <aside class="admin-panel today-panel">
+            <div class="admin-panel-head">
+              <div>
+                <h2>Today’s Work</h2>
+                <p>Plain-language tasks for staff.</p>
+              </div>
+            </div>
+            <div class="admin-task-list">
+              <label><input type="checkbox" /> Check 12 medical documents for AMC Summer</label>
+              <label><input type="checkbox" /> Confirm 18 hostel beds before Friday</label>
+              <label><input type="checkbox" /> Issue gear list to equipment store</label>
+              <label><input type="checkbox" /> Follow up on 9 unpaid applications</label>
+              <label><input type="checkbox" /> Schedule safety briefing for BMC-06</label>
+            </div>
+          </aside>
+        </section>
+
+        <section class="ops-blockers" aria-label="Items blocking upcoming batches">
+          <header class="ops-blockers-head">
+            <h2>Blockers</h2>
+            <p>Items that will hold up an upcoming batch if not cleared.</p>
+          </header>
+          <div class="blocker-list">
+            <article class="blocker-card blocker-red">
+              <span class="blocker-tag">AMC Summer 2026</span>
+              <strong>Safety briefing not scheduled</strong>
+              <p>Required before 28 May · 5 days remaining.</p>
+              <a href="#">Schedule briefing</a>
+            </article>
+            <article class="blocker-card blocker-amber">
+              <span class="blocker-tag">AMC Summer 2026</span>
+              <strong>9 applications unpaid after approval</strong>
+              <p>Risk of seat release if not paid by 25 May.</p>
+              <a href="admin-applications.html">Open queue</a>
+            </article>
+            <article class="blocker-card blocker-amber">
+              <span class="blocker-tag">Equipment</span>
+              <strong>11 gear returns overdue</strong>
+              <p>From BMC Batch 05 · follow up with 4 trainees.</p>
+              <a href="#">Open returns</a>
+            </article>
+            <article class="blocker-card blocker-amber">
+              <span class="blocker-tag">Certificates</span>
+              <strong>64 awaiting attendance clearance</strong>
+              <p>BMC Batch 05 cohort · attendance lock pending.</p>
+              <a href="#">Review</a>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -83,7 +83,7 @@ public interface IUserRepository
     Task<(IEnumerable<User> Users, int TotalCount)> GetApprovedAlumniAsync(
         string? searchTerm = null,
         string? course = null,
-        int? graduationYear = null,
+        string? batch = null,
         int page = 1,
         int pageSize = 20);
 

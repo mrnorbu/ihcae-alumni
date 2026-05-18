@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Features.Auth.Repositories;
@@ -96,18 +97,33 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // CORS Configuration
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
+    ?? new[] { "http://localhost:4200" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") // Angular dev server
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
+// Forwarded Headers Configuration (for Nginx)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Trust the local loopback (Nginx)
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+// Forwarded headers must be the VERY first middleware
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -137,8 +153,17 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try
     {
-        context.Database.EnsureCreated();
-        Log.Information("Database connection verified successfully");
+        if (app.Environment.IsEnvironment("Testing"))
+        {
+            context.Database.EnsureDeleted();
+            context.Database.Migrate();
+            Log.Information("Test database migrated successfully");
+        }
+        else
+        {
+            context.Database.EnsureCreated();
+            Log.Information("Database connection verified successfully");
+        }
     }
     catch (Exception ex)
     {
@@ -161,3 +186,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+public partial class Program { }

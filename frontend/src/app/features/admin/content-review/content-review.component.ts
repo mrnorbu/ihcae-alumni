@@ -1,320 +1,240 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, LayoutDashboard, Users, FileText, MessageSquare, Calendar, Newspaper, CheckCircle, XCircle, Eye, Clock, User as UserIcon, LogOut } from 'lucide-angular';
+import { LucideAngularModule, Calendar, Newspaper, CheckCircle, XCircle, Eye, Clock, User as UserIcon } from 'lucide-angular';
 import { NewsService } from '../../news-events/services/news.service';
 import { EventsService } from '../../news-events/services/events.service';
-import { UserAuthStore } from '../../../core/state/user-auth.store';
-import { AuthService } from '../../auth/services/auth.service';
 import type { NewsArticleSummary, EventSummary } from '../../news-events/models';
 
-/**
- * Admin Content Review Component
- * 
- * Allows admins to review and approve/reject pending news articles and events.
- */
 @Component({
   selector: 'app-content-review',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule],
+  imports: [FormsModule, LucideAngularModule],
   template: `
-    <div class="min-h-screen bg-neutral-50">
-      <!-- Compact Sidebar -->
-      <aside class="sidebar">
-        <div class="p-6 border-b border-neutral-200">
-          <h2 class="text-xl font-bold text-neutral-900">Admin Panel</h2>
+    <div class="p-4 sm:p-6 space-y-4">
+
+      <!-- Header -->
+      <div>
+        <h1 class="text-lg font-bold text-neutral-900">Content Review</h1>
+        <p class="text-xs text-neutral-500">Review and approve pending news articles and events</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white border border-neutral-200 rounded-xl">
+        <div class="border-b border-neutral-200">
+          <nav class="flex gap-6 px-4">
+            <button
+              (click)="setActiveTab('news')"
+              class="py-3 border-b-2 text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors"
+              [class.border-neutral-900]="activeTab() === 'news'"
+              [class.text-neutral-900]="activeTab() === 'news'"
+              [class.border-transparent]="activeTab() !== 'news'"
+              [class.text-neutral-400]="activeTab() !== 'news'"
+              [class.hover:text-neutral-600]="activeTab() !== 'news'">
+              <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
+              News
+              <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                [class.bg-neutral-900]="activeTab() === 'news'"
+                [class.text-white]="activeTab() === 'news'"
+                [class.bg-neutral-100]="activeTab() !== 'news'"
+                [class.text-neutral-500]="activeTab() !== 'news'">
+                {{ pendingNews().length }}
+              </span>
+            </button>
+            <button
+              (click)="setActiveTab('events')"
+              class="py-3 border-b-2 text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors"
+              [class.border-neutral-900]="activeTab() === 'events'"
+              [class.text-neutral-900]="activeTab() === 'events'"
+              [class.border-transparent]="activeTab() !== 'events'"
+              [class.text-neutral-400]="activeTab() !== 'events'"
+              [class.hover:text-neutral-600]="activeTab() !== 'events'">
+              <lucide-icon [img]="calendarIcon" [size]="14"></lucide-icon>
+              Events
+              <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                [class.bg-neutral-900]="activeTab() === 'events'"
+                [class.text-white]="activeTab() === 'events'"
+                [class.bg-neutral-100]="activeTab() !== 'events'"
+                [class.text-neutral-500]="activeTab() !== 'events'">
+                {{ pendingEvents().length }}
+              </span>
+            </button>
+          </nav>
         </div>
-        
-        <nav class="p-4 space-y-1">
-          <a routerLink="/admin" routerLinkActive="nav-item-active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
-            <lucide-icon [img]="dashboardIcon" [size]="18"></lucide-icon>
-            <span>Dashboard</span>
-          </a>
-          <a routerLink="/admin/users" routerLinkActive="nav-item-active" class="nav-item">
-            <lucide-icon [img]="usersIcon" [size]="18"></lucide-icon>
-            <span>User Management</span>
-          </a>
-          <a routerLink="/admin/content-review" routerLinkActive="nav-item-active" class="nav-item">
-            <lucide-icon [img]="fileTextIcon" [size]="18"></lucide-icon>
-            <span>Content Review</span>
-          </a>
-          <a routerLink="/admin/forums" routerLinkActive="nav-item-active" class="nav-item">
-            <lucide-icon [img]="messageSquareIcon" [size]="18"></lucide-icon>
-            <span>Forum Moderation</span>
-          </a>
-        </nav>
 
-        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-neutral-200">
-          <button (click)="logout()" class="nav-item w-full text-error-600 hover:bg-error-50">
-            <lucide-icon [img]="logoutIcon" [size]="18"></lucide-icon>
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <div class="p-8">
-          <!-- Header -->
-          <div class="mb-8">
-            <h1 class="text-3xl font-bold text-neutral-900 mb-2">Content Review</h1>
-            <p class="text-neutral-600">Review and approve pending news articles and events</p>
-          </div>
-
-          <!-- Tabs -->
-          <div class="bg-white rounded-lg shadow mb-6">
-            <div class="border-b border-neutral-200">
-              <nav class="flex space-x-8 px-6">
-                <button 
-                  (click)="setActiveTab('news')"
-                  [class.tab-active]="activeTab() === 'news'"
-                  [class.tab-inactive]="activeTab() !== 'news'"
-                  class="py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2">
-                  <lucide-icon [img]="newspaperIcon" [size]="18"></lucide-icon>
-                  Pending News ({{ pendingNews().length }})
-                </button>
-                <button 
-                  (click)="setActiveTab('events')"
-                  [class.tab-active]="activeTab() === 'events'"
-                  [class.tab-inactive]="activeTab() !== 'events'"
-                  class="py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2">
-                  <lucide-icon [img]="calendarIcon" [size]="18"></lucide-icon>
-                  Pending Events ({{ pendingEvents().length }})
-                </button>
-              </nav>
-            </div>
-
-            <!-- News Tab -->
-            @if (activeTab() === 'news') {
-              <div class="p-6">
-                @if (isLoadingNews()) {
-                  <div class="flex justify-center items-center py-12">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-                  </div>
-                } @else if (pendingNews().length === 0) {
-                  <div class="text-center py-12">
-                    <lucide-icon [img]="checkCircleIcon" [size]="48" class="text-success-600 mx-auto mb-4"></lucide-icon>
-                    <p class="text-neutral-600">No pending news articles to review</p>
-                  </div>
-                } @else {
-                  <div class="space-y-4">
-                    @for (article of pendingNews(); track article.id) {
-                      <div class="border border-neutral-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                        <div class="flex items-start justify-between gap-6">
-                          <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
-                              <h3 class="text-lg font-semibold text-neutral-900">{{ article.title }}</h3>
-                              <span class="badge badge-warning">Pending Review</span>
-                            </div>
-                            
-                            <p class="text-neutral-600 mb-4 line-clamp-2">{{ article.excerpt }}</p>
-                            
-                            <div class="flex items-center gap-4 text-sm text-neutral-500">
-                              <div class="flex items-center gap-1">
-                                <lucide-icon [img]="userIconSmall" [size]="14"></lucide-icon>
-                                <span>{{ article.author.firstName }} {{ article.author.lastName }}</span>
-                              </div>
-                              <div class="flex items-center gap-1">
-                                <lucide-icon [img]="clockIcon" [size]="14"></lucide-icon>
-                                <span>{{ formatDate(article.createdAt) }}</span>
-                              </div>
-                              <div class="flex items-center gap-1">
-                                <span class="badge badge-primary text-xs">{{ article.category.name }}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="flex flex-col gap-2">
-                            <button 
-                              (click)="viewArticle(article.id)"
-                              class="btn-outline btn-sm inline-flex items-center gap-2"
-                            >
-                              <lucide-icon [img]="eyeIcon" [size]="16"></lucide-icon>
-                              View
-                            </button>
-                            <button 
-                              (click)="approveArticle(article.id)"
-                              [disabled]="isProcessing()"
-                              class="btn-primary btn-sm inline-flex items-center gap-2"
-                            >
-                              <lucide-icon [img]="checkCircleIcon" [size]="16"></lucide-icon>
-                              Approve
-                            </button>
-                            <button 
-                              (click)="openRejectModal(article.id, 'news')"
-                              [disabled]="isProcessing()"
-                              class="btn-outline btn-sm text-error-600 border-error-300 hover:bg-error-50 inline-flex items-center gap-2"
-                            >
-                              <lucide-icon [img]="xCircleIcon" [size]="16"></lucide-icon>
-                              Reject
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
+        <!-- News Tab -->
+        @if (activeTab() === 'news') {
+          <div class="p-4">
+            @if (isLoadingNews()) {
+              <div class="flex justify-center py-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-2 border-neutral-200 border-t-neutral-600"></div>
               </div>
-            }
+            } @else if (pendingNews().length === 0) {
+              <div class="text-center py-10">
+                <lucide-icon [img]="checkCircleIcon" [size]="32" class="text-green-500 mx-auto mb-2"></lucide-icon>
+                <p class="text-sm text-neutral-500">No pending news articles</p>
+              </div>
+            } @else {
+              <div class="space-y-3">
+                @for (article of pendingNews(); track article.id) {
+                  <div class="border border-neutral-200 rounded-lg p-4 hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-start justify-between gap-4">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1.5">
+                          <h3 class="text-sm font-semibold text-neutral-900 truncate">{{ article.title }}</h3>
+                          <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
+                        </div>
 
-            <!-- Events Tab -->
-            @if (activeTab() === 'events') {
-              <div class="p-6">
-                @if (isLoadingEvents()) {
-                  <div class="flex justify-center items-center py-12">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-                  </div>
-                } @else if (pendingEvents().length === 0) {
-                  <div class="text-center py-12">
-                    <lucide-icon [img]="checkCircleIcon" [size]="48" class="text-success-600 mx-auto mb-4"></lucide-icon>
-                    <p class="text-neutral-600">No pending events to review</p>
-                  </div>
-                } @else {
-                  <div class="space-y-4">
-                    @for (event of pendingEvents(); track event.id) {
-                      <div class="border border-neutral-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                        <div class="flex items-start justify-between gap-6">
-                          <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
-                              <h3 class="text-lg font-semibold text-neutral-900">{{ event.title }}</h3>
-                              <span class="badge badge-warning">Pending Review</span>
-                            </div>
-                            
-                            <div class="flex items-center gap-4 text-sm text-neutral-500 mb-3">
-                              <div class="flex items-center gap-1">
-                                <lucide-icon [img]="calendarIcon" [size]="14"></lucide-icon>
-                                <span>{{ formatDate(event.eventDate) }}</span>
-                              </div>
-                              <div class="flex items-center gap-1">
-                                <span>{{ event.location }}</span>
-                              </div>
-                              @if (event.category) {
-                                <span class="badge badge-success text-xs">{{ event.category.name }}</span>
-                              }
-                            </div>
-                          </div>
+                        <p class="text-xs text-neutral-500 mb-2 line-clamp-2">{{ article.excerpt }}</p>
 
-                          <div class="flex flex-col gap-2">
-                            <button 
-                              (click)="viewEvent(event.id)"
-                              class="btn-outline btn-sm inline-flex items-center gap-2"
-                            >
-                              <lucide-icon [img]="eyeIcon" [size]="16"></lucide-icon>
-                              View
-                            </button>
-                            <button 
-                              (click)="approveEvent(event.id)"
-                              [disabled]="isProcessing()"
-                              class="btn-primary btn-sm inline-flex items-center gap-2"
-                            >
-                              <lucide-icon [img]="checkCircleIcon" [size]="16"></lucide-icon>
-                              Approve
-                            </button>
-                            <button 
-                              (click)="openRejectModal(event.id, 'event')"
-                              [disabled]="isProcessing()"
-                              class="btn-outline btn-sm text-error-600 border-error-300 hover:bg-error-50 inline-flex items-center gap-2"
-                            >
-                              <lucide-icon [img]="xCircleIcon" [size]="16"></lucide-icon>
-                              Reject
-                            </button>
-                          </div>
+                        <div class="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
+                          <span class="inline-flex items-center gap-1">
+                            <lucide-icon [img]="userIconSmall" [size]="12"></lucide-icon>
+                            {{ article.author.firstName }} {{ article.author.lastName }}
+                          </span>
+                          <span class="inline-flex items-center gap-1">
+                            <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
+                            {{ formatDate(article.createdAt) }}
+                          </span>
+                          <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-medium">{{ article.category.name }}</span>
                         </div>
                       </div>
-                    }
+
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        <button (click)="viewArticle(article.id)"
+                          class="p-1.5 rounded-md border border-neutral-200 text-neutral-500 hover:bg-neutral-100 transition-colors" title="View">
+                          <lucide-icon [img]="eyeIcon" [size]="14"></lucide-icon>
+                        </button>
+                        <button (click)="approveArticle(article.id)" [disabled]="isProcessing()"
+                          class="p-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 transition-colors" title="Approve">
+                          <lucide-icon [img]="checkCircleIcon" [size]="14"></lucide-icon>
+                        </button>
+                        <button (click)="openRejectModal(article.id, 'news')" [disabled]="isProcessing()"
+                          class="p-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40 transition-colors" title="Reject">
+                          <lucide-icon [img]="xCircleIcon" [size]="14"></lucide-icon>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 }
               </div>
             }
           </div>
-        </div>
-      </main>
+        }
 
-      <!-- Reject Modal -->
-      @if (showRejectModal()) {
-        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" (click)="closeRejectModal()">
-          <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" (click)="$event.stopPropagation()">
-            <div class="p-6">
-              <h3 class="text-xl font-bold text-neutral-900 mb-4">Reject Content</h3>
-              <p class="text-neutral-600 mb-4">Please provide a reason for rejection:</p>
-              
-              <textarea
-                [(ngModel)]="rejectReason"
-                class="input-field mb-4"
-                rows="4"
-                placeholder="Enter rejection reason..."
-              ></textarea>
-
-              <div class="flex gap-3">
-                <button 
-                  (click)="confirmReject()"
-                  [disabled]="!rejectReason.trim() || isProcessing()"
-                  class="btn-primary flex-1"
-                >
-                  @if (isProcessing()) {
-                    <span class="flex items-center justify-center gap-2">
-                      <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Rejecting...
-                    </span>
-                  } @else {
-                    Confirm Rejection
-                  }
-                </button>
-                <button 
-                  (click)="closeRejectModal()"
-                  [disabled]="isProcessing()"
-                  class="btn-outline"
-                >
-                  Cancel
-                </button>
+        <!-- Events Tab -->
+        @if (activeTab() === 'events') {
+          <div class="p-4">
+            @if (isLoadingEvents()) {
+              <div class="flex justify-center py-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-2 border-neutral-200 border-t-neutral-600"></div>
               </div>
-            </div>
+            } @else if (pendingEvents().length === 0) {
+              <div class="text-center py-10">
+                <lucide-icon [img]="checkCircleIcon" [size]="32" class="text-green-500 mx-auto mb-2"></lucide-icon>
+                <p class="text-sm text-neutral-500">No pending events</p>
+              </div>
+            } @else {
+              <div class="space-y-3">
+                @for (event of pendingEvents(); track event.id) {
+                  <div class="border border-neutral-200 rounded-lg p-4 hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-start justify-between gap-4">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1.5">
+                          <h3 class="text-sm font-semibold text-neutral-900 truncate">{{ event.title }}</h3>
+                          <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
+                          <span class="inline-flex items-center gap-1">
+                            <lucide-icon [img]="calendarIcon" [size]="12"></lucide-icon>
+                            {{ formatDate(event.eventDate) }}
+                          </span>
+                          <span>{{ event.location }}</span>
+                          @if (event.category) {
+                            <span class="px-2 py-0.5 rounded-full bg-green-50 text-green-600 border border-green-100 text-[10px] font-medium">{{ event.category.name }}</span>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        <button (click)="viewEvent(event.id)"
+                          class="p-1.5 rounded-md border border-neutral-200 text-neutral-500 hover:bg-neutral-100 transition-colors" title="View">
+                          <lucide-icon [img]="eyeIcon" [size]="14"></lucide-icon>
+                        </button>
+                        <button (click)="approveEvent(event.id)" [disabled]="isProcessing()"
+                          class="p-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 transition-colors" title="Approve">
+                          <lucide-icon [img]="checkCircleIcon" [size]="14"></lucide-icon>
+                        </button>
+                        <button (click)="openRejectModal(event.id, 'event')" [disabled]="isProcessing()"
+                          class="p-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40 transition-colors" title="Reject">
+                          <lucide-icon [img]="xCircleIcon" [size]="14"></lucide-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           </div>
-        </div>
-      }
+        }
+      </div>
     </div>
+
+    <!-- Reject Modal -->
+    @if (showRejectModal()) {
+      <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" (click)="closeRejectModal()">
+        <div class="bg-white rounded-xl border border-neutral-200 max-w-md w-full mx-4" (click)="$event.stopPropagation()">
+          <div class="p-5">
+            <h3 class="text-base font-bold text-neutral-900 mb-1">Reject Content</h3>
+            <p class="text-xs text-neutral-500 mb-4">Provide a reason for rejection:</p>
+
+            <textarea
+              [(ngModel)]="rejectReason"
+              class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:bg-white resize-none mb-4"
+              rows="3"
+              placeholder="Enter rejection reason..."
+            ></textarea>
+
+            <div class="flex gap-2">
+              <button
+                (click)="confirmReject()"
+                [disabled]="!rejectReason.trim() || isProcessing()"
+                class="flex-1 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
+                @if (isProcessing()) {
+                  <span class="flex items-center justify-center gap-2">
+                    <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white/30 border-t-white"></div>
+                    Rejecting...
+                  </span>
+                } @else {
+                  Confirm Rejection
+                }
+              </button>
+              <button
+                (click)="closeRejectModal()"
+                [disabled]="isProcessing()"
+                class="px-4 py-2 text-sm font-medium border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   `,
-  styles: [`
-    .sidebar {
-      @apply fixed left-0 top-0 h-screen w-60 bg-white border-r border-neutral-200 overflow-y-auto;
-    }
-    .main-content {
-      @apply ml-60 min-h-screen;
-    }
-    .nav-item {
-      @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors;
-    }
-    .nav-item-active {
-      @apply bg-primary-50 text-primary-700 font-medium;
-    }
-    .tab-active {
-      @apply border-primary-600 text-primary-600;
-    }
-    .tab-inactive {
-      @apply border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300;
-    }
-  `]
+  styles: []
 })
 export class ContentReviewComponent implements OnInit {
   private newsService = inject(NewsService);
   private eventsService = inject(EventsService);
-  private authStore = inject(UserAuthStore);
-  private authService = inject(AuthService);
 
-  // Icons
-  dashboardIcon = LayoutDashboard;
-  usersIcon = Users;
-  fileTextIcon = FileText;
-  messageSquareIcon = MessageSquare;
-  calendarIcon = Calendar;
-  newspaperIcon = Newspaper;
-  checkCircleIcon = CheckCircle;
-  xCircleIcon = XCircle;
-  eyeIcon = Eye;
-  clockIcon = Clock;
-  userIconSmall = UserIcon;
-  logoutIcon = LogOut;
+  readonly calendarIcon = Calendar;
+  readonly newspaperIcon = Newspaper;
+  readonly checkCircleIcon = CheckCircle;
+  readonly xCircleIcon = XCircle;
+  readonly eyeIcon = Eye;
+  readonly clockIcon = Clock;
+  readonly userIconSmall = UserIcon;
 
   // State
   activeTab = signal<'news' | 'events'>('news');
@@ -467,7 +387,4 @@ export class ContentReviewComponent implements OnInit {
     });
   }
 
-  logout(): void {
-    this.authService.logout();
-  }
 }

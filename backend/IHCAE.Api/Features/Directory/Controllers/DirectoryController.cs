@@ -59,7 +59,7 @@ public class DirectoryController : ControllerBase
     public async Task<IActionResult> GetAlumniDirectory(
         [FromQuery] string? search = null,
         [FromQuery] string? course = null,
-        [FromQuery] int? graduationYear = null,
+        [FromQuery] string? batch = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -86,7 +86,7 @@ public class DirectoryController : ControllerBase
 
             // Retrieve filtered alumni directory
             var result = await _directoryService.GetAlumniDirectoryAsync(
-                search, course, graduationYear, page, pageSize);
+                search, course, batch, page, pageSize);
 
             _logger.LogInformation($"Retrieved alumni directory page {page} with {result.Items.Count()} results");
             

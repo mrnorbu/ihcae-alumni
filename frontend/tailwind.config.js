@@ -107,7 +107,6 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        // For special text like "exhilaration" and "conservation"
         display: ['Playfair Display', 'serif'],
       },
       backgroundImage: {

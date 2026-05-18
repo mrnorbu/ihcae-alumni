@@ -7,6 +7,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent white flash on page navigation */
+html, body {
+  background-color: #fafafa; /* matches bg-neutral-50 */
+}
+
+/* Smooth page fade-in — opacity only (no transform, avoids breaking fixed modals) */
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-fade-in {
+  animation: pageFadeIn 0.15s ease-out both;
+}
+
 /* Custom component styles using IHCAE brand colors */
 @layer components {
   /* Modern Compact Buttons */

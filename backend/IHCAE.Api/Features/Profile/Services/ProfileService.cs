@@ -130,9 +130,9 @@ public class ProfileService : IProfileService
         {
             user.AlumniProfile.Course = request.Course;
         }
-        if (request.GraduationYear.HasValue)
+        if (request.Batch != null)
         {
-            user.AlumniProfile.GraduationYear = request.GraduationYear;
+            user.AlumniProfile.Batch = request.Batch;
         }
         
         // Update timestamp
@@ -219,7 +219,7 @@ public class ProfileService : IProfileService
             Email = user.Email,
             Phone = user.Phone,
             ProfileImageUrl = profileImageUrl,
-            GraduationYear = user.AlumniProfile?.GraduationYear,
+            Batch = user.AlumniProfile?.Batch,
             Course = user.AlumniProfile?.Course,
             Bio = user.AlumniProfile?.Bio,
             JobTitle = user.AlumniProfile?.JobTitle,

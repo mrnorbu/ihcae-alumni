@@ -61,11 +61,6 @@
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.MvcApplicationPartsAssemblyInfo.cache
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.build.json
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.development.json
-/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets/msbuild.IHCAE.Api.Microsoft.AspNetCore.StaticWebAssets.props
-/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets/msbuild.build.IHCAE.Api.props
-/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.IHCAE.Api.props
-/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.IHCAE.Api.props
-/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.pack.json
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/scopedcss/bundle/IHCAE.Api.styles.css
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.csproj.Up2Date
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.dll
@@ -157,3 +152,180 @@
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.staticwebassets.runtime.json
 /Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/SixLabors.ImageSharp.dll
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.staticwebassets.endpoints.json
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rpswa.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rjimswa.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rjsmrazor.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.build.json.cache
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.build.endpoints.json
+/Users/sonamnorbu/Desktop/Kalasha Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/swae.build.ex.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/appsettings.Development.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/appsettings.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.staticwebassets.endpoints.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.staticwebassets.runtime.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.deps.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.runtimeconfig.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/IHCAE.Api.pdb
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/BCrypt.Net-Next.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Humanizer.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.AspNetCore.OpenApi.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Bcl.AsyncInterfaces.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Build.Locator.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.CodeAnalysis.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.CodeAnalysis.CSharp.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.CodeAnalysis.Workspaces.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Design.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Relational.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Caching.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Caching.Memory.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Configuration.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Configuration.Binder.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.DependencyModel.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Hosting.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Logging.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.Extensions.Primitives.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Microsoft.OpenApi.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Mono.TextTemplating.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/MySqlConnector.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Pomelo.EntityFrameworkCore.MySql.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.AspNetCore.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.Extensions.Hosting.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.Extensions.Logging.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.Formatting.Compact.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.Settings.Configuration.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.Sinks.Console.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.Sinks.Debug.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Serilog.Sinks.File.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/SixLabors.ImageSharp.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.CodeDom.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Composition.AttributedModel.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Composition.Convention.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Composition.Hosting.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Composition.Runtime.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Composition.TypedParts.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Diagnostics.DiagnosticSource.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.IO.Pipelines.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Text.Encodings.Web.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/System.Text.Json.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.csproj.AssemblyReference.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rpswa.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.AssemblyInfoInputs.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.AssemblyInfo.cs
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.csproj.CoreCompileInputs.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.MvcApplicationPartsAssemblyInfo.cs
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.MvcApplicationPartsAssemblyInfo.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rjimswa.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rjsmrazor.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/scopedcss/bundle/IHCAE.Api.styles.css
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.build.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.build.json.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.development.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/staticwebassets.build.endpoints.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/swae.build.ex.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.csproj.Up2Date
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/refint/IHCAE.Api.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.pdb
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/IHCAE.Api.genruntimeconfig.cache
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/obj/Debug/net8.0/ref/IHCAE.Api.dll
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/appsettings.Production.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/publish/appsettings.Development.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/publish/appsettings.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/publish/appsettings.Production.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/publish/IHCAE.Api.deps.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/publish/IHCAE.Api.runtimeconfig.json
+/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/bin/Debug/net8.0/publish/IHCAE.Api.staticwebassets.endpoints.json

@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook } from 'lucide-angular';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [RouterModule, LucideAngularModule],
   template: `
     <!-- Footer - Full Width -->
     <footer class="bg-neutral-900 text-white py-12 w-full">

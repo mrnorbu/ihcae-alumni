@@ -23,9 +23,10 @@ public class AlumniProfile
     public string? ProfileImageUrl { get; set; }
 
     /// <summary>
-    /// Year the alumnus graduated from IHCAE
+    /// Batch or graduation period (e.g., "Batch 1", "Jan 2024")
     /// </summary>
-    public int? GraduationYear { get; set; }
+    [MaxLength(100)]
+    public string? Batch { get; set; }
 
     /// <summary>
     /// Course/program the alumnus completed at IHCAE

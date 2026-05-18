@@ -43,9 +43,10 @@ public class AlumniDatabase
     public string? Course { get; set; }
 
     /// <summary>
-    /// Year the alumnus graduated
+    /// Batch or graduation period (e.g., "Batch 1", "Jan 2024")
     /// </summary>
-    public int? GraduationYear { get; set; }
+    [MaxLength(100)]
+    public string? Batch { get; set; }
 
     /// <summary>
     /// Phone number if available

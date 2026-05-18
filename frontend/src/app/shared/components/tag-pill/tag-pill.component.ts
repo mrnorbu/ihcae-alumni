@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 /**
  * Reusable Tag Pill Component
@@ -24,25 +24,28 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-tag-pill',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <span
       [class]="getTagClasses()"
       (click)="handleClick()"
-    >
-      <span class="text-xs">{{ label }}</span>
-      <span *ngIf="usageCount !== undefined" class="text-xs opacity-75 ml-1">({{ usageCount }})</span>
-      <button
-        *ngIf="removable"
-        type="button"
-        (click)="handleRemove($event)"
-        class="ml-1 hover:text-blue-900 transition-colors"
-        [attr.aria-label]="'Remove ' + label + ' tag'"
       >
-        <i class="bi bi-x text-xs"></i>
-      </button>
+      <span class="text-xs">{{ label }}</span>
+      @if (usageCount !== undefined) {
+        <span class="text-xs opacity-75 ml-1">({{ usageCount }})</span>
+      }
+      @if (removable) {
+        <button
+          type="button"
+          (click)="handleRemove($event)"
+          class="ml-1 hover:text-blue-900 transition-colors"
+          [attr.aria-label]="'Remove ' + label + ' tag'"
+          >
+          <i class="bi bi-x text-xs"></i>
+        </button>
+      }
     </span>
-  `,
+    `,
   styles: []
 })
 export class TagPillComponent {

@@ -45,5 +45,19 @@ public interface IAlumniImportService
     /// <param name="userId">The user account ID</param>
     /// <returns>Task representing the async operation</returns>
     Task LinkAlumniToUserAsync(Guid alumniId, Guid userId);
+
+    /// <summary>
+    /// Updates multiple alumni database records at once.
+    /// </summary>
+    /// <param name="records">The list of updated records</param>
+    /// <returns>Task representing the async operation</returns>
+    Task UpdateAlumniRecordsAsync(IEnumerable<AlumniDatabaseDto> records);
+
+    /// <summary>
+    /// Generates user accounts for the specified alumni records.
+    /// </summary>
+    /// <param name="alumniIds">The list of alumni IDs</param>
+    /// <returns>The number of accounts generated</returns>
+    Task<int> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds);
 }
 

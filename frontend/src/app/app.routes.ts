@@ -53,32 +53,26 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
-    canActivate: [AdminGuard]
-  },
-  {
-    path: 'admin/users',
-    loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent),
-    canActivate: [AdminGuard]
-  },
-  {
-    path: 'admin/content-review',
-    loadComponent: () => import('./features/admin/content-review/content-review.component').then(m => m.ContentReviewComponent),
-    canActivate: [AdminGuard]
-  },
-  {
-    path: 'admin/alumni',
-    loadComponent: () => import('./features/admin/alumni-management/alumni-management.component').then(m => m.AlumniManagementComponent),
-    canActivate: [AdminGuard]
-  },
-  {
-    path: 'admin/forums',
-    loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent),
-    canActivate: [AdminGuard]
+    loadComponent: () => import('./features/admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    canActivate: [AdminGuard],
+    children: [
+      { path: '', loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
+      { path: 'content-review', loadComponent: () => import('./features/admin/content-review/content-review.component').then(m => m.ContentReviewComponent) },
+      { path: 'alumni', loadComponent: () => import('./features/admin/alumni-management/alumni-management.component').then(m => m.AlumniManagementComponent) },
+      { path: 'forums', loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent) },
+      { path: 'content', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Content Management' } },
+      { path: 'analytics', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Analytics' } },
+      { path: 'settings', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Settings' } },
+    ]
   },
   {
     path: 'forums',
     loadComponent: () => import('./features/forums/containers/modern-forum-list/modern-forum-list.component').then(m => m.ModernForumListComponent),
+    canActivate: [AlumniGuard]
+  },
+  {
+    path: 'forums/topics/:id',
+    loadComponent: () => import('./features/forums/containers/forum-thread-detail/forum-thread-detail.component').then(m => m.ForumThreadDetailComponent),
     canActivate: [AlumniGuard]
   },
   {

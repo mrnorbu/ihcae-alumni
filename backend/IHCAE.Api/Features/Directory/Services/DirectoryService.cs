@@ -50,7 +50,7 @@ public class DirectoryService : IDirectoryService
     public async Task<PaginatedResult<AlumniCardDto>> GetAlumniDirectoryAsync(
         string? searchTerm = null,
         string? course = null,
-        int? graduationYear = null,
+        string? batch = null,
         int page = 1,
         int pageSize = 20)
     {
@@ -67,7 +67,7 @@ public class DirectoryService : IDirectoryService
 
         // Retrieve filtered alumni data from repository
         var (users, totalCount) = await _userRepository.GetApprovedAlumniAsync(
-            searchTerm, course, graduationYear, page, pageSize);
+            searchTerm, course, batch, page, pageSize);
 
         // Transform User entities to AlumniCardDto objects
         var alumniCards = users.Select(MapToAlumniCardDto).ToList();
@@ -136,7 +136,7 @@ public class DirectoryService : IDirectoryService
             FirstName = user.FirstName,
             LastName = user.LastName,
             ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(user.AlumniProfile?.ProfileImageUrl),
-            GraduationYear = user.AlumniProfile?.GraduationYear,
+            Batch = user.AlumniProfile?.Batch,
             Course = user.AlumniProfile?.Course,
             JobTitle = user.AlumniProfile?.JobTitle,
             Location = user.AlumniProfile?.Location
@@ -160,7 +160,7 @@ public class DirectoryService : IDirectoryService
             Email = user.Email,
             Phone = user.Phone,
             ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(user.AlumniProfile?.ProfileImageUrl),
-            GraduationYear = user.AlumniProfile?.GraduationYear,
+            Batch = user.AlumniProfile?.Batch,
             Course = user.AlumniProfile?.Course,
             Bio = user.AlumniProfile?.Bio,
             JobTitle = user.AlumniProfile?.JobTitle,

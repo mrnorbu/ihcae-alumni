@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { LucideAngularModule, X, Eye, EyeOff, Send, Tag, Hash } from 'lucide-angular';
@@ -17,203 +17,219 @@ import { ForumService } from '../../services/forum.service';
 @Component({
   selector: 'app-create-topic-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, LucideAngularModule],
+  imports: [ReactiveFormsModule, FormsModule, LucideAngularModule],
   template: `
     <!-- Modal Overlay -->
-    <div *ngIf="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <!-- Modal Container -->
-      <div class="bg-white rounded-lg shadow-lg border border-neutral-200 w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        
-        <!-- Modal Header -->
-        <div class="p-4 border-b border-neutral-200 bg-neutral-50">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <h2 class="text-lg font-semibold text-blue-800">Create New Topic</h2>
-            </div>
-            <button
-              (click)="onCancel()"
-              class="text-neutral-500 hover:text-neutral-700 transition-colors"
-              type="button"
-            >
-              <lucide-icon [img]="xIcon" [size]="20"></lucide-icon>
-            </button>
-          </div>
-        </div>
-
-        <!-- Modal Content -->
-        <div class="p-4 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <form [formGroup]="topicForm" (ngSubmit)="onSubmit()">
-            
-            <!-- Title Field -->
-            <div class="mb-4">
-              <label for="title" class="block text-sm font-medium text-neutral-700 mb-2">
-                Topic Title <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="title"
-                type="text"
-                formControlName="title"
-                placeholder="Enter a descriptive title for your topic"
-                class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                [class.border-red-500]="topicForm.get('title')?.invalid && topicForm.get('title')?.touched"
-              />
-              <div
-                *ngIf="topicForm.get('title')?.invalid && topicForm.get('title')?.touched"
-                class="text-red-500 text-xs mt-1"
-              >
-                <p *ngIf="topicForm.get('title')?.errors?.['required']">Title is required</p>
-                <p *ngIf="topicForm.get('title')?.errors?.['minlength']">
-                  Title must be at least 5 characters
-                </p>
-                <p *ngIf="topicForm.get('title')?.errors?.['maxlength']">
-                  Title cannot exceed 255 characters
-                </p>
+    @if (isVisible) {
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <!-- Modal Container -->
+        <div class="bg-white rounded-lg shadow-lg border border-neutral-200 w-full max-w-2xl max-h-[90vh] overflow-hidden">
+          <!-- Modal Header -->
+          <div class="p-4 border-b border-neutral-200 bg-neutral-50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <h2 class="text-lg font-semibold text-blue-800">Create New Topic</h2>
               </div>
-            </div>
-
-            <!-- Content Field -->
-            <div class="mb-4">
-              <label for="content" class="block text-sm font-medium text-neutral-700 mb-2">
-                Content <span class="text-red-500">*</span>
-              </label>
-              <textarea
-                id="content"
-                formControlName="content"
-                rows="4"
-                placeholder="Write your post content here. URLs will be automatically converted to clickable links."
-                class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
-                [class.border-red-500]="topicForm.get('content')?.invalid && topicForm.get('content')?.touched"
-              ></textarea>
-              <div
-                *ngIf="topicForm.get('content')?.invalid && topicForm.get('content')?.touched"
-                class="text-red-500 text-xs mt-1"
-              >
-                <p *ngIf="topicForm.get('content')?.errors?.['required']">Content is required</p>
-                <p *ngIf="topicForm.get('content')?.errors?.['minlength']">
-                  Content must be at least 10 characters
-                </p>
-              </div>
-            </div>
-
-            <!-- Tags Selection -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Tags (Optional)
-                <span class="text-neutral-500 text-xs">- Maximum 5 tags</span>
-              </label>
-              
-              <!-- Selected Tags -->
-              <div *ngIf="selectedTags.length > 0" class="flex flex-wrap gap-1 mb-2">
-                <span
-                  *ngFor="let tag of selectedTags"
-                  class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium"
-                >
-                  #{{ tag }}
-                  <button
-                    (click)="removeTag(tag)"
-                    type="button"
-                    class="text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    <lucide-icon [img]="xIcon" [size]="12"></lucide-icon>
-                  </button>
-                </span>
-              </div>
-
-              <!-- Tag Search Input -->
-              <div class="relative">
-                <input
-                  type="text"
-                  [(ngModel)]="tagSearchQuery"
-                  (input)="onTagSearchChange()"
-                  (blur)="onTagSearchBlur()"
-                  placeholder="Search or add tags..."
-                  [disabled]="selectedTags.length >= 5"
-                  class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-                
-                <!-- Tag Suggestions Dropdown -->
-                <div
-                  *ngIf="showTagSuggestions"
-                  class="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg max-h-32 overflow-y-auto"
-                >
-                  <button
-                    *ngFor="let tag of tagSuggestions"
-                    (click)="addTag(tag.name)"
-                    type="button"
-                    class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center justify-between"
-                  >
-                    <span>#{{ tag.name }}</span>
-                    <span class="text-xs text-neutral-500">{{ tag.usageCount }} uses</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Popular Tags -->
-              <div *ngIf="popularTags.length > 0" class="mt-2">
-                <p class="text-xs text-neutral-600 mb-1">Popular tags:</p>
-                <div class="flex flex-wrap gap-1">
-                  <button
-                    *ngFor="let tag of popularTags.slice(0, 8)"
-                    (click)="addTag(tag.name)"
-                    type="button"
-                    [disabled]="selectedTags.includes(tag.name) || selectedTags.length >= 5"
-                    class="px-2 py-1 text-xs bg-neutral-100 text-neutral-700 rounded hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    #{{ tag.name }} ({{ tag.usageCount }})
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Preview Toggle -->
-            <div class="mb-3">
               <button
+                (click)="onCancel()"
+                class="text-neutral-500 hover:text-neutral-700 transition-colors"
                 type="button"
-                (click)="togglePreview()"
-                class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors"
-              >
-                <lucide-icon [img]="showPreview ? eyeOffIcon : eyeIcon" [size]="14"></lucide-icon>
-                {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
+                >
+                <lucide-icon [img]="xIcon" [size]="20"></lucide-icon>
               </button>
             </div>
-
-            <!-- Preview Section -->
-            <div *ngIf="showPreview" class="mb-4 p-3 bg-neutral-50 rounded-md border border-neutral-200">
-              <h3 class="text-sm font-semibold text-neutral-900 mb-2">Preview</h3>
-              <div class="border-b border-neutral-300 mb-2 pb-2">
-                <h4 class="text-base font-bold text-neutral-900">{{ topicForm.get('title')?.value || '(No title)' }}</h4>
+          </div>
+          <!-- Modal Content -->
+          <div class="p-4 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <form [formGroup]="topicForm" (ngSubmit)="onSubmit()">
+              <!-- Title Field -->
+              <div class="mb-4">
+                <label for="title" class="block text-sm font-medium text-neutral-700 mb-2">
+                  Topic Title <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="title"
+                  type="text"
+                  formControlName="title"
+                  placeholder="Enter a descriptive title for your topic"
+                  class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="topicForm.get('title')?.invalid && topicForm.get('title')?.touched"
+                  />
+                @if (topicForm.get('title')?.invalid && topicForm.get('title')?.touched) {
+                  <div
+                    class="text-red-500 text-xs mt-1"
+                    >
+                    @if (topicForm.get('title')?.errors?.['required']) {
+                      <p>Title is required</p>
+                    }
+                    @if (topicForm.get('title')?.errors?.['minlength']) {
+                      <p>
+                        Title must be at least 5 characters
+                      </p>
+                    }
+                    @if (topicForm.get('title')?.errors?.['maxlength']) {
+                      <p>
+                        Title cannot exceed 255 characters
+                      </p>
+                    }
+                  </div>
+                }
               </div>
-              <div class="text-neutral-700 text-sm whitespace-pre-wrap" [innerHTML]="previewHtml"></div>
+              <!-- Content Field -->
+              <div class="mb-4">
+                <label for="content" class="block text-sm font-medium text-neutral-700 mb-2">
+                  Content <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="content"
+                  formControlName="content"
+                  rows="4"
+                  placeholder="Write your post content here. URLs will be automatically converted to clickable links."
+                  class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
+                  [class.border-red-500]="topicForm.get('content')?.invalid && topicForm.get('content')?.touched"
+                ></textarea>
+                @if (topicForm.get('content')?.invalid && topicForm.get('content')?.touched) {
+                  <div
+                    class="text-red-500 text-xs mt-1"
+                    >
+                    @if (topicForm.get('content')?.errors?.['required']) {
+                      <p>Content is required</p>
+                    }
+                    @if (topicForm.get('content')?.errors?.['minlength']) {
+                      <p>
+                        Content must be at least 10 characters
+                      </p>
+                    }
+                  </div>
+                }
+              </div>
+              <!-- Tags Selection -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-neutral-700 mb-2">
+                  Tags (Optional)
+                  <span class="text-neutral-500 text-xs">- Maximum 5 tags</span>
+                </label>
+                <!-- Selected Tags -->
+                @if (selectedTags.length > 0) {
+                  <div class="flex flex-wrap gap-1 mb-2">
+                    @for (tag of selectedTags; track tag) {
+                      <span
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium"
+                        >
+                        #{{ tag }}
+                        <button
+                          (click)="removeTag(tag)"
+                          type="button"
+                          class="text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                          <lucide-icon [img]="xIcon" [size]="12"></lucide-icon>
+                        </button>
+                      </span>
+                    }
+                  </div>
+                }
+                <!-- Tag Search Input -->
+                <div class="relative">
+                  <input
+                    type="text"
+                    [(ngModel)]="tagSearchQuery"
+                    (input)="onTagSearchChange()"
+                    (blur)="onTagSearchBlur()"
+                    placeholder="Search or add tags..."
+                    [disabled]="selectedTags.length >= 5"
+                    class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    />
+                  <!-- Tag Suggestions Dropdown -->
+                  @if (showTagSuggestions) {
+                    <div
+                      class="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg max-h-32 overflow-y-auto"
+                      >
+                      @for (tag of tagSuggestions; track tag) {
+                        <button
+                          (click)="addTag(tag.name)"
+                          type="button"
+                          class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center justify-between"
+                          >
+                          <span>#{{ tag.name }}</span>
+                          <span class="text-xs text-neutral-500">{{ tag.usageCount }} uses</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+                <!-- Popular Tags -->
+                @if (popularTags.length > 0) {
+                  <div class="mt-2">
+                    <p class="text-xs text-neutral-600 mb-1">Popular tags:</p>
+                    <div class="flex flex-wrap gap-1">
+                      @for (tag of popularTags.slice(0, 8); track tag) {
+                        <button
+                          (click)="addTag(tag.name)"
+                          type="button"
+                          [disabled]="selectedTags.includes(tag.name) || selectedTags.length >= 5"
+                          class="px-2 py-1 text-xs bg-neutral-100 text-neutral-700 rounded hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                          #{{ tag.name }} ({{ tag.usageCount }})
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+              <!-- Preview Toggle -->
+              <div class="mb-3">
+                <button
+                  type="button"
+                  (click)="togglePreview()"
+                  class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors"
+                  >
+                  <lucide-icon [img]="showPreview ? eyeOffIcon : eyeIcon" [size]="14"></lucide-icon>
+                  {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
+                </button>
+              </div>
+              <!-- Preview Section -->
+              @if (showPreview) {
+                <div class="mb-4 p-3 bg-neutral-50 rounded-md border border-neutral-200">
+                  <h3 class="text-sm font-semibold text-neutral-900 mb-2">Preview</h3>
+                  <div class="border-b border-neutral-300 mb-2 pb-2">
+                    <h4 class="text-base font-bold text-neutral-900">{{ topicForm.get('title')?.value || '(No title)' }}</h4>
+                  </div>
+                  <div class="text-neutral-700 text-sm whitespace-pre-wrap" [innerHTML]="previewHtml"></div>
+                </div>
+              }
+            </form>
+          </div>
+          <!-- Modal Footer -->
+          <div class="p-4 border-t border-neutral-200 bg-neutral-50">
+            <div class="flex justify-end gap-2">
+              <button
+                type="button"
+                (click)="onCancel()"
+                class="px-4 py-2 text-sm border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                >
+                Cancel
+              </button>
+              <button
+                type="button"
+                (click)="onSubmit()"
+                [disabled]="topicForm.invalid || isSubmitting"
+                class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                >
+                <lucide-icon [img]="sendIcon" [size]="14"></lucide-icon>
+                @if (!isSubmitting) {
+                  <span>Create Topic</span>
+                }
+                @if (isSubmitting) {
+                  <span>Creating...</span>
+                }
+              </button>
             </div>
-          </form>
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="p-4 border-t border-neutral-200 bg-neutral-50">
-          <div class="flex justify-end gap-2">
-            <button
-              type="button"
-              (click)="onCancel()"
-              class="px-4 py-2 text-sm border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              (click)="onSubmit()"
-              [disabled]="topicForm.invalid || isSubmitting"
-              class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-            >
-              <lucide-icon [img]="sendIcon" [size]="14"></lucide-icon>
-              <span *ngIf="!isSubmitting">Create Topic</span>
-              <span *ngIf="isSubmitting">Creating...</span>
-            </button>
           </div>
         </div>
       </div>
-    </div>
-  `,
+    }
+    `,
   styles: []
 })
 export class CreateTopicModalComponent {

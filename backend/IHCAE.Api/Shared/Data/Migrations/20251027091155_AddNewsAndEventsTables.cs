@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -286,8 +286,8 @@ namespace IHCAE.Api.Shared.Data.Migrations
 
             // Seed ContentCreator Role
             migrationBuilder.Sql(@"
-                INSERT INTO Roles (Id, Name, Description, CreatedAt)
-                VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'ContentCreator', 'Can create news articles and events for admin review', UTC_TIMESTAMP());
+                INSERT INTO Roles (Name, Description, CreatedAt)
+                VALUES ('ContentCreator', 'Can create news articles and events for admin review', UTC_TIMESTAMP());
             ");
         }
 

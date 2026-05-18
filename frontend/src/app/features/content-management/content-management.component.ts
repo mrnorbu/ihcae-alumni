@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, Plus, Edit, Trash2, Eye, Calendar, MapPin, Users, Newspaper, CheckCircle, Clock, X, Upload, Image as ImageIcon } from 'lucide-angular';
@@ -21,7 +21,7 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
 @Component({
   selector: 'app-content-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>

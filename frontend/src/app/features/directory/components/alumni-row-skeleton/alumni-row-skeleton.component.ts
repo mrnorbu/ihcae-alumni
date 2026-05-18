@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 /**
  * Alumni Card Skeleton Component
@@ -27,7 +27,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-alumni-row-skeleton',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <!-- Skeleton card matching AlumniRowComponent layout -->
     <div class="bg-white rounded-lg shadow-sm border border-neutral-200 animate-pulse h-full">

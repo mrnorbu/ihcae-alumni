@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { UserAuthStore } from '../../core/state/user-auth.store';
 import { HeaderComponent, FooterComponent } from '../../shared/components';
@@ -26,7 +26,7 @@ import {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-white">
       <app-header></app-header>

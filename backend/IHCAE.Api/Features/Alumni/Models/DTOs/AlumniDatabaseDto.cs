@@ -34,7 +34,7 @@ public class AlumniDatabaseDto
     /// <summary>
     /// Year of graduation.
     /// </summary>
-    public int? GraduationYear { get; set; }
+    public string? Batch { get; set; }
 
     /// <summary>
     /// Phone number.

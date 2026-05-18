@@ -145,6 +145,28 @@ public class EmailService : IEmailService
         await SendEmailAsync(to, subject, htmlBody);
     }
 
+    /// <summary>
+    /// Sends a notification when a user receives a new reply to their topic or post.
+    /// </summary>
+    public async Task SendNewReplyNotificationAsync(string to, string firstName, string topicTitle, string replyAuthorName, string postLink)
+    {
+        var subject = $"New Reply to: {topicTitle}";
+        var htmlBody = GetNewReplyTemplate(firstName, topicTitle, replyAuthorName, postLink);
+
+        await SendEmailAsync(to, subject, htmlBody);
+    }
+
+    /// <summary>
+    /// Sends a notification when a topic or post is moderated (deleted or locked) by an admin.
+    /// </summary>
+    public async Task SendTopicModerationNotificationAsync(string to, string firstName, string topicTitle, string action, string reason)
+    {
+        var subject = $"Moderation Notice: {topicTitle}";
+        var htmlBody = GetTopicModerationTemplate(firstName, topicTitle, action, reason);
+
+        await SendEmailAsync(to, subject, htmlBody);
+    }
+
     #region Email Templates
 
     /// <summary>
@@ -304,6 +326,60 @@ public class EmailService : IEmailService
         <p>Thank you for your interest in joining the IHCAE Alumni Network.</p>
         <p>After careful review, we were unable to approve your registration at this time. This may be due to incomplete information or inability to verify your alumni status.</p>
         <p>If you believe this is an error, please contact our support team with additional documentation.</p>
+        <p>Best regards,<br>IHCAE Alumni Network Team</p>
+    </div>
+</body>
+</html>";
+    }
+
+    /// <summary>
+    /// Gets the HTML template for new reply notification.
+    /// </summary>
+    private static string GetNewReplyTemplate(string firstName, string topicTitle, string replyAuthorName, string postLink)
+    {
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>New Reply - IHCAE Alumni Network</title>
+</head>
+<body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+        <h2 style='color: #2563eb;'>New Reply in Forums</h2>
+        <p>Dear {firstName},</p>
+        <p><strong>{replyAuthorName}</strong> has replied to the discussion topic: <em>{topicTitle}</em>.</p>
+        <div style='text-align: center; margin: 30px 0;'>
+            <a href='{postLink}' style='background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;'>View Reply</a>
+        </div>
+        <p>Best regards,<br>IHCAE Alumni Network Team</p>
+    </div>
+</body>
+</html>";
+    }
+
+    /// <summary>
+    /// Gets the HTML template for topic moderation notification.
+    /// </summary>
+    private static string GetTopicModerationTemplate(string firstName, string topicTitle, string action, string reason)
+    {
+        var headerColor = action.ToLower() == "deleted" ? "#dc2626" : "#eab308";
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Moderation Notice - IHCAE Alumni Network</title>
+</head>
+<body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+        <h2 style='color: {headerColor};'>Moderation Notice</h2>
+        <p>Dear {firstName},</p>
+        <p>Your content in the discussion topic <em>{topicTitle}</em> has been <strong>{action}</strong> by a moderator.</p>
+        <div style='background-color: #f3f4f6; padding: 15px; border-left: 4px solid {headerColor}; margin: 20px 0;'>
+            <strong>Reason:</strong> {reason}
+        </div>
+        <p>Please refer to our community guidelines. If you believe this is an error, please contact our support team.</p>
         <p>Best regards,<br>IHCAE Alumni Network Team</p>
     </div>
 </body>

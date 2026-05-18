@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 /**
  * Sidebar Widget Component
@@ -19,13 +19,15 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-sidebar-widget',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="sidebar-card mb-6">
-      <h3 *ngIf="title" class="heading-section">{{ title }}</h3>
+      @if (title) {
+        <h3 class="heading-section">{{ title }}</h3>
+      }
       <ng-content></ng-content>
     </div>
-  `,
+    `,
   styles: []
 })
 export class SidebarWidgetComponent {

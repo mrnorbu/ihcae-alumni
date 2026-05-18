@@ -1,230 +1,272 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { forkJoin, catchError, of } from 'rxjs';
 import { AuthService } from '../auth/services/auth.service';
 import { UserAuthStore } from '../../core/state/user-auth.store';
 import { NotificationService } from '../../core/services/notification.service';
-import { User } from '../../shared/models';
+import { EventsService } from '../news-events/services/events.service';
+import { NewsService } from '../news-events/services/news.service';
+import { ForumService } from '../forums/services/forum.service';
+import { DirectoryService } from '../directory/services/directory.service';
+import { ProfileService, ProfileData } from '../profile/services/profile.service';
+import { User, TopicSummaryDto } from '../../shared/models';
+import type { EventSummary, NewsArticleSummary } from '../news-events/models';
 import { HeaderComponent, FooterComponent } from '../../shared/components';
+import {
+  LucideAngularModule,
+  Users, Calendar, MessageSquare, Newspaper,
+  ChevronRight, Shield, Star, Edit3, MapPin
+} from 'lucide-angular';
 
-/**
- * User Dashboard Component
- * 
- * Clean, minimal dashboard showing only implemented functionality from Epic 1.
- * Features:
- * - User profile information
- * - Account status (pending/approved)
- * - Email verification status
- * - Admin panel access (if admin)
- * 
- * @author IHCAE Development Team
- * @version 1.0.0
- */
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
-    <div class="min-h-screen bg-white">
+    <div class="min-h-screen bg-slate-50">
       <app-header></app-header>
-      
-      <!-- Main Content -->
-      <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
-        <!-- Welcome Section - Compact -->
-        <div class="mb-6">
-          <h2 class="text-3xl font-bold text-gray-900 mb-1">
-            Welcome back, {{ user()?.firstName }}!
-          </h2>
-          <p class="text-gray-600">
-            {{ user()?.email }}
-          </p>
-        </div>
 
-        <!-- Compact Status Bar -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div class="flex items-center justify-between flex-wrap gap-4">
-            <!-- Account Status -->
-            <div class="flex items-center gap-2">
-              <div class="w-2 h-2 rounded-full" 
-                   [ngClass]="{
-                     'bg-green-500': user()?.status === 'Approved',
-                     'bg-yellow-500': user()?.status === 'Pending',
-                     'bg-red-500': user()?.status === 'Rejected'
-                   }"></div>
-              <span class="text-sm font-medium text-gray-700">Account:</span>
-              <span class="text-sm font-semibold"
-                    [ngClass]="{
-                      'text-green-600': user()?.status === 'Approved',
-                      'text-yellow-600': user()?.status === 'Pending',
-                      'text-red-600': user()?.status === 'Rejected'
-                    }">
+      <div class="max-w-4xl mx-auto px-4 sm:px-5 pt-20 pb-10">
+
+        <!-- Profile strip -->
+        <div class="bg-white border border-slate-100 rounded-xl p-4 mb-3 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0 text-base font-bold text-green-700">
+            {{ getInitials() }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="text-base font-bold text-slate-900">{{ user()?.firstName }} {{ user()?.lastName }}</h1>
+              <span class="text-sm font-medium px-2 py-0.5 rounded-full" [class]="getRoleBadgeClass()">{{ getPrimaryRole() }}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-0.5 flex-wrap">
+              <span class="text-sm text-slate-500 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full inline-block" [class]="getStatusDotClass()"></span>
                 {{ user()?.status || 'Pending' }}
               </span>
-            </div>
-
-            <!-- Email Verification -->
-            <div class="flex items-center gap-2">
-              <svg *ngIf="user()?.emailVerified" class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-              </svg>
-              <svg *ngIf="!user()?.emailVerified" class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-              </svg>
-              <span class="text-sm font-medium text-gray-700">Email:</span>
-              <span class="text-sm font-semibold"
-                    [ngClass]="{
-                      'text-green-600': user()?.emailVerified,
-                      'text-red-600': !user()?.emailVerified
-                    }">
-                {{ user()?.emailVerified ? 'Verified' : 'Unverified' }}
-              </span>
-            </div>
-
-            <!-- Member Since -->
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-              <span class="text-sm font-medium text-gray-700">Member since:</span>
-              <span class="text-sm font-semibold text-gray-900">
-                {{ user()?.createdAt ? formatDate(user()!.createdAt.toString()) : 'N/A' }}
-              </span>
+              <span class="text-sm text-slate-400">Member since {{ user()?.createdAt ? formatDate(user()!.createdAt.toString()) : '–' }}</span>
             </div>
           </div>
-        </div>
-
-        <!-- Admin Access Card (Only for Admins) - Compact -->
-        <div *ngIf="isAdmin()" class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg p-6 mb-6 text-white">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-              </div>
-              <div>
-                <h3 class="text-lg font-semibold">Admin Panel</h3>
-                <p class="text-sm text-purple-100">Manage users and system settings</p>
-              </div>
-            </div>
-            <a routerLink="/admin" class="bg-white text-purple-600 hover:bg-purple-50 font-medium py-2 px-6 rounded-lg transition-colors">
-              Open
-            </a>
-          </div>
-        </div>
-
-        <!-- Quick Actions Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <!-- Share Your Story Card (Alumni) -->
-          <div *ngIf="isAlumni() && !isAdmin() && !isContentCreator()" class="bg-gradient-to-br from-amber-500 to-orange-600 overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6 text-white">
-              <div class="flex items-center mb-4">
-                <div class="flex-shrink-0">
-                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                  </svg>
-                </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-medium">Share Your Success Story</h3>
-                  <p class="text-sm text-amber-100">Inspire others with your achievements</p>
-                </div>
-              </div>
-              <a 
-                routerLink="/content-management"
-                class="w-full bg-white text-amber-600 hover:bg-amber-50 font-medium py-2 px-4 rounded-lg text-center inline-block transition-colors"
-              >
-                Submit Your Story
+          <div class="flex items-center gap-2 shrink-0">
+            @if (isAdmin()) {
+              <a routerLink="/admin"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-700 transition-colors">
+                <lucide-icon [img]="shieldIcon" [size]="12"></lucide-icon>
+                Admin Panel
               </a>
-            </div>
-          </div>
-
-          <!-- Content Management Card (Admin/Content Creator) -->
-          <div *ngIf="isContentCreator() || isAdmin()" class="bg-gradient-to-br from-blue-500 to-indigo-600 overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6 text-white">
-              <div class="flex items-center mb-4">
-                <div class="flex-shrink-0">
-                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-medium">Content Management</h3>
-                  <p class="text-sm text-blue-100">Create news articles and events</p>
-                </div>
-              </div>
-              <a 
-                routerLink="/content-management"
-                class="w-full bg-white text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-lg text-center inline-block transition-colors"
-              >
+            }
+            @if (isAlumni() && !isAdmin()) {
+              <a routerLink="/content-management"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:border-slate-400 hover:text-slate-800 transition-colors">
+                <lucide-icon [img]="starIcon" [size]="12"></lucide-icon>
+                Share Story
+              </a>
+            }
+            @if (isContentCreator() && !isAdmin()) {
+              <a routerLink="/content-management"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:border-slate-400 hover:text-slate-800 transition-colors">
+                <lucide-icon [img]="editIcon" [size]="12"></lucide-icon>
                 Manage Content
               </a>
+            }
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="grid grid-cols-3 gap-3 mb-3">
+          <div class="bg-white border border-slate-100 rounded-xl p-4 flex items-center gap-3">
+            <div class="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+              <lucide-icon [img]="usersIcon" [size]="16" class="text-blue-600"></lucide-icon>
+            </div>
+            <div>
+              <p class="text-xl font-bold text-slate-900 leading-none">{{ alumniCount() !== null ? alumniCount() : '–' }}</p>
+              <p class="text-sm text-slate-500 mt-0.5">Alumni Members</p>
             </div>
           </div>
-
-          <!-- Community Forums Widget -->
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <div class="flex items-center mb-4">
-                <div class="flex-shrink-0">
-                  <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                  </svg>
-                </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-medium text-gray-900">Community Forums</h3>
-                  <p class="text-sm text-gray-500">Connect with fellow alumni</p>
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <a 
-                  routerLink="/forums"
-                  class="flex-1 btn-primary text-center inline-block"
-                >
-                  Browse Forums
-                </a>
-                <a 
-                  routerLink="/forums/create"
-                  class="flex-1 btn-outline text-center inline-block"
-                >
-                  Start Discussion
-                </a>
-              </div>
+          <div class="bg-white border border-slate-100 rounded-xl p-4 flex items-center gap-3">
+            <div class="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center shrink-0">
+              <lucide-icon [img]="calendarIcon" [size]="16" class="text-amber-600"></lucide-icon>
+            </div>
+            <div>
+              <p class="text-xl font-bold text-slate-900 leading-none">{{ eventsCount() !== null ? eventsCount() : '–' }}</p>
+              <p class="text-sm text-slate-500 mt-0.5">Upcoming Events</p>
             </div>
           </div>
-
-          <!-- News & Events Widget -->
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <div class="flex items-center mb-4">
-                <div class="flex-shrink-0">
-                  <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-                  </svg>
-                </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-medium text-gray-900">News & Events</h3>
-                  <p class="text-sm text-gray-500">Stay updated with IHCAE</p>
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <a 
-                  routerLink="/news-events"
-                  class="flex-1 btn-primary text-center inline-block"
-                >
-                  View All
-                </a>
-                <a 
-                  routerLink="/success-stories"
-                  class="flex-1 btn-outline text-center inline-block"
-                >
-                  Success Stories
-                </a>
-              </div>
+          <div class="bg-white border border-slate-100 rounded-xl p-4 flex items-center gap-3">
+            <div class="w-9 h-9 bg-violet-50 rounded-lg flex items-center justify-center shrink-0">
+              <lucide-icon [img]="forumIcon" [size]="16" class="text-violet-600"></lucide-icon>
+            </div>
+            <div>
+              <p class="text-xl font-bold text-slate-900 leading-none">{{ forumsCount() !== null ? forumsCount() : '–' }}</p>
+              <p class="text-sm text-slate-500 mt-0.5">Forum Discussions</p>
             </div>
           </div>
         </div>
+
+        <!-- Content grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+
+          <!-- Upcoming Events -->
+          <div class="bg-white border border-slate-100 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-base font-semibold text-slate-900">Upcoming Events</h2>
+              <a routerLink="/news-events" class="text-sm text-green-700 hover:underline flex items-center gap-0.5">
+                View all <lucide-icon [img]="chevronIcon" [size]="12"></lucide-icon>
+              </a>
+            </div>
+            @if (isLoading()) {
+              <div class="space-y-3">
+                @for (i of [1,2,3]; track i) {
+                  <div class="animate-pulse flex gap-2.5">
+                    <div class="w-10 h-10 bg-slate-100 rounded-lg shrink-0"></div>
+                    <div class="flex-1 space-y-1.5 pt-0.5">
+                      <div class="h-3 bg-slate-100 rounded w-3/4"></div>
+                      <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            @if (!isLoading() && upcomingEvents().length === 0) {
+              <p class="text-sm text-slate-400 py-4 text-center">No upcoming events</p>
+            }
+            @if (!isLoading() && upcomingEvents().length > 0) {
+              <div class="space-y-2.5">
+                @for (event of upcomingEvents(); track event.id) {
+                  <a [routerLink]="['/events', event.id]" class="flex items-start gap-2.5 group">
+                    <div class="w-10 h-10 bg-amber-50 border border-amber-100 rounded-lg flex flex-col items-center justify-center shrink-0">
+                      <span class="text-base font-semibold text-amber-600 uppercase leading-none">{{ formatEventMonth(event.eventDate) }}</span>
+                      <span class="text-base font-bold text-amber-700 leading-none">{{ formatEventDay(event.eventDate) }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0 pt-0.5">
+                      <p class="text-sm font-semibold text-slate-800 group-hover:text-green-700 truncate transition-colors">{{ event.title }}</p>
+                      <p class="text-sm text-slate-400 truncate mt-0.5 flex items-center gap-1">
+                        <lucide-icon [img]="mapPinIcon" [size]="11"></lucide-icon>
+                        {{ event.location }}
+                      </p>
+                    </div>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Forum Discussions -->
+          <div class="bg-white border border-slate-100 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-base font-semibold text-slate-900">Forum Discussions</h2>
+              <a routerLink="/forums" class="text-sm text-green-700 hover:underline flex items-center gap-0.5">
+                View all <lucide-icon [img]="chevronIcon" [size]="12"></lucide-icon>
+              </a>
+            </div>
+            @if (isLoading()) {
+              <div class="space-y-3">
+                @for (i of [1,2,3,4]; track i) {
+                  <div class="animate-pulse space-y-1.5">
+                    <div class="h-3 bg-slate-100 rounded w-4/5"></div>
+                    <div class="h-3 bg-slate-100 rounded w-2/5"></div>
+                  </div>
+                }
+              </div>
+            }
+            @if (!isLoading() && recentTopics().length === 0) {
+              <p class="text-sm text-slate-400 py-4 text-center">No discussions yet</p>
+            }
+            @if (!isLoading() && recentTopics().length > 0) {
+              <div class="space-y-3">
+                @for (topic of recentTopics(); track topic.id) {
+                  <a routerLink="/forums" class="block group">
+                    <p class="text-sm font-semibold text-slate-800 group-hover:text-green-700 line-clamp-1 transition-colors">{{ topic.title }}</p>
+                    <p class="text-sm text-slate-400 mt-0.5">
+                      {{ topic.createdBy.firstName }} {{ topic.createdBy.lastName }} · {{ topic.postCount }} {{ topic.postCount === 1 ? 'reply' : 'replies' }}
+                    </p>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Recent News -->
+        <div class="bg-white border border-slate-100 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base font-semibold text-slate-900">Latest News</h2>
+            <a routerLink="/news-events" class="text-sm text-green-700 hover:underline flex items-center gap-0.5">
+              View all <lucide-icon [img]="chevronIcon" [size]="12"></lucide-icon>
+            </a>
+          </div>
+          @if (isLoading()) {
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              @for (i of [1,2,3]; track i) {
+                <div class="animate-pulse space-y-2">
+                  <div class="h-20 bg-slate-100 rounded-lg"></div>
+                  <div class="h-3 bg-slate-100 rounded w-full"></div>
+                  <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                </div>
+              }
+            </div>
+          }
+          @if (!isLoading() && recentNews().length === 0) {
+            <p class="text-sm text-slate-400 py-4 text-center">No news articles yet</p>
+          }
+          @if (!isLoading() && recentNews().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              @for (article of recentNews(); track article.id) {
+                <a [routerLink]="['/news', article.id]" class="group block">
+                  @if (article.thumbnailUrl) {
+                    <div class="w-full h-24 rounded-lg overflow-hidden mb-2 bg-slate-100">
+                      <img [src]="article.thumbnailUrl" [alt]="article.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    </div>
+                  }
+                  @if (!article.thumbnailUrl) {
+                    <div class="w-full h-24 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-2">
+                      <lucide-icon [img]="newsIcon" [size]="20" class="text-slate-300"></lucide-icon>
+                    </div>
+                  }
+                  <p class="text-sm font-semibold text-slate-800 group-hover:text-green-700 line-clamp-2 transition-colors leading-snug">{{ article.title }}</p>
+                  <p class="text-sm text-slate-400 mt-0.5">
+                    {{ article.author.firstName }} {{ article.author.lastName }} · {{ formatShortDate(article.publishedAt || article.createdAt) }}
+                  </p>
+                </a>
+              }
+            </div>
+          }
+        </div>
+
       </div>
       
+      @if (showOnboardingWizard()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+            <div class="p-6 sm:p-8">
+              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <lucide-icon [img]="starIcon" [size]="24" class="text-green-600"></lucide-icon>
+              </div>
+              <h2 class="text-2xl font-bold text-slate-900 mb-2">Welcome to IHCAE Alumni!</h2>
+              <p class="text-slate-600 mb-6">Let's complete your profile so fellow alumni can connect with you. This will only take a moment.</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Current Job Title</label>
+                  <input type="text" #jobInput class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="e.g. Software Engineer at Tech Corp">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Current Location</label>
+                  <input type="text" #locationInput class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" placeholder="e.g. Sikkim, India">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Short Bio</label>
+                  <textarea #bioInput class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all h-24 resize-none" placeholder="Tell us a bit about what you're doing now..."></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-100">
+              <button (click)="skipOnboarding()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Skip for now</button>
+              <button (click)="saveOnboarding(jobInput.value, locationInput.value, bioInput.value)" class="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm">Save Profile</button>
+            </div>
+          </div>
+        </div>
+      }
+
       <app-footer></app-footer>
     </div>
   `,
@@ -234,14 +276,100 @@ export class DashboardComponent implements OnInit {
   private authService = inject(AuthService);
   private authStore = inject(UserAuthStore);
   private notificationService = inject(NotificationService);
+  private eventsService = inject(EventsService);
+  private newsService = inject(NewsService);
+  private forumService = inject(ForumService);
+  private directoryService = inject(DirectoryService);
+  private profileService = inject(ProfileService);
 
   user = signal<User | null>(null);
+  showOnboardingWizard = signal(false);
+  profileData = signal<ProfileData | null>(null);
+  isLoading = signal(true);
+  upcomingEvents = signal<EventSummary[]>([]);
+  recentNews = signal<NewsArticleSummary[]>([]);
+  recentTopics = signal<TopicSummaryDto[]>([]);
+  alumniCount = signal<number | null>(null);
+  eventsCount = signal<number | null>(null);
+  forumsCount = signal<number | null>(null);
+
+  readonly shieldIcon = Shield;
+  readonly starIcon = Star;
+  readonly editIcon = Edit3;
+  readonly usersIcon = Users;
+  readonly calendarIcon = Calendar;
+  readonly forumIcon = MessageSquare;
+  readonly newsIcon = Newspaper;
+  readonly chevronIcon = ChevronRight;
+  readonly mapPinIcon = MapPin;
 
   ngOnInit() {
-    // Get current user from auth store
     this.authStore.state$.subscribe((authState: any) => {
       if (authState?.user) {
         this.user.set(authState.user);
+      }
+    });
+    this.loadDashboardData();
+  }
+
+  loadDashboardData() {
+    this.isLoading.set(true);
+
+    forkJoin({
+      events: this.eventsService.getUpcomingEvents(1, 3).pipe(catchError(() => of({ items: [], totalCount: 0 } as any))),
+      news: this.newsService.getPublishedArticles(1, 3).pipe(catchError(() => of({ items: [], totalCount: 0 } as any))),
+      topics: this.forumService.getTopics(1, 4).pipe(catchError(() => of({ items: [], totalCount: 0 } as any))),
+      alumni: this.directoryService.getAlumniDirectory({ pageSize: 1 }).pipe(catchError(() => of({ items: [], totalCount: 0 } as any)))
+    }).subscribe({
+      next: (results) => {
+        this.upcomingEvents.set(results.events.items);
+        this.eventsCount.set(results.events.totalCount);
+        this.recentNews.set(results.news.items);
+        this.recentTopics.set(results.topics.items);
+        this.forumsCount.set(results.topics.totalCount);
+        this.alumniCount.set(results.alumni.totalCount);
+        this.isLoading.set(false);
+        this.checkOnboarding();
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.checkOnboarding();
+      }
+    });
+  }
+
+  
+  checkOnboarding() {
+    this.profileService.getMyProfile().subscribe({
+      next: (profile) => {
+        this.profileData.set(profile);
+        if (!profile.jobTitle || !profile.location) {
+          this.showOnboardingWizard.set(true);
+        }
+      }
+    });
+  }
+
+  skipOnboarding() {
+    this.showOnboardingWizard.set(false);
+  }
+
+  saveOnboarding(jobTitle: string, location: string, bio: string) {
+    if (!jobTitle && !location) {
+      this.skipOnboarding();
+      return;
+    }
+    
+    this.isLoading.set(true);
+    this.profileService.updateProfile({ jobTitle, location, bio }).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Profile Updated', 'Your profile is now complete!');
+        this.showOnboardingWizard.set(false);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.notificationService.showError('Error', 'Failed to update profile.');
+        this.isLoading.set(false);
       }
     });
   }
@@ -259,25 +387,57 @@ export class DashboardComponent implements OnInit {
   }
 
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short' 
-    });
+    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+  }
+
+  formatShortDate(date: Date | string | undefined): string {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  formatEventMonth(date: Date | string): string {
+    return new Date(date).toLocaleDateString('en-US', { month: 'short' });
+  }
+
+  formatEventDay(date: Date | string): string {
+    return new Date(date).getDate().toString();
+  }
+
+  getInitials(): string {
+    const u = this.user();
+    return ((u?.firstName || '').charAt(0) + (u?.lastName || '').charAt(0)).toUpperCase();
+  }
+
+  getPrimaryRole(): string {
+    const roles = this.user()?.roles || [];
+    if (roles.includes('Admin')) return 'Admin';
+    if (roles.includes('ContentCreator')) return 'Content Creator';
+    return 'Alumni';
+  }
+
+  getRoleBadgeClass(): string {
+    const roles = this.user()?.roles || [];
+    if (roles.includes('Admin')) return 'bg-violet-100 text-violet-700';
+    if (roles.includes('ContentCreator')) return 'bg-blue-100 text-blue-700';
+    return 'bg-green-100 text-green-700';
+  }
+
+  getStatusDotClass(): string {
+    const status = this.user()?.status;
+    if (status === 'Approved') return 'bg-green-500';
+    if (status === 'Rejected') return 'bg-red-500';
+    return 'bg-amber-400';
   }
 
   isAdmin(): boolean {
-    const currentUser = this.user();
-    return currentUser?.roles?.includes('Admin') || false;
+    return this.user()?.roles?.includes('Admin') || false;
   }
 
   isAlumni(): boolean {
-    const currentUser = this.user();
-    return currentUser?.roles?.includes('Alumni') || false;
+    return this.user()?.roles?.includes('Alumni') || false;
   }
 
   isContentCreator(): boolean {
-    const currentUser = this.user();
-    return currentUser?.roles?.includes('ContentCreator') || false;
+    return this.user()?.roles?.includes('ContentCreator') || false;
   }
 }

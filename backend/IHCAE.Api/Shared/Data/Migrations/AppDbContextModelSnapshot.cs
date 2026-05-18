@@ -28,6 +28,10 @@ namespace IHCAE.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("Batch")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("Course")
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
@@ -42,13 +46,10 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<int?>("GraduationYear")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ImportedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -82,6 +83,10 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("Batch")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("Bio")
                         .HasColumnType("longtext");
 
@@ -92,10 +97,7 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int?>("GraduationYear")
-                        .HasColumnType("int");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<string>("JobTitle")
                         .HasMaxLength(255)
@@ -114,9 +116,9 @@ namespace IHCAE.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("Course");
+                    b.HasIndex("Batch");
 
-                    b.HasIndex("GraduationYear");
+                    b.HasIndex("Course");
 
                     b.ToTable("AlumniProfiles");
                 });
@@ -130,7 +132,7 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -200,7 +202,7 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("datetime(6)");
@@ -235,7 +237,7 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("datetime(6)");
@@ -666,7 +668,7 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("datetime(6)");
@@ -706,7 +708,7 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(255)
@@ -779,7 +781,7 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                     b.Property<Guid?>("AssignedBy")
                         .HasColumnType("char(36)");

@@ -57,4 +57,26 @@ public interface IEmailService
     /// <param name="firstName">User's first name</param>
     /// <returns>Task representing the async operation</returns>
     Task SendRegistrationRejectedAsync(string to, string firstName);
+
+    /// <summary>
+    /// Sends a notification when a user receives a new reply to their topic or post.
+    /// </summary>
+    /// <param name="to">Recipient's email address</param>
+    /// <param name="firstName">Recipient's first name</param>
+    /// <param name="topicTitle">The title of the discussion topic</param>
+    /// <param name="replyAuthorName">The name of the user who replied</param>
+    /// <param name="postLink">A link to view the post</param>
+    /// <returns>Task representing the async operation</returns>
+    Task SendNewReplyNotificationAsync(string to, string firstName, string topicTitle, string replyAuthorName, string postLink);
+
+    /// <summary>
+    /// Sends a notification when a topic or post is moderated (deleted or locked) by an admin.
+    /// </summary>
+    /// <param name="to">Recipient's email address</param>
+    /// <param name="firstName">Recipient's first name</param>
+    /// <param name="topicTitle">The title of the discussion topic</param>
+    /// <param name="action">The moderation action (e.g., 'deleted', 'locked')</param>
+    /// <param name="reason">The reason provided by the admin</param>
+    /// <returns>Task representing the async operation</returns>
+    Task SendTopicModerationNotificationAsync(string to, string firstName, string topicTitle, string action, string reason);
 }

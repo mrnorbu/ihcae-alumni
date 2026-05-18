@@ -1,123 +1,74 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { LucideAngularModule, MessageCircle, ThumbsUp, Reply } from 'lucide-angular';
+import { LucideAngularModule, MessageCircle, ThumbsUp, Pin, Lock } from 'lucide-angular';
 import type { TopicSummaryDto } from '../../../../shared/models';
 
-/**
- * Modern Thread Card Component
- * 
- * Displays individual forum threads in the new modern design format.
- * Matches the target design with user info, thread content, and interaction buttons.
- * 
- * @author IHCAE Development Team
- * @version 1.0.0
- */
 @Component({
   selector: 'app-modern-thread-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [LucideAngularModule],
   template: `
-    <div class="bg-white border-b border-neutral-200 py-4 px-6 hover:bg-neutral-50 transition-colors duration-200 relative group">
+    <div class="bg-white border-b border-neutral-200 py-4 px-6 hover:bg-neutral-50 transition-colors duration-150 cursor-pointer" (click)="onCardClick()">
       <div class="flex items-start gap-4">
-        <!-- User Avatar -->
-        <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-neutral-600">
-          <img
-            *ngIf="topic.createdBy.profileImageUrl && !isLucideIconUrl(topic.createdBy.profileImageUrl)"
-            [src]="topic.createdBy.profileImageUrl"
-            [alt]="getAuthorName(topic.createdBy)"
-            class="w-10 h-10 rounded-full object-cover"
-          />
-          <span *ngIf="!topic.createdBy.profileImageUrl || isLucideIconUrl(topic.createdBy.profileImageUrl)">
-            {{ getAuthorInitials(topic.createdBy) }}
-          </span>
+        <!-- Avatar -->
+        <div class="w-9 h-9 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-neutral-600 mt-0.5">
+          @if (topic.createdBy.profileImageUrl && !isPlaceholder(topic.createdBy.profileImageUrl)) {
+            <img [src]="topic.createdBy.profileImageUrl" [alt]="authorName" class="w-9 h-9 rounded-full object-cover" />
+          } @else {
+            {{ authorInitials }}
+          }
         </div>
-        
-        <!-- Thread Content -->
+
+        <!-- Content -->
         <div class="flex-1 min-w-0">
-          <!-- User Name with Badge -->
-          <div class="flex items-center gap-2 mb-2">
-            <span 
+          <!-- Author + time -->
+          <div class="flex items-center gap-1.5 mb-1">
+            <button
               (click)="onAuthorClick($event)"
-              class="font-medium text-neutral-900 hover:text-blue-600 cursor-pointer transition-colors"
-            >
-              {{ getAuthorName(topic.createdBy) }}
-            </span>
-            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+              class="text-sm font-medium text-neutral-700 hover:text-blue-600 transition-colors"
+              >{{ authorName }}</button>
+            <span class="text-neutral-300 text-xs">•</span>
+            <span class="text-xs text-neutral-400">{{ lastActivity }}</span>
+            @if (topic.isPinned) {
+              <lucide-icon [img]="pinIcon" [size]="12" class="text-amber-500 ml-1"></lucide-icon>
+            }
+            @if (topic.isLocked) {
+              <lucide-icon [img]="lockIcon" [size]="12" class="text-neutral-400 ml-1"></lucide-icon>
+            }
           </div>
-          
-          <!-- Thread Title -->
-          <h3 class="text-lg font-semibold text-neutral-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer">
+
+          <!-- Title -->
+          <h3 class="text-base font-semibold text-neutral-900 hover:text-blue-600 transition-colors leading-snug mb-2">
             {{ topic.title }}
           </h3>
-          
-          <!-- Thread Description -->
-          <p class="text-neutral-600 text-sm mb-3 line-clamp-2">
-            {{ getThreadDescription(topic) }}
-          </p>
-          
-          <!-- Tags and Timestamp -->
-          <div class="flex items-center gap-3 mb-3">
-            <!-- Tags -->
-            <div *ngIf="topic.tags && topic.tags.length > 0" class="flex flex-wrap gap-1">
-              <span
-                *ngFor="let tag of topic.tags.slice(0, 4)"
-                class="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-md font-medium"
-              >
-                #{{ tag.name }}
-              </span>
+
+          <!-- Tags -->
+          @if (topic.tags && topic.tags.length > 0) {
+            <div class="flex flex-wrap gap-1 mb-3">
+              @for (tag of topic.tags.slice(0, 4); track tag) {
+                <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">#{{ tag.name }}</span>
+              }
             </div>
-            
-            <!-- Timestamp -->
-            <span class="text-xs text-neutral-500">
-              - {{ getLastActivityTime(topic) }}
-            </span>
-          </div>
-          
-          <!-- Interaction Buttons -->
+          }
+
+          <!-- Stats row -->
           <div class="flex items-center gap-4">
-            <!-- Comments Button -->
-            <button 
-              (click)="onCommentsClick()"
-              class="flex items-center gap-1 text-neutral-600 hover:text-blue-600 transition-colors duration-200"
-            >
-              <lucide-icon [img]="messageIcon" [size]="16"></lucide-icon>
-              <span class="text-sm">{{ getReplyCount(topic) }}</span>
+            <button
+              (click)="$event.stopPropagation()"
+              class="flex items-center gap-1.5 text-xs text-neutral-500"
+              >
+              <lucide-icon [img]="messageIcon" [size]="14"></lucide-icon>
+              <span>{{ replyCount }}</span>
             </button>
-            
-            <!-- Like Button -->
-            <button 
-              *ngIf="hasMainPost(topic)"
-              (click)="onLikeClick()"
+
+            <button
+              (click)="onLikeClick($event)"
+              class="flex items-center gap-1.5 text-xs transition-colors"
               [class.text-blue-600]="topic.isMainPostLikedByCurrentUser"
-              [class.text-neutral-600]="!topic.isMainPostLikedByCurrentUser"
-              class="flex items-center gap-1 hover:text-blue-600 transition-colors duration-200"
-              [title]="topic.isMainPostLikedByCurrentUser ? 'Unlike this thread' : 'Like this thread'"
-            >
-              <lucide-icon 
-                [img]="thumbsUpIcon" 
-                [size]="16"
-                [class.text-blue-600]="topic.isMainPostLikedByCurrentUser"
-              ></lucide-icon>
-              <span class="text-sm">{{ getLikeCount(topic) }}</span>
-            </button>
-            
-            <!-- Disabled Like Button for topics without posts -->
-            <div 
-              *ngIf="!hasMainPost(topic)"
-              class="flex items-center gap-1 text-neutral-400 cursor-not-allowed"
-              title="This thread has no posts yet"
-            >
-              <lucide-icon [img]="thumbsUpIcon" [size]="16"></lucide-icon>
-              <span class="text-sm">0</span>
-            </div>
-            
-            <!-- Reply Button -->
-            <button 
-              (click)="onReplyClick()"
-              class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 transform hover:scale-105"
-            >
-              <lucide-icon [img]="replyIcon" [size]="14"></lucide-icon>
-              Reply
+              [class.text-neutral-500]="!topic.isMainPostLikedByCurrentUser"
+              [title]="topic.isMainPostLikedByCurrentUser ? 'Unlike' : 'Like'"
+              >
+              <lucide-icon [img]="thumbsUpIcon" [size]="14"></lucide-icon>
+              <span>{{ topic.totalLikes }}</span>
             </button>
           </div>
         </div>
@@ -128,123 +79,30 @@ import type { TopicSummaryDto } from '../../../../shared/models';
 })
 export class ModernThreadCardComponent {
   @Input() topic!: TopicSummaryDto;
-  
-  @Output() commentsClick = new EventEmitter<string>();
+
+  @Output() threadClick = new EventEmitter<string>();
   @Output() likeClick = new EventEmitter<string>();
-  @Output() replyClick = new EventEmitter<string>();
   @Output() authorClick = new EventEmitter<{userId: string, userName: string}>();
 
-  // Lucide icons
   readonly messageIcon = MessageCircle;
   readonly thumbsUpIcon = ThumbsUp;
-  readonly replyIcon = Reply;
+  readonly pinIcon = Pin;
+  readonly lockIcon = Lock;
 
-  /**
-   * Handles comments button click
-   */
-  onCommentsClick(): void {
-    this.commentsClick.emit(this.topic.id);
+  get authorName(): string {
+    return `${this.topic.createdBy.firstName} ${this.topic.createdBy.lastName}`;
   }
 
-  /**
-   * Handles like button click
-   */
-  onLikeClick(): void {
-    this.likeClick.emit(this.topic.id);
+  get authorInitials(): string {
+    return (this.topic.createdBy.firstName.charAt(0) + this.topic.createdBy.lastName.charAt(0)).toUpperCase();
   }
 
-  /**
-   * Handles reply button click
-   */
-  onReplyClick(): void {
-    this.replyClick.emit(this.topic.id);
+  get replyCount(): number {
+    return Math.max(0, (this.topic.postCount || 0) - 1);
   }
 
-  /**
-   * Handles author name click
-   */
-  onAuthorClick(event: Event): void {
-    event.stopPropagation();
-    this.authorClick.emit({
-      userId: this.topic.createdBy.id,
-      userName: this.getAuthorName(this.topic.createdBy)
-    });
-  }
-
-  /**
-   * Gets the full name of the author
-   */
-  getAuthorName(author: { firstName: string; lastName: string }): string {
-    return `${author.firstName} ${author.lastName}`;
-  }
-
-  /**
-   * Gets author initials for avatar fallback
-   */
-  getAuthorInitials(author: any): string {
-    const firstName = (author.firstName || '').trim();
-    const lastName = (author.lastName || '').trim();
-    
-    if (firstName && lastName) {
-      return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-    }
-    
-    const name = firstName || lastName;
-    if (name) {
-      return name.substring(0, 2).toUpperCase();
-    }
-    
-    const email = (author.email || '').trim();
-    if (email) {
-      return email.charAt(0).toUpperCase();
-    }
-    
-    return 'U';
-  }
-
-  /**
-   * Checks if the URL is a Lucide icon URL (default placeholder)
-   */
-  isLucideIconUrl(url: string): boolean {
-    return url.includes('lucide') || url.includes('placeholder') || url.includes('default');
-  }
-
-  /**
-   * Gets thread description from topic content
-   */
-  getThreadDescription(topic: TopicSummaryDto): string {
-    // For now, we'll use a placeholder. In a real implementation,
-    // this would come from the topic's first post content
-    return "This is a sample thread description that would contain the main content or summary of the discussion...";
-  }
-
-  /**
-   * Checks if topic has a main post
-   */
-  hasMainPost(topic: TopicSummaryDto): boolean {
-    return topic.mainPostId !== '00000000-0000-0000-0000-000000000000' && topic.postCount > 0;
-  }
-
-  /**
-   * Gets reply count (excluding the main post)
-   */
-  getReplyCount(topic: TopicSummaryDto): number {
-    // PostCount includes the main post, so subtract 1 to get replies only
-    return Math.max(0, (topic.postCount || 0) - 1);
-  }
-
-  /**
-   * Gets like count for the topic from actual data
-   */
-  getLikeCount(topic: TopicSummaryDto): number {
-    return topic.totalLikes || 0;
-  }
-
-  /**
-   * Formats the last activity time as a relative time string
-   */
-  getLastActivityTime(topic: TopicSummaryDto): string {
-    const date = topic.lastReplyAt ? new Date(topic.lastReplyAt) : new Date(topic.createdAt);
+  get lastActivity(): string {
+    const date = this.topic.lastReplyAt ? new Date(this.topic.lastReplyAt) : new Date(this.topic.createdAt);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -256,5 +114,25 @@ export class ModernThreadCardComponent {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
+  }
+
+  isPlaceholder(url: string): boolean {
+    return url.includes('lucide') || url.includes('placeholder') || url.includes('default');
+  }
+
+  onCardClick(): void {
+    this.threadClick.emit(this.topic.id);
+  }
+
+  onLikeClick(event: Event): void {
+    event.stopPropagation();
+    if (this.topic.mainPostId && this.topic.mainPostId !== '00000000-0000-0000-0000-000000000000') {
+      this.likeClick.emit(this.topic.id);
+    }
+  }
+
+  onAuthorClick(event: Event): void {
+    event.stopPropagation();
+    this.authorClick.emit({ userId: this.topic.createdBy.id, userName: this.authorName });
   }
 }

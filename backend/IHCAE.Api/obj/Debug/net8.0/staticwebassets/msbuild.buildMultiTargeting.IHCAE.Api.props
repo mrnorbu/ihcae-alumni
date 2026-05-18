@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/IHCAE.Api.props" />
-</Project>

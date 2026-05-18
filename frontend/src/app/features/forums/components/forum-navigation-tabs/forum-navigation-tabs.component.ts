@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 /**
@@ -14,7 +14,7 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-forum-navigation-tabs',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   template: `
     <!-- Forum Navigation Tabs -->
     <div class="bg-white border-b border-neutral-200">

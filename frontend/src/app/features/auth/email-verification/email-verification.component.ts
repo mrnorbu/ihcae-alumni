@@ -40,32 +40,38 @@ interface VerificationResponse {
     <div class="min-h-screen bg-white">
       <!-- Header component for consistent navigation -->
       <app-header></app-header>
-      
+    
       <!-- Main verification content area -->
       <div class="pt-20 pb-16 bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
           <!-- Verification status header with dynamic icon and messaging -->
           <div class="text-center">
             <!-- Dynamic status icon with appropriate colors -->
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full" 
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full"
                  [ngClass]="{
                    'bg-green-100': verificationStatus() === 'success',
                    'bg-red-100': verificationStatus() === 'error',
                    'bg-yellow-100': verificationStatus() === 'loading'
                  }">
               <!-- Loading spinner for verification in progress -->
-              <svg *ngIf="verificationStatus() === 'loading'" class="animate-spin h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              @if (verificationStatus() === 'loading') {
+                <svg class="animate-spin h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              }
               <!-- Success checkmark icon -->
-              <svg *ngIf="verificationStatus() === 'success'" class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
+              @if (verificationStatus() === 'success') {
+                <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              }
               <!-- Error X icon -->
-              <svg *ngIf="verificationStatus() === 'error'" class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
+              @if (verificationStatus() === 'error') {
+                <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              }
             </div>
             <!-- Dynamic title based on verification status -->
             <h2 class="mt-6 text-3xl font-display text-gray-900">
@@ -76,125 +82,131 @@ interface VerificationResponse {
               {{ getMessage() }}
             </p>
           </div>
-
+    
           <!-- Success state: Show confirmation and next steps -->
-          <div *ngIf="verificationStatus() === 'success'" class="mt-8 space-y-4">
-            <!-- Success notification card -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <!-- Success icon -->
-                  <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                </div>
-                <div class="ml-3">
-                  <h3 class="text-sm font-medium text-green-800">
-                    Email Verified Successfully!
-                  </h3>
-                  <div class="mt-2 text-sm text-green-700">
-                    <p>Your email address has been verified. You can now:</p>
-                    <!-- List of available features after verification -->
-                    <ul class="mt-2 list-disc list-inside space-y-1">
-                      <li>Access all features of the alumni network</li>
-                      <li>Participate in discussions and forums</li>
-                      <li>Connect with other alumni members</li>
-                    </ul>
+          @if (verificationStatus() === 'success') {
+            <div class="mt-8 space-y-4">
+              <!-- Success notification card -->
+              <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <!-- Success icon -->
+                    <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-green-800">
+                      Email Verified Successfully!
+                    </h3>
+                    <div class="mt-2 text-sm text-green-700">
+                      <p>Your email address has been verified. You can now:</p>
+                      <!-- List of available features after verification -->
+                      <ul class="mt-2 list-disc list-inside space-y-1">
+                        <li>Access all features of the alumni network</li>
+                        <li>Participate in discussions and forums</li>
+                        <li>Connect with other alumni members</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
+              <!-- Action buttons for successful verification -->
+              <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Primary action: Sign in to account -->
+                <button
+                  (click)="goToLogin()"
+                  class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  >
+                  Sign In to Your Account
+                </button>
+                <!-- Secondary action: Return to home -->
+                <button
+                  (click)="goToHome()"
+                  class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+                  >
+                  Return to Home
+                </button>
+              </div>
             </div>
-            
-            <!-- Action buttons for successful verification -->
-            <div class="flex flex-col sm:flex-row gap-4">
-              <!-- Primary action: Sign in to account -->
-              <button
-                (click)="goToLogin()"
-                class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Sign In to Your Account
-              </button>
-              <!-- Secondary action: Return to home -->
-              <button
-                (click)="goToHome()"
-                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Return to Home
-              </button>
-            </div>
-          </div>
-
+          }
+    
           <!-- Error state: Show error details and recovery options -->
-          <div *ngIf="verificationStatus() === 'error'" class="mt-8 space-y-4">
-            <!-- Error notification card -->
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <!-- Warning icon -->
-                  <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                  </svg>
-                </div>
-                <div class="ml-3">
-                  <h3 class="text-sm font-medium text-red-800">
-                    Verification Failed
-                  </h3>
-                  <div class="mt-2 text-sm text-red-700">
-                    <!-- Display specific error message -->
-                    <p>{{ errorMessage() }}</p>
-                    <!-- Common reasons for verification failure -->
-                    <p class="mt-2">This could happen if:</p>
-                    <ul class="mt-1 list-disc list-inside space-y-1">
-                      <li>The verification link has expired (24 hours)</li>
-                      <li>The link has already been used</li>
-                      <li>The link is invalid or corrupted</li>
-                    </ul>
+          @if (verificationStatus() === 'error') {
+            <div class="mt-8 space-y-4">
+              <!-- Error notification card -->
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <!-- Warning icon -->
+                    <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">
+                      Verification Failed
+                    </h3>
+                    <div class="mt-2 text-sm text-red-700">
+                      <!-- Display specific error message -->
+                      <p>{{ errorMessage() }}</p>
+                      <!-- Common reasons for verification failure -->
+                      <p class="mt-2">This could happen if:</p>
+                      <ul class="mt-1 list-disc list-inside space-y-1">
+                        <li>The verification link has expired (24 hours)</li>
+                        <li>The link has already been used</li>
+                        <li>The link is invalid or corrupted</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
+              <!-- Action buttons for failed verification -->
+              <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Primary action: Request new verification email -->
+                <button
+                  (click)="requestNewVerification()"
+                  class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  [disabled]="isRequestingNew()"
+                  >
+                  <!-- Loading spinner for request in progress -->
+                  @if (isRequestingNew()) {
+                    <span class="mr-2">
+                      <svg class="animate-spin h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </span>
+                  }
+                  {{ isRequestingNew() ? 'Sending...' : 'Request New Verification Email' }}
+                </button>
+                <!-- Secondary action: Return to home -->
+                <button
+                  (click)="goToHome()"
+                  class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+                  >
+                  Return to Home
+                </button>
+              </div>
             </div>
-            
-            <!-- Action buttons for failed verification -->
-            <div class="flex flex-col sm:flex-row gap-4">
-              <!-- Primary action: Request new verification email -->
-              <button
-                (click)="requestNewVerification()"
-                class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                [disabled]="isRequestingNew()"
-              >
-                <!-- Loading spinner for request in progress -->
-                <span *ngIf="isRequestingNew()" class="mr-2">
-                  <svg class="animate-spin h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </span>
-                {{ isRequestingNew() ? 'Sending...' : 'Request New Verification Email' }}
-              </button>
-              <!-- Secondary action: Return to home -->
-              <button
-                (click)="goToHome()"
-                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Return to Home
-              </button>
-            </div>
-          </div>
-
+          }
+    
           <!-- Loading state: Show verification in progress -->
-          <div *ngIf="verificationStatus() === 'loading'" class="mt-8">
-            <div class="text-center">
-              <p class="text-gray-500">Verifying your email address...</p>
-              <p class="text-sm text-gray-400 mt-2">This may take a few moments</p>
+          @if (verificationStatus() === 'loading') {
+            <div class="mt-8">
+              <div class="text-center">
+                <p class="text-gray-500">Verifying your email address...</p>
+                <p class="text-sm text-gray-400 mt-2">This may take a few moments</p>
+              </div>
             </div>
-          </div>
+          }
         </div>
       </div>
-      
+    
       <!-- Footer component for consistent layout -->
       <app-footer></app-footer>
     </div>
-  `,
+    `,
   styles: []
 })
 export class EmailVerificationComponent implements OnInit {

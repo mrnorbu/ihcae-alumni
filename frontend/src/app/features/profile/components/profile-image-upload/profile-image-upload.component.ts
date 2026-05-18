@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { ProfileService, UploadImageResponse } from '../../services/profile.service';
@@ -23,13 +23,13 @@ import { ProfileService, UploadImageResponse } from '../../services/profile.serv
 @Component({
   selector: 'app-profile-image-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <!-- Profile Image Upload Component -->
     <div class="max-w-md mx-auto" [class.opacity-60]="disabled" [class.pointer-events-none]="disabled">
-      
+    
       <!-- Upload Area -->
-      <div 
+      <div
         class="upload-area relative border-2 border-dashed border-neutral-300 rounded-xl p-8 text-center bg-neutral-50 transition-all duration-300 cursor-pointer min-h-[200px] flex items-center justify-center hover:border-primary-500 hover:bg-primary-50"
         [class.drag-over]="isDragOver"
         [class.has-preview]="hasPreview"
@@ -37,111 +37,123 @@ import { ProfileService, UploadImageResponse } from '../../services/profile.serv
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
         (click)="!disabled && !hasPreview && fileInput.click()">
-        
+    
         <!-- Image Preview -->
-        <div class="image-preview relative w-full h-full rounded-xl overflow-hidden" *ngIf="hasPreview">
-          <img 
-            [src]="previewUrl" 
-            [alt]="'Profile image preview'"
-            class="preview-image w-full h-full object-cover rounded-xl">
-          
-          <!-- Upload Overlay -->
-          <div class="upload-overlay absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-xl" *ngIf="!disabled">
-            <div class="upload-actions flex gap-2">
-              <button 
-                type="button" 
-                class="btn-secondary btn-sm"
-                (click)="$event.stopPropagation(); fileInput.click()">
-                <i class="fas fa-camera"></i>
-                Change Photo
-              </button>
-              <button 
-                type="button" 
-                class="btn-outline btn-sm border-error-500 text-error-500 hover:bg-error-500 hover:text-white"
-                (click)="$event.stopPropagation(); removeImage()">
-                <i class="fas fa-trash"></i>
-                Remove
-              </button>
-            </div>
+        @if (hasPreview) {
+          <div class="image-preview relative w-full h-full rounded-xl overflow-hidden">
+            <img
+              [src]="previewUrl"
+              [alt]="'Profile image preview'"
+              class="preview-image w-full h-full object-cover rounded-xl">
+            <!-- Upload Overlay -->
+            @if (!disabled) {
+              <div class="upload-overlay absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-xl">
+                <div class="upload-actions flex gap-2">
+                  <button
+                    type="button"
+                    class="btn-secondary btn-sm"
+                    (click)="$event.stopPropagation(); fileInput.click()">
+                    <i class="fas fa-camera"></i>
+                    Change Photo
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-outline btn-sm border-error-500 text-error-500 hover:bg-error-500 hover:text-white"
+                    (click)="$event.stopPropagation(); removeImage()">
+                    <i class="fas fa-trash"></i>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            }
           </div>
-        </div>
-
+        }
+    
         <!-- Upload Placeholder -->
-        <div class="upload-placeholder flex flex-col items-center gap-4" *ngIf="!hasPreview">
-          <div class="upload-icon text-5xl text-neutral-500">
-            <i class="fas fa-cloud-upload-alt"></i>
-          </div>
-          <div class="upload-text">
-            <h4 class="text-xl font-semibold text-neutral-700 m-0">Upload Profile Photo</h4>
-            <p class="text-neutral-500 my-2">Drag and drop an image here, or click to browse</p>
-            <small class="text-sm text-neutral-400">
-              Supported formats: JPEG, PNG, GIF, WebP (max 5MB)
-            </small>
-          </div>
-        </div>
-
-        <!-- Upload Progress -->
-        <div class="upload-progress absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 text-center" *ngIf="isUploading">
-          <div class="progress-bar w-full h-2 bg-neutral-200 rounded-full overflow-hidden mb-2">
-            <div 
-              class="progress-fill h-full bg-primary-500 rounded-full"
-              [style.width.%]="uploadProgress">
+        @if (!hasPreview) {
+          <div class="upload-placeholder flex flex-col items-center gap-4">
+            <div class="upload-icon text-5xl text-neutral-500">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-text">
+              <h4 class="text-xl font-semibold text-neutral-700 m-0">Upload Profile Photo</h4>
+              <p class="text-neutral-500 my-2">Drag and drop an image here, or click to browse</p>
+              <small class="text-sm text-neutral-400">
+                Supported formats: JPEG, PNG, GIF, WebP (max 5MB)
+              </small>
             </div>
           </div>
-          <p class="progress-text text-sm text-neutral-700 m-0">Uploading... {{ uploadProgress }}%</p>
-        </div>
+        }
+    
+        <!-- Upload Progress -->
+        @if (isUploading) {
+          <div class="upload-progress absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 text-center">
+            <div class="progress-bar w-full h-2 bg-neutral-200 rounded-full overflow-hidden mb-2">
+              <div
+                class="progress-fill h-full bg-primary-500 rounded-full"
+                [style.width.%]="uploadProgress">
+              </div>
+            </div>
+            <p class="progress-text text-sm text-neutral-700 m-0">Uploading... {{ uploadProgress }}%</p>
+          </div>
+        }
       </div>
-
+    
       <!-- File Input (Hidden) -->
-      <input 
+      <input
         #fileInput
         type="file"
         accept="image/jpeg,image/png,image/gif,image/webp"
         (change)="onFileSelected($event)"
         class="hidden">
-
+    
       <!-- Selected File Info -->
-      <div class="file-info mt-4 p-4 bg-neutral-50 rounded-lg flex justify-between items-center" *ngIf="selectedFile && !isUploading">
-        <div class="file-details flex items-center gap-2 flex-1">
-          <i class="fas fa-image text-primary-500"></i>
-          <span class="file-name font-medium text-neutral-700">{{ selectedFile.name }}</span>
-          <span class="file-size text-sm text-neutral-500">{{ getFileSizeText(selectedFile.size) }}</span>
+      @if (selectedFile && !isUploading) {
+        <div class="file-info mt-4 p-4 bg-neutral-50 rounded-lg flex justify-between items-center">
+          <div class="file-details flex items-center gap-2 flex-1">
+            <i class="fas fa-image text-primary-500"></i>
+            <span class="file-name font-medium text-neutral-700">{{ selectedFile.name }}</span>
+            <span class="file-size text-sm text-neutral-500">{{ getFileSizeText(selectedFile.size) }}</span>
+          </div>
+          <div class="file-actions flex gap-2">
+            <button
+              type="button"
+              class="btn-primary btn-sm"
+              [disabled]="!canUpload"
+              (click)="uploadImage()">
+              <i class="fas fa-upload"></i>
+              Upload
+            </button>
+            <button
+              type="button"
+              class="btn-outline btn-sm"
+              (click)="cancelUpload()">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+          </div>
         </div>
-        
-        <div class="file-actions flex gap-2">
-          <button 
-            type="button" 
-            class="btn-primary btn-sm"
-            [disabled]="!canUpload"
-            (click)="uploadImage()">
-            <i class="fas fa-upload"></i>
-            Upload
-          </button>
-          <button 
-            type="button" 
-            class="btn-outline btn-sm"
-            (click)="cancelUpload()">
-            <i class="fas fa-times"></i>
-            Cancel
-          </button>
-        </div>
-      </div>
-
+      }
+    
       <!-- Error Message -->
-      <div class="error-message mt-4 p-3 bg-error-50 border border-error-200 rounded-lg text-error-700 flex items-center gap-2" *ngIf="errorMessage">
-        <i class="fas fa-exclamation-triangle text-error-500"></i>
-        <span>{{ errorMessage }}</span>
-      </div>
-
+      @if (errorMessage) {
+        <div class="error-message mt-4 p-3 bg-error-50 border border-error-200 rounded-lg text-error-700 flex items-center gap-2">
+          <i class="fas fa-exclamation-triangle text-error-500"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+    
       <!-- Help Text -->
-      <div class="help-text mt-4 text-center" *ngIf="!hasPreview && !selectedFile">
-        <small class="text-sm text-muted">
-          <i class="fas fa-info-circle mr-1"></i>
-          A profile photo helps other alumni recognize you in the directory.
-        </small>
-      </div>
+      @if (!hasPreview && !selectedFile) {
+        <div class="help-text mt-4 text-center">
+          <small class="text-sm text-muted">
+            <i class="fas fa-info-circle mr-1"></i>
+            A profile photo helps other alumni recognize you in the directory.
+          </small>
+        </div>
+      }
     </div>
-  `,
+    `,
   styles: [`
     /* Custom styles for drag and drop states */
     .upload-area.drag-over {

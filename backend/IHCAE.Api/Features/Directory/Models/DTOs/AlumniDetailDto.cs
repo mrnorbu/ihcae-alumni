@@ -53,7 +53,7 @@ public class AlumniDetailDto
     /// Used for filtering and display purposes
     /// Examples: 2020, 2021, 2022
     /// </summary>
-    public int? GraduationYear { get; set; }
+    public string? Batch { get; set; }
 
     /// <summary>
     /// Course/program the alumnus completed at IHCAE

@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.build]
+cmds = ["npm ci", "npx ng build --configuration=production"]
+
+[start]
+cmd = "npx serve dist/ihcaeweb/browser -s -l 3000"

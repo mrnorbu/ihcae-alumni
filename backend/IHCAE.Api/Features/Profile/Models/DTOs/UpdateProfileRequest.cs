@@ -44,7 +44,7 @@ public class UpdateProfileRequest
     /// Range validation ensures reasonable years (1950-2100)
     /// </summary>
     [Range(1950, 2100, ErrorMessage = "Graduation year must be between 1950 and 2100")]
-    public int? GraduationYear { get; set; }
+    public string? Batch { get; set; }
 
     /// <summary>
     /// Phone number for contact purposes

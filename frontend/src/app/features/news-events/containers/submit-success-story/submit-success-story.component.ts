@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Upload, CheckCircle, AlertCircle, Image as ImageIcon } from 'lucide-angular';
@@ -16,7 +16,7 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
 @Component({
   selector: 'app-submit-success-story',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>

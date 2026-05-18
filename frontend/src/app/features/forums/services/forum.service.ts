@@ -187,5 +187,13 @@ export class ForumService {
   deleteOwnPost(postId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/posts/${postId}`);
   }
+
+  togglePinTopic(topicId: string): Observable<void> {
+    return this.http.put<void>(`${this.adminApiUrl}/topics/${topicId}/pin`, {});
+  }
+
+  toggleLockTopic(topicId: string): Observable<void> {
+    return this.http.put<void>(`${this.adminApiUrl}/topics/${topicId}/lock`, {});
+  }
 }
 

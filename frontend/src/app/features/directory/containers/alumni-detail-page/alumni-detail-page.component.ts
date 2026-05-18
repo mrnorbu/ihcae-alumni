@@ -1,338 +1,236 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { DirectoryService, AlumniDetail } from '../../services/directory.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
-import { 
-  LucideAngularModule, 
-  User, 
-  ArrowLeft, 
-  Mail, 
-  Phone, 
+import {
+  LucideAngularModule,
+  User,
+  ArrowLeft,
+  Mail,
+  Phone,
   MessageCircle,
-  MapPin, 
-  Briefcase, 
+  MapPin,
+  Briefcase,
   GraduationCap,
-  Calendar
+  Calendar,
+  RefreshCw
 } from 'lucide-angular';
 
-/**
- * Alumni Detail Page Component
- * 
- * Displays comprehensive information about a specific alumni member.
- * This is the detailed view accessed from the alumni directory cards.
- * 
- * **Key Features:**
- * - Full profile information display with professional layout
- * - Contact details (email, phone) with clickable links
- * - Quick action buttons (Email, Call, WhatsApp) for immediate contact
- * - Back navigation to directory
- * - Responsive design (mobile: column, desktop: row layout)
- * - Error state handling for missing profiles
- * 
- * **Contact Integration:**
- * - Email: Opens default email client with mailto: link
- * - Phone: Opens phone dialer with tel: link
- * - WhatsApp: Opens WhatsApp Web with wa.me link (cleans phone number)
- * 
- * **Data Flow:**
- * 1. Extract userId from route parameters
- * 2. Load detailed alumni data from API
- * 3. Display profile information in organized sections
- * 4. Handle loading and error states
- * 
- * **API Integration:**
- * - GET /api/v1/alumni/{userId} - Fetch detailed alumni information
- * - Returns: AlumniDetail with contact information
- * 
- * @author IHCAE Development Team
- * @version 1.0.0
- */
 @Component({
   selector: 'app-alumni-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
-    <!-- Main container with full height and neutral background -->
-    <div class="min-h-screen bg-neutral-50">
-      <!-- Header component with navigation and user menu -->
+    <div class="min-h-screen bg-slate-50">
       <app-header></app-header>
-      
-      <!-- Main Content Container -->
-      <!-- max-w-4xl: Constrains content width for readability -->
-      <!-- pt-24: Top padding to account for fixed header -->
-      <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
-        <!-- Back Navigation Button -->
-        <!-- Ghost style button with arrow icon -->
-        <button
-          routerLink="/directory"
-          class="btn-ghost mb-6 inline-flex items-center gap-2"
-        >
-          <lucide-icon [img]="backIcon" [size]="18"></lucide-icon>
-          <span>Back to Directory</span>
+
+      <div class="max-w-3xl mx-auto px-4 sm:px-5 pt-20 pb-8">
+
+        <!-- Back button -->
+        <button routerLink="/directory"
+          class="inline-flex items-center gap-1.5 text-base text-slate-500 hover:text-slate-800 mb-4 transition-colors">
+          <lucide-icon [img]="backIcon" [size]="15"></lucide-icon>
+          Back to Directory
         </button>
 
-        <!-- Loading State -->
-        <!-- Shows spinner while fetching alumni data -->
-        <div *ngIf="isLoading()" class="bg-white rounded-lg shadow p-12 text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p class="text-neutral-600">Loading profile...</p>
-        </div>
+        <!-- Loading -->
+        @if (isLoading()) {
+          <div class="bg-white border border-slate-100 rounded-xl p-10 text-center">
+            <lucide-icon [img]="loadingIcon" [size]="24" class="animate-spin text-slate-300 mx-auto mb-2"></lucide-icon>
+            <p class="text-base text-slate-500">Loading profile…</p>
+          </div>
+        }
 
-        <!-- Profile Content -->
-        <!-- Only shows when not loading and alumni data exists -->
-        <div *ngIf="!isLoading() && alumni()" class="space-y-6">
-          <!-- Profile Header Card -->
-          <!-- Contains gradient banner, profile image, name, and quick actions -->
-          <div class="bg-white rounded-lg shadow overflow-hidden">
-            <!-- Gradient Banner -->
-            <!-- Uses IHCAE brand colors for visual appeal -->
-            <div class="relative h-32 bg-gradient-to-r from-primary-600 to-secondary-600"></div>
-            <div class="relative px-6 pb-6">
-              <!-- Profile Image and Info Section -->
-              <!-- Responsive: column on mobile, row on desktop -->
-              <div class="flex flex-col md:flex-row items-start md:items-end -mt-16 mb-4 gap-4">
-                <!-- Profile Image -->
-                <!-- Large circular image with white border -->
-                <div class="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-neutral-200 flex items-center justify-center flex-shrink-0">
-                  <img
-                    *ngIf="alumni()?.profileImageUrl && !isLucideIconUrl(alumni()!.profileImageUrl)"
-                    [src]="alumni()!.profileImageUrl"
-                    [alt]="alumni()!.firstName + ' ' + alumni()!.lastName"
-                    class="w-full h-full object-cover"
-                  />
-                  <!-- Fallback icon for missing profile image -->
-                  <lucide-icon
-                    *ngIf="!alumni()?.profileImageUrl || isLucideIconUrl(alumni()!.profileImageUrl)"
-                    [img]="userIcon"
-                    [size]="48"
-                    class="text-neutral-400"
-                  ></lucide-icon>
+        @if (!isLoading() && alumni()) {
+          <div class="space-y-3">
+
+            <!-- Profile header — flat white card, no gradient -->
+            <div class="bg-white border border-slate-100 rounded-xl p-5">
+              <div class="flex items-start gap-4">
+                <!-- Avatar -->
+                <div class="w-16 h-16 rounded-full border-2 border-slate-100 bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                  @if (alumni()?.profileImageUrl && !isLucideIconUrl(alumni()!.profileImageUrl)) {
+                    <img [src]="alumni()!.profileImageUrl" [alt]="alumni()!.firstName + ' ' + alumni()!.lastName" class="w-full h-full object-cover" />
+                  }
+                  @if (!alumni()?.profileImageUrl || isLucideIconUrl(alumni()!.profileImageUrl)) {
+                    <lucide-icon [img]="userIcon" [size]="28" class="text-slate-400"></lucide-icon>
+                  }
                 </div>
 
-                <!-- Name and Title Section -->
-                <div class="flex-1">
-                  <h1 class="text-2xl md:text-3xl font-bold text-neutral-900">
+                <!-- Name + info -->
+                <div class="flex-1 min-w-0">
+                  <h1 class="text-xl font-bold text-slate-900 truncate">
                     {{ alumni()?.firstName }} {{ alumni()?.lastName }}
                   </h1>
-                  <!-- Job Title (if available) -->
-                  <p *ngIf="alumni()?.jobTitle" class="text-lg text-neutral-600 mt-1">
-                    {{ alumni()!.jobTitle }}
-                  </p>
-                  <!-- Location (if available) -->
-                  <p *ngIf="alumni()?.location" class="text-sm text-neutral-500 mt-1 flex items-center gap-1">
-                    <lucide-icon [img]="locationIcon" [size]="14"></lucide-icon>
-                    {{ alumni()!.location }}
-                  </p>
+                  @if (alumni()?.jobTitle) {
+                    <p class="text-base text-slate-500 mt-0.5">{{ alumni()!.jobTitle }}</p>
+                  }
+                  @if (alumni()?.location) {
+                    <p class="text-sm text-slate-400 mt-1 flex items-center gap-1">
+                      <lucide-icon [img]="locationIcon" [size]="12"></lucide-icon>
+                      {{ alumni()!.location }}
+                    </p>
+                  }
                 </div>
 
-                <!-- Quick Contact Action Buttons -->
-                <!-- Responsive: wraps on mobile, inline on desktop -->
-                <div class="flex flex-wrap gap-2">
-                  <!-- Email Button -->
-                  <!-- Opens default email client -->
-                  <a
-                    *ngIf="alumni()?.email"
-                    [href]="'mailto:' + alumni()!.email"
-                    class="btn-outline btn-sm inline-flex items-center gap-2"
-                    title="Send Email"
-                  >
-                    <lucide-icon [img]="mailIcon" [size]="16"></lucide-icon>
-                    <span class="hidden sm:inline">Email</span>
-                  </a>
-
-                  <!-- Call Button -->
-                  <!-- Opens phone dialer -->
-                  <a
-                    *ngIf="alumni()?.phone"
-                    [href]="'tel:' + alumni()!.phone"
-                    class="btn-outline btn-sm inline-flex items-center gap-2"
-                    title="Call"
-                  >
-                    <lucide-icon [img]="phoneIcon" [size]="16"></lucide-icon>
-                    <span class="hidden sm:inline">Call</span>
-                  </a>
-
-                  <!-- WhatsApp Button -->
-                  <!-- Opens WhatsApp Web with cleaned phone number -->
-                  <a
-                    *ngIf="alumni()?.phone"
-                    [href]="getWhatsAppLink()"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="btn-primary btn-sm inline-flex items-center gap-2"
-                    title="WhatsApp"
-                  >
-                    <lucide-icon [img]="whatsappIcon" [size]="16"></lucide-icon>
-                    <span class="hidden sm:inline">WhatsApp</span>
-                  </a>
+                <!-- Contact actions -->
+                <div class="flex items-center gap-2 shrink-0">
+                  @if (alumni()?.email) {
+                    <a [href]="'mailto:' + alumni()!.email"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-slate-200 rounded-lg text-slate-600 hover:border-slate-400 hover:text-slate-800 transition-colors">
+                      <lucide-icon [img]="mailIcon" [size]="13"></lucide-icon>
+                      Email
+                    </a>
+                  }
+                  @if (alumni()?.phone) {
+                    <a [href]="'tel:' + alumni()!.phone"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-slate-200 rounded-lg text-slate-600 hover:border-slate-400 hover:text-slate-800 transition-colors">
+                      <lucide-icon [img]="phoneIcon" [size]="13"></lucide-icon>
+                      Call
+                    </a>
+                  }
+                  @if (alumni()?.phone) {
+                    <a [href]="getWhatsAppLink()" target="_blank" rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                      <lucide-icon [img]="whatsappIcon" [size]="13"></lucide-icon>
+                      WhatsApp
+                    </a>
+                  }
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Education & Professional Info Card -->
-          <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-neutral-900 mb-4">Education & Professional Information</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Course -->
-              <div *ngIf="alumni()?.course">
-                <label class="text-sm font-medium text-neutral-600 flex items-center gap-2 mb-1">
-                  <lucide-icon [img]="gradIcon" [size]="16"></lucide-icon>
-                  Course
-                </label>
-                <p class="text-neutral-900">{{ alumni()!.course }}</p>
-              </div>
-
-              <!-- Graduation Year -->
-              <div *ngIf="alumni()?.graduationYear">
-                <label class="text-sm font-medium text-neutral-600 flex items-center gap-2 mb-1">
-                  <lucide-icon [img]="calendarIcon" [size]="16"></lucide-icon>
-                  Graduation Year
-                </label>
-                <p class="text-neutral-900">{{ alumni()!.graduationYear }}</p>
-              </div>
-
-              <!-- Job Title -->
-              <div *ngIf="alumni()?.jobTitle">
-                <label class="text-sm font-medium text-neutral-600 flex items-center gap-2 mb-1">
-                  <lucide-icon [img]="briefcaseIcon" [size]="16"></lucide-icon>
-                  Current Position
-                </label>
-                <p class="text-neutral-900">{{ alumni()!.jobTitle }}</p>
-              </div>
-
-              <!-- Location -->
-              <div *ngIf="alumni()?.location">
-                <label class="text-sm font-medium text-neutral-600 flex items-center gap-2 mb-1">
-                  <lucide-icon [img]="locationIcon" [size]="16"></lucide-icon>
-                  Location
-                </label>
-                <p class="text-neutral-900">{{ alumni()!.location }}</p>
+            <!-- Education & Professional -->
+            <div class="bg-white border border-slate-100 rounded-xl p-5">
+              <h2 class="text-base font-semibold text-slate-900 mb-3">Education &amp; Professional</h2>
+              <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                @if (alumni()?.course) {
+                  <div>
+                    <p class="text-sm text-slate-400 flex items-center gap-1 mb-0.5">
+                      <lucide-icon [img]="gradIcon" [size]="12"></lucide-icon> Course
+                    </p>
+                    <p class="text-base text-slate-800">{{ alumni()!.course }}</p>
+                  </div>
+                }
+                @if (alumni()?.graduationYear) {
+                  <div>
+                    <p class="text-sm text-slate-400 flex items-center gap-1 mb-0.5">
+                      <lucide-icon [img]="calendarIcon" [size]="12"></lucide-icon> Graduation Year
+                    </p>
+                    <p class="text-base text-slate-800">{{ alumni()!.graduationYear }}</p>
+                  </div>
+                }
+                @if (alumni()?.jobTitle) {
+                  <div>
+                    <p class="text-sm text-slate-400 flex items-center gap-1 mb-0.5">
+                      <lucide-icon [img]="briefcaseIcon" [size]="12"></lucide-icon> Current Position
+                    </p>
+                    <p class="text-base text-slate-800">{{ alumni()!.jobTitle }}</p>
+                  </div>
+                }
+                @if (alumni()?.location) {
+                  <div>
+                    <p class="text-sm text-slate-400 flex items-center gap-1 mb-0.5">
+                      <lucide-icon [img]="locationIcon" [size]="12"></lucide-icon> Location
+                    </p>
+                    <p class="text-base text-slate-800">{{ alumni()!.location }}</p>
+                  </div>
+                }
               </div>
             </div>
-          </div>
 
-          <!-- About Section -->
-          <div *ngIf="alumni()?.bio" class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-neutral-900 mb-4">About</h2>
-            <p class="text-neutral-700 whitespace-pre-wrap leading-relaxed">{{ alumni()!.bio }}</p>
-          </div>
-
-          <!-- Contact Information Card -->
-          <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-neutral-900 mb-4">Contact Information</h2>
-            
-            <div class="space-y-4">
-              <!-- Email -->
-              <div *ngIf="alumni()?.email">
-                <label class="text-sm font-medium text-neutral-600 flex items-center gap-2 mb-1">
-                  <lucide-icon [img]="mailIcon" [size]="16"></lucide-icon>
-                  Email
-                </label>
-                <a
-                  [href]="'mailto:' + alumni()!.email"
-                  class="text-primary-600 hover:text-primary-700 hover:underline"
-                >
-                  {{ alumni()!.email }}
-                </a>
+            <!-- About -->
+            @if (alumni()?.bio) {
+              <div class="bg-white border border-slate-100 rounded-xl p-5">
+                <h2 class="text-base font-semibold text-slate-900 mb-2">About</h2>
+                <p class="text-base text-slate-600 leading-relaxed whitespace-pre-wrap">{{ alumni()!.bio }}</p>
               </div>
+            }
 
-              <!-- Phone -->
-              <div *ngIf="alumni()?.phone">
-                <label class="text-sm font-medium text-neutral-600 flex items-center gap-2 mb-1">
-                  <lucide-icon [img]="phoneIcon" [size]="16"></lucide-icon>
-                  Phone
-                </label>
-                <a
-                  [href]="'tel:' + alumni()!.phone"
-                  class="text-primary-600 hover:text-primary-700 hover:underline"
-                >
-                  {{ alumni()!.phone }}
-                </a>
+            <!-- Contact -->
+            <div class="bg-white border border-slate-100 rounded-xl p-5">
+              <h2 class="text-base font-semibold text-slate-900 mb-3">Contact</h2>
+              <div class="space-y-2">
+                @if (alumni()?.email) {
+                  <div class="flex items-center gap-2">
+                    <lucide-icon [img]="mailIcon" [size]="13" class="text-slate-400 shrink-0"></lucide-icon>
+                    <a [href]="'mailto:' + alumni()!.email" class="text-base text-green-700 hover:underline">{{ alumni()!.email }}</a>
+                  </div>
+                }
+                @if (alumni()?.phone) {
+                  <div class="flex items-center gap-2">
+                    <lucide-icon [img]="phoneIcon" [size]="13" class="text-slate-400 shrink-0"></lucide-icon>
+                    <a [href]="'tel:' + alumni()!.phone" class="text-base text-green-700 hover:underline">{{ alumni()!.phone }}</a>
+                  </div>
+                }
               </div>
             </div>
-          </div>
 
-          <!-- Member Since -->
-          <div *ngIf="alumni()?.createdAt" class="text-center text-sm text-neutral-500">
-            Member since {{ formatDate(alumni()!.createdAt) }}
-          </div>
-        </div>
+            <!-- Member since -->
+            @if (alumni()?.createdAt) {
+              <p class="text-center text-sm text-slate-400">Member since {{ formatDate(alumni()!.createdAt) }}</p>
+            }
 
-        <!-- Error State -->
-        <div *ngIf="!isLoading() && !alumni()" class="bg-white rounded-lg shadow p-12 text-center">
-          <lucide-icon [img]="userIcon" [size]="48" class="text-neutral-300 mx-auto mb-4"></lucide-icon>
-          <h3 class="text-lg font-semibold text-neutral-900 mb-2">Alumni not found</h3>
-          <p class="text-neutral-600 mb-4">The alumni profile you're looking for doesn't exist or has been removed.</p>
-          <button
-            routerLink="/directory"
-            class="btn-primary"
-          >
-            Back to Directory
-          </button>
-        </div>
+          </div>
+        }
+
+        <!-- Error state -->
+        @if (!isLoading() && !alumni()) {
+          <div class="bg-white border border-slate-100 rounded-xl p-10 text-center">
+            <lucide-icon [img]="userIcon" [size]="36" class="text-slate-200 mx-auto mb-3"></lucide-icon>
+            <p class="text-base font-semibold text-slate-700 mb-1">Alumni not found</p>
+            <p class="text-sm text-slate-400 mb-4">This profile doesn't exist or has been removed.</p>
+            <button routerLink="/directory" class="text-sm bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700 transition-colors">
+              Back to Directory
+            </button>
+          </div>
+        }
+
       </div>
-      
       <app-footer></app-footer>
     </div>
   `,
   styles: []
 })
 export class AlumniDetailPageComponent implements OnInit {
-  // Dependency injection for services
   private directoryService = inject(DirectoryService);
   private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
 
-  // Reactive state using Angular signals
-  alumni = signal<AlumniDetail | null>(null);  // Current alumni data
-  isLoading = signal(true);                    // Loading state for API calls
+  alumni = signal<AlumniDetail | null>(null);
+  isLoading = signal(true);
 
-  // Lucide icons for UI elements
-  userIcon = User;           // Fallback icon for missing profile images
-  backIcon = ArrowLeft;      // Back navigation button
-  mailIcon = Mail;          // Email contact button
-  phoneIcon = Phone;        // Phone contact button
-  whatsappIcon = MessageCircle; // WhatsApp contact button
-  locationIcon = MapPin;    // Location information
-  briefcaseIcon = Briefcase; // Job title information
-  gradIcon = GraduationCap; // Course and graduation information
-  calendarIcon = Calendar;  // Graduation year information
+  readonly userIcon = User;
+  readonly backIcon = ArrowLeft;
+  readonly mailIcon = Mail;
+  readonly phoneIcon = Phone;
+  readonly whatsappIcon = MessageCircle;
+  readonly locationIcon = MapPin;
+  readonly briefcaseIcon = Briefcase;
+  readonly gradIcon = GraduationCap;
+  readonly calendarIcon = Calendar;
+  readonly loadingIcon = RefreshCw;
 
-  /**
-   * Checks if the provided URL is a Lucide icon URL that should use the fallback instead.
-   * @param url The URL to check
-   * @returns True if the URL is a Lucide icon URL
-   */
   isLucideIconUrl(url: string | undefined): boolean {
     if (!url) return true;
     return url.includes('lucide.dev/icons/') || url.includes('lucide.dev/icons/user.svg');
   }
 
   ngOnInit() {
-    // Extract userId from route parameters
     const userId = this.route.snapshot.paramMap.get('userId');
     if (userId) {
       this.loadAlumniDetail(userId);
     } else {
-      // No userId found in route, stop loading
       this.isLoading.set(false);
     }
   }
 
-  /**
-   * Loads detailed alumni information from API
-   * Updates loading state and handles errors
-   * @param userId The unique identifier of the alumnus
-   */
   loadAlumniDetail(userId: string) {
     this.isLoading.set(true);
     this.directoryService.getAlumniDetail(userId).subscribe({
       next: (alumni) => {
-        // Update reactive state with API response
         this.alumni.set(alumni);
         this.isLoading.set(false);
       },
@@ -344,34 +242,13 @@ export class AlumniDetailPageComponent implements OnInit {
     });
   }
 
-  /**
-   * Generates WhatsApp Web link with cleaned phone number
-   * Removes all non-numeric characters from phone number
-   * @returns WhatsApp Web URL or '#' if no phone
-   */
   getWhatsAppLink(): string {
     const phone = this.alumni()?.phone;
     if (!phone) return '#';
-    
-    // Remove all non-numeric characters (spaces, dashes, parentheses, etc.)
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    // Generate WhatsApp Web link
-    return `https://wa.me/${cleanPhone}`;
+    return `https://wa.me/${phone.replace(/\D/g, '')}`;
   }
 
-  /**
-   * Formats date string for display
-   * Converts ISO date to readable format (e.g., "October 2025")
-   * @param dateString ISO date string from API
-   * @returns Formatted date string
-   */
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long' 
-    });
+    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   }
 }
-

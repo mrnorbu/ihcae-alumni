@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, FileText, Download, Eye, User, Mail, Phone, MapPin, Calendar, Award, Briefcase, GraduationCap, Save } from 'lucide-angular';
@@ -17,11 +17,11 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
 @Component({
   selector: 'app-resume-builder',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
-      
+    
       <!-- Main Content -->
       <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
         <!-- Page Header -->
@@ -29,7 +29,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
           <h1 class="text-3xl font-bold text-neutral-900 mb-2">Professional Profile</h1>
           <p class="text-neutral-600">Build your professional profile for job applications</p>
         </div>
-
+    
         <!-- Profile Form -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
           <div class="flex items-center justify-between mb-6">
@@ -45,7 +45,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
               </button>
             </div>
           </div>
-
+    
           <!-- Personal Information -->
           <div class="mb-8">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
@@ -75,21 +75,21 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
               </div>
             </div>
           </div>
-
+    
           <!-- Professional Summary -->
           <div class="mb-8">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
               <lucide-icon [img]="fileTextIcon" [size]="18"></lucide-icon>
               Professional Summary
             </h3>
-            <textarea 
+            <textarea
               [(ngModel)]="profile().summary"
-              rows="4" 
-              class="input-field-lg" 
+              rows="4"
+              class="input-field-lg"
               placeholder="Write a brief summary of your professional background and career objectives...">
             </textarea>
           </div>
-
+    
           <!-- Current Role -->
           <div class="mb-8">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
@@ -119,7 +119,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
               <textarea [(ngModel)]="profile().currentRole.description" rows="3" class="input-field-lg" placeholder="Describe your current role and key responsibilities..."></textarea>
             </div>
           </div>
-
+    
           <!-- Education -->
           <div class="mb-8">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
@@ -145,7 +145,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
               </div>
             </div>
           </div>
-
+    
           <!-- Skills -->
           <div class="mb-8">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
@@ -153,9 +153,11 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
               Skills & Expertise
             </h3>
             <div class="flex flex-wrap gap-2 mb-4">
-              <span *ngFor="let skill of profile().skills" class="badge badge-primary">
-                {{ skill }}
-              </span>
+              @for (skill of profile().skills; track skill) {
+                <span class="badge badge-primary">
+                  {{ skill }}
+                </span>
+              }
             </div>
             <div class="flex gap-2">
               <input [(ngModel)]="newSkill" type="text" class="input-field flex-1" placeholder="Add a skill...">
@@ -164,21 +166,21 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
               </button>
             </div>
           </div>
-
+    
           <!-- Career Objectives -->
           <div class="mb-8">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
               <lucide-icon [img]="fileTextIcon" [size]="18"></lucide-icon>
               Career Objectives
             </h3>
-            <textarea 
+            <textarea
               [(ngModel)]="profile().careerObjectives"
-              rows="3" 
-              class="input-field-lg" 
+              rows="3"
+              class="input-field-lg"
               placeholder="What are your career goals and what type of opportunities are you looking for?">
             </textarea>
           </div>
-
+    
           <!-- Availability -->
           <div class="mb-8">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
@@ -211,7 +213,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
               </div>
             </div>
           </div>
-
+    
           <!-- Action Buttons -->
           <div class="flex gap-4 justify-end">
             <button class="btn-outline">
@@ -224,7 +226,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
             </button>
           </div>
         </div>
-
+    
         <!-- Profile Preview Card -->
         <div class="bg-white rounded-lg shadow p-6">
           <h3 class="text-lg font-semibold text-neutral-900 mb-4">Profile Preview</h3>
@@ -237,10 +239,10 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
           </div>
         </div>
       </div>
-      
+    
       <app-footer></app-footer>
     </div>
-  `,
+    `,
   styles: []
 })
 export class ResumeBuilderComponent implements OnInit {
