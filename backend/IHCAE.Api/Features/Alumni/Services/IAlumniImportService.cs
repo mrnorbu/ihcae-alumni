@@ -36,7 +36,8 @@ public interface IAlumniImportService
         string? searchTerm = null, 
         bool? matchedOnly = null, 
         int page = 1, 
-        int pageSize = 50);
+        int pageSize = 50,
+        string? status = null);
 
     /// <summary>
     /// Links an alumni record to a user account.
@@ -57,7 +58,29 @@ public interface IAlumniImportService
     /// Generates user accounts for the specified alumni records.
     /// </summary>
     /// <param name="alumniIds">The list of alumni IDs</param>
-    /// <returns>The number of accounts generated</returns>
-    Task<int> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds);
+    /// <returns>The bulk generation result containing generated and linked counts</returns>
+    Task<BulkGenerateResultDto> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds);
+
+    /// <summary>
+    /// Deletes a specific alumni record.
+    /// </summary>
+    Task<bool> DeleteAlumniRecordAsync(Guid id);
+
+    /// <summary>
+    /// Creates a single alumni record.
+    /// </summary>
+    Task<AlumniDatabase> CreateAlumniRecordAsync(AlumniDatabaseDto record);
+
+    /// <summary>
+    /// Resends the account-claim invitation email for an alumni whose account was generated but not yet claimed.
+    /// Throws InvalidOperationException if the record is not linked or has already been claimed.
+    /// </summary>
+    Task ResendInvitationAsync(Guid alumniId);
+
+    /// <summary>
+    /// Parses and validates CSV content without writing to the database.
+    /// Returns the same AlumniImportResult shape as ImportAlumniDataAsync.
+    /// </summary>
+    Task<AlumniImportResult> PreviewImportAsync(string csvContent);
 }
 

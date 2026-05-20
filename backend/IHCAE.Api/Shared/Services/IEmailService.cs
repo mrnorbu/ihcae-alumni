@@ -55,8 +55,26 @@ public interface IEmailService
     /// </summary>
     /// <param name="to">Recipient's email address</param>
     /// <param name="firstName">User's first name</param>
+    /// <param name="reason">Optional reason for rejection</param>
     /// <returns>Task representing the async operation</returns>
-    Task SendRegistrationRejectedAsync(string to, string firstName);
+    Task SendRegistrationRejectedAsync(string to, string firstName, string? reason = null);
+
+    /// <summary>
+    /// Sends a password reset success confirmation email to a user.
+    /// </summary>
+    /// <param name="to">Recipient's email address</param>
+    /// <param name="firstName">User's first name</param>
+    /// <returns>Task representing the async operation</returns>
+    Task SendPasswordResetConfirmationAsync(string to, string firstName);
+
+    /// <summary>
+    /// Sends a claim account link to a bulk-imported legacy user.
+    /// </summary>
+    /// <param name="to">Recipient's email address</param>
+    /// <param name="firstName">User's first name</param>
+    /// <param name="setupUrl">The security setup URL containing the token</param>
+    /// <returns>Task representing the async operation</returns>
+    Task SendClaimAccountEmailAsync(string to, string firstName, string setupUrl);
 
     /// <summary>
     /// Sends a notification when a user receives a new reply to their topic or post.
@@ -79,4 +97,29 @@ public interface IEmailService
     /// <param name="reason">The reason provided by the admin</param>
     /// <returns>Task representing the async operation</returns>
     Task SendTopicModerationNotificationAsync(string to, string firstName, string topicTitle, string action, string reason);
+
+    /// <summary>
+    /// Sends an admin notification that a new event has been submitted.
+    /// </summary>
+    Task SendEventSubmittedNotificationAsync(string to, string eventTitle, Guid eventId);
+
+    /// <summary>
+    /// Sends a notification to a user regarding the approval or rejection of their event.
+    /// </summary>
+    Task SendEventStatusNotificationAsync(string to, string firstName, string eventTitle, string status, string? reason = null);
+
+    /// <summary>
+    /// Sends an event registration confirmation.
+    /// </summary>
+    Task SendEventRegistrationConfirmationAsync(string to, string name, string eventTitle);
+
+    /// <summary>
+    /// Sends an admin notification that a new article has been submitted.
+    /// </summary>
+    Task SendNewsSubmittedNotificationAsync(string to, string articleTitle, Guid articleId);
+
+    /// <summary>
+    /// Sends a notification to a user regarding the approval or rejection of their article.
+    /// </summary>
+    Task SendNewsStatusNotificationAsync(string to, string firstName, string articleTitle, string status, string? reason = null);
 }

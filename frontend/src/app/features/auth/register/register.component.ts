@@ -166,6 +166,7 @@ import { HeaderComponent, FooterComponent } from '../../../shared/components';
                     [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
                     placeholder="your@email.com"
                     />
+                  <p class="text-xs text-neutral-400 mt-1">If you completed a course at IHCAE, use the email you registered with us to get instant access.</p>
                   @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
                     <div class="form-error">
                       @if (registerForm.get('email')?.errors?.['required']) {

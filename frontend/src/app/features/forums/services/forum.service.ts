@@ -195,5 +195,33 @@ export class ForumService {
   toggleLockTopic(topicId: string): Observable<void> {
     return this.http.put<void>(`${this.adminApiUrl}/topics/${topicId}/lock`, {});
   }
-}
 
+  // ===================== Flagging =====================
+
+  /**
+   * Flags a post for admin review.
+   */
+  flagPost(postId: string, reason: string, details?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/posts/${postId}/flag`, { reason, details });
+  }
+
+  /**
+   * Gets flagged posts (admin only).
+   */
+  getFlags(status?: string, page: number = 1, pageSize: number = 20): Observable<PaginatedResult<any>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    if (status) {
+      params = params.set('status', status);
+    }
+    return this.http.get<PaginatedResult<any>>(`${this.adminApiUrl}/flags`, { params });
+  }
+
+  /**
+   * Resolves a flag (admin only).
+   */
+  resolveFlag(flagId: string, status: string, notes?: string): Observable<any> {
+    return this.http.put(`${this.adminApiUrl}/flags/${flagId}/resolve`, { status, notes });
+  }
+}

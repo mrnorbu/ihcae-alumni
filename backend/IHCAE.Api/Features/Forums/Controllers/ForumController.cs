@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using IHCAE.Api.Features.Forums.Models.DTOs;
+using IHCAE.Api.Features.Forums.Models.Entities;
 using IHCAE.Api.Features.Forums.Services;
+using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.DTOs;
 using IHCAE.Api.Shared.Services;
 using System.Security.Claims;
@@ -19,12 +22,14 @@ public class ForumController : ControllerBase
 {
     private readonly IForumService _forumService;
     private readonly ITagService _tagService;
+    private readonly AppDbContext _context;
     private readonly ILogger<ForumController> _logger;
 
-    public ForumController(IForumService forumService, ITagService tagService, ILogger<ForumController> logger)
+    public ForumController(IForumService forumService, ITagService tagService, AppDbContext context, ILogger<ForumController> logger)
     {
         _forumService = forumService;
         _tagService = tagService;
+        _context = context;
         _logger = logger;
     }
 
@@ -234,6 +239,51 @@ public class ForumController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting post {PostId}", postId);
             return StatusCode(500, new ErrorResponse { Message = "An error occurred while deleting the post." });
+        }
+    }
+
+    /// <summary>
+    /// Flags a forum post for admin review.
+    /// </summary>
+    [HttpPost("posts/{postId}/flag")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> FlagPost(Guid postId, [FromBody] FlagPostRequest request)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+
+            var postExists = await _context.ForumPosts.AnyAsync(p => p.Id == postId && !p.IsDeleted);
+            if (!postExists)
+                return NotFound(new ErrorResponse { Message = "Post not found." });
+
+            var alreadyFlagged = await _context.ForumFlags
+                .AnyAsync(f => f.PostId == postId && f.FlaggedById == userId);
+            if (alreadyFlagged)
+                return Conflict(new ErrorResponse { Message = "You have already flagged this post." });
+
+            var flag = new ForumFlag
+            {
+                PostId = postId,
+                FlaggedById = userId,
+                Reason = request.Reason,
+                Details = request.Details,
+                Status = FlagStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.ForumFlags.Add(flag);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("User {UserId} flagged post {PostId} for reason: {Reason}", userId, postId, request.Reason);
+            return Ok(new { Message = "Post flagged for review." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error flagging post {PostId}", postId);
+            return StatusCode(500, new ErrorResponse { Message = "An error occurred while flagging the post." });
         }
     }
 

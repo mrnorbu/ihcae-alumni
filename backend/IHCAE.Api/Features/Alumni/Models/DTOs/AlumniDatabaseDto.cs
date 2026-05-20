@@ -55,5 +55,10 @@ public class AlumniDatabaseDto
     /// Date when this record was imported.
     /// </summary>
     public DateTime ImportedAt { get; set; }
+
+    /// <summary>
+    /// Last login time of the matched user. Null means account exists but has never been claimed.
+    /// </summary>
+    public DateTime? LastLoginAt { get; set; }
 }
 

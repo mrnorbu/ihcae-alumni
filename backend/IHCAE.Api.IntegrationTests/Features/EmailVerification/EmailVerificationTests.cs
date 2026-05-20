@@ -55,9 +55,9 @@ public class EmailVerificationTests : IntegrationTestBase
         }
 
         // Verify Email Service was called
-        await _emailServiceMock.Received(1).SendEmailAsync(
+        await _emailServiceMock.Received(1).SendEmailVerificationAsync(
             Arg.Is("verify@example.com"),
-            Arg.Is("Verify Your IHCAE Alumni Network Account"),
+            Arg.Is("Test"),
             Arg.Any<string>());
     }
 

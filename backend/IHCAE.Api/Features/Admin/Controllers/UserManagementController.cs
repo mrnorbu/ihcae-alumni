@@ -1,10 +1,14 @@
 using IHCAE.Api.Features.Auth.Services;
 using IHCAE.Api.Features.Auth.Repositories;
+using IHCAE.Api.Features.Alumni.Services;
 using IHCAE.Api.Shared.Services;
+using IHCAE.Api.Shared.Data;
+using IHCAE.Api.Shared.Constants;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace IHCAE.Api.Features.Admin.Controllers;
@@ -19,16 +23,22 @@ namespace IHCAE.Api.Features.Admin.Controllers;
 public class UserManagementController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
+    private readonly IAlumniImportService _alumniImportService;
     private readonly IEmailService _emailService;
+    private readonly AppDbContext _context;
     private readonly ILogger<UserManagementController> _logger;
 
     public UserManagementController(
         IUserRepository userRepository,
+        IAlumniImportService alumniImportService,
         IEmailService emailService,
+        AppDbContext context,
         ILogger<UserManagementController> logger)
     {
         _userRepository = userRepository;
+        _alumniImportService = alumniImportService;
         _emailService = emailService;
+        _context = context;
         _logger = logger;
     }
 
@@ -44,19 +54,29 @@ public class UserManagementController : ControllerBase
     {
         try
         {
-            var users = await _userRepository.GetAllAsync();
+            var users = await _context.Users
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .Include(u => u.AlumniProfile)
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
+
             var userDtos = users.Select(u => new
             {
                 id = u.Id,
                 firstName = u.FirstName,
                 lastName = u.LastName,
                 email = u.Email,
+                phone = u.Phone,
                 status = u.Status.ToString(),
                 emailVerified = u.EmailVerified,
                 isBanned = u.IsBanned,
                 createdAt = u.CreatedAt,
                 updatedAt = u.UpdatedAt,
-                roles = u.UserRoles.Select(ur => ur.Role.Name).ToList()
+                roles = u.UserRoles.Select(ur => ur.Role.Name).ToList(),
+                course = u.AlumniProfile != null ? u.AlumniProfile.Course : null,
+                batch = u.AlumniProfile != null ? u.AlumniProfile.Batch : null,
+                location = u.AlumniProfile != null ? u.AlumniProfile.Location : null,
+                bio = u.AlumniProfile != null ? u.AlumniProfile.Bio : null
             }).ToList();
 
             return Ok(new { success = true, users = userDtos });
@@ -133,24 +153,31 @@ public class UserManagementController : ControllerBase
             user.UpdatedAt = DateTime.UtcNow;
             await _userRepository.UpdateAsync(user);
 
-            // Send approval email
-            var subject = "Welcome to IHCAE Alumni Network - Account Approved!";
-            var body = $"<p>Dear {user.FirstName} {user.LastName},</p>" +
-                       "<p>Great news! Your account has been approved by our admin team.</p>" +
-                       "<p>You can now:</p>" +
-                       "<ul>" +
-                       "<li>Access all features of the alumni network</li>" +
-                       "<li>Participate in discussions and forums</li>" +
-                       "<li>Connect with other alumni members</li>" +
-                       "<li>Access exclusive alumni resources</li>" +
-                       "</ul>" +
-                       "<p>Please log in to your account to get started.</p>" +
-                       "<p>Welcome to the IHCAE Alumni Network!</p>" +
-                       "<p>Best regards,<br/>IHCAE Alumni Network Team</p>";
+            // Assign Alumni role
+            await _userRepository.AssignRoleAsync(userId, RoleConstants.Alumni);
 
+            // Link to AlumniDatabase roster if email matches an unmatched record
+            var match = await _alumniImportService.FindMatchingAlumniAsync(user.Email);
+            if (match != null)
+            {
+                await _alumniImportService.LinkAlumniToUserAsync(match.Id, userId);
+
+                // Populate AlumniProfile with authoritative data from roster
+                var profile = await _context.AlumniProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+                if (profile != null)
+                {
+                    profile.Course = match.Course;
+                    profile.Batch = match.Batch;
+                    profile.Location = match.Location;
+                    profile.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            // Send approval email
             try
             {
-                await _emailService.SendEmailAsync(user.Email, subject, body);
+                await _emailService.SendRegistrationApprovedAsync(user.Email, user.FirstName);
                 _logger.LogInformation("Approval email sent to {Email}", user.Email);
             }
             catch (Exception emailEx)
@@ -159,7 +186,7 @@ public class UserManagementController : ControllerBase
                 // Don't fail the approval if email fails
             }
 
-            _logger.LogInformation("User {UserId} ({Email}) approved by admin {AdminId}", 
+            _logger.LogInformation("User {UserId} ({Email}) approved by admin {AdminId}",
                 userId, user.Email, User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             return Ok(new { success = true, message = "User approved successfully!" });
@@ -205,18 +232,9 @@ public class UserManagementController : ControllerBase
 
             // Send rejection email
             var reason = request?.Reason ?? "Your application did not meet our current requirements.";
-            var subject = "IHCAE Alumni Network - Application Status Update";
-            var body = $"<p>Dear {user.FirstName} {user.LastName},</p>" +
-                       "<p>Thank you for your interest in joining the IHCAE Alumni Network.</p>" +
-                       "<p>After careful review, we regret to inform you that your application has not been approved at this time.</p>" +
-                       $"<p><strong>Reason:</strong> {reason}</p>" +
-                       "<p>You may reapply in the future if your circumstances change.</p>" +
-                       "<p>If you have any questions, please contact our support team.</p>" +
-                       "<p>Best regards,<br/>IHCAE Alumni Network Team</p>";
-
             try
             {
-                await _emailService.SendEmailAsync(user.Email, subject, body);
+                await _emailService.SendRegistrationRejectedAsync(user.Email, user.FirstName, reason);
                 _logger.LogInformation("Rejection email sent to {Email}", user.Email);
             }
             catch (Exception emailEx)

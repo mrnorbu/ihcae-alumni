@@ -19,7 +19,10 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Database,
+  BookOpen,
+  Newspaper
 } from 'lucide-angular';
 
 @Component({
@@ -40,8 +43,8 @@ import {
             <img src="images/logo.png" alt="IHCAE" class="w-4 h-4 object-contain brightness-200">
           </div>
           <div class="leading-tight">
-            <strong class="block text-xs font-bold tracking-wide text-neutral-900">IHCAE Console</strong>
-            <small class="text-[10px] text-neutral-400">Alumni Admin</small>
+            <strong class="block text-sm font-bold tracking-wide text-neutral-900">IHCAE Console</strong>
+            <small class="text-xs text-neutral-400">Alumni Admin</small>
           </div>
         </div>
 
@@ -51,7 +54,7 @@ import {
           <!-- Overview -->
           <div>
             <a routerLink="/admin" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-              class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+              class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
               <lucide-icon [img]="dashboardIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
               Dashboard
             </a>
@@ -59,51 +62,55 @@ import {
 
           <!-- User Management -->
           <div>
-            <p class="px-2.5 mb-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Users</p>
-            <a routerLink="/admin" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-              class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
-              <lucide-icon [img]="clockIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
-              User Approvals
-              @if (pendingCount() > 0) {
-                <span class="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">
-                  {{ pendingCount() }}
-                </span>
-              }
-            </a>
+            <p class="px-2.5 mb-1 text-xs font-semibold uppercase tracking-widest text-neutral-400">Users</p>
+            <div class="space-y-0.5">
+              <a routerLink="/admin/users" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
+                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+                <lucide-icon [img]="usersIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
+                User Management
+              </a>
+            </div>
           </div>
 
           <!-- Content -->
           <div>
-            <p class="px-2.5 mb-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Content</p>
+            <p class="px-2.5 mb-1 text-xs font-semibold uppercase tracking-widest text-neutral-400">Content</p>
             <div class="space-y-0.5">
-              <a routerLink="/admin/content-review" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
-                <lucide-icon [img]="alertIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
-                Content Review
-              </a>
               <a routerLink="/admin/content" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
-                <lucide-icon [img]="fileTextIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
+                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+                <lucide-icon [img]="newspaperIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
                 News & Events
+              </a>
+              <a routerLink="/admin/content-review" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
+                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+                <lucide-icon [img]="bookOpenIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
+                Story Review
               </a>
             </div>
           </div>
 
           <!-- Alumni -->
           <div>
-            <p class="px-2.5 mb-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Alumni</p>
-            <a routerLink="/admin/alumni" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-              class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
-              <lucide-icon [img]="userCheckIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
-              Alumni Management
-            </a>
+            <p class="px-2.5 mb-1 text-xs font-semibold uppercase tracking-widest text-neutral-400">Alumni</p>
+            <div class="space-y-0.5">
+              <a routerLink="/admin/alumni-hub" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
+                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+                <lucide-icon [img]="databaseIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
+                Alumni Hub
+                @if (pendingCount() > 0) {
+                  <span class="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                    {{ pendingCount() }}
+                  </span>
+                }
+              </a>
+            </div>
           </div>
 
           <!-- Forums -->
           <div>
-            <p class="px-2.5 mb-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Forums</p>
+            <p class="px-2.5 mb-1 text-xs font-semibold uppercase tracking-widest text-neutral-400">Forums</p>
             <a routerLink="/admin/forums" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-              class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+              class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
               <lucide-icon [img]="messageSquareIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
               Forum Moderation
             </a>
@@ -111,15 +118,15 @@ import {
 
           <!-- System -->
           <div>
-            <p class="px-2.5 mb-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">System</p>
+            <p class="px-2.5 mb-1 text-xs font-semibold uppercase tracking-widest text-neutral-400">System</p>
             <div class="space-y-0.5">
               <a routerLink="/admin/analytics" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
                 <lucide-icon [img]="analyticsIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
                 Analytics
               </a>
               <a routerLink="/admin/settings" routerLinkActive="bg-neutral-100 text-neutral-900 font-semibold"
-                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
                 <lucide-icon [img]="settingsIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
                 Settings
               </a>
@@ -131,13 +138,13 @@ import {
         <div class="px-2.5 py-2.5 border-t border-neutral-200 shrink-0">
           <div class="flex items-center gap-2">
             <div class="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center shrink-0">
-              <span class="text-[10px] font-semibold text-neutral-600">
+              <span class="text-xs font-semibold text-neutral-600">
                 {{ user()?.firstName?.charAt(0) }}{{ user()?.lastName?.charAt(0) }}
               </span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-xs font-medium text-neutral-900 truncate">{{ user()?.firstName }} {{ user()?.lastName }}</p>
-              <p class="text-[10px] text-neutral-400">Administrator</p>
+              <p class="text-xs text-neutral-400">Administrator</p>
             </div>
             <button (click)="logout()" title="Logout"
               class="p-1 rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors shrink-0">
@@ -164,7 +171,7 @@ import {
             </button>
             <div class="flex-1">
               <h1 class="text-base font-bold text-neutral-900">IHCAE Admin</h1>
-              <p class="text-[11px] text-neutral-400 leading-none">
+              <p class="text-xs text-neutral-400 leading-none">
                 @if (pendingCount() > 0) {
                   <span class="text-amber-600 font-medium">{{ pendingCount() }} pending approval</span>
                 } @else {
@@ -202,6 +209,9 @@ export class AdminLayoutComponent implements OnInit {
   readonly logoutIcon = LogOut;
   readonly menuIcon = Menu;
   readonly xIcon = X;
+  readonly databaseIcon = Database;
+  readonly bookOpenIcon = BookOpen;
+  readonly newspaperIcon = Newspaper;
 
   user = signal<User | null>(null);
   sidebarOpen = signal(true);

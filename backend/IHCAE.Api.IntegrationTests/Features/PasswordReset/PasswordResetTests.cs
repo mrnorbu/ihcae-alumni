@@ -57,9 +57,9 @@ public class PasswordResetTests : IntegrationTestBase
             token!.IsUsed.Should().BeFalse();
         }
 
-        await _emailServiceMock.Received(1).SendEmailAsync(
+        await _emailServiceMock.Received(1).SendPasswordResetAsync(
             Arg.Is(email),
-            Arg.Is("Reset Your IHCAE Alumni Network Password"),
+            Arg.Is("Test"),
             Arg.Any<string>());
     }
 

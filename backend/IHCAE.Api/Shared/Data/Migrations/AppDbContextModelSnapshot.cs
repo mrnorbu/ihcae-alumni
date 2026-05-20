@@ -483,6 +483,63 @@ namespace IHCAE.Infrastructure.Migrations
                     b.ToTable("DiscussionTopicTags");
                 });
 
+            modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.ForumFlag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<Guid>("FlaggedById")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("ResolvedById")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("FlaggedById");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("ResolvedById");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("PostId", "FlaggedById")
+                        .IsUnique();
+
+                    b.ToTable("ForumFlags");
+                });
+
             modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.ForumPost", b =>
                 {
                     b.Property<Guid>("Id")
@@ -900,6 +957,32 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Navigation("Tag");
 
                     b.Navigation("Topic");
+                });
+
+            modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.ForumFlag", b =>
+                {
+                    b.HasOne("IHCAE.Api.Features.Auth.Models.Entities.User", "FlaggedBy")
+                        .WithMany()
+                        .HasForeignKey("FlaggedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IHCAE.Api.Features.Forums.Models.Entities.ForumPost", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IHCAE.Api.Features.Auth.Models.Entities.User", "ResolvedBy")
+                        .WithMany()
+                        .HasForeignKey("ResolvedById")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("FlaggedBy");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("ResolvedBy");
                 });
 
             modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.ForumPost", b =>

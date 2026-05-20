@@ -129,19 +129,21 @@ export class NotificationService {
    */
   private addNotification(notification: Notification): void {
     const currentNotifications = this._notifications.value;
-    
-    // Limit to maximum 5 notifications at once
-    const maxNotifications = 5;
+
+    // Deduplicate: if an identical title+message is already visible, don't add another
+    const isDuplicate = currentNotifications.some(
+      n => n.type === notification.type && n.title === notification.title && n.message === notification.message
+    );
+    if (isDuplicate) return;
+
+    // Limit to maximum 3 notifications at once
     let notifications = [...currentNotifications, notification];
-    
-    // If we exceed the limit, remove the oldest notifications
-    if (notifications.length > maxNotifications) {
-      notifications = notifications.slice(-maxNotifications);
+    if (notifications.length > 3) {
+      notifications = notifications.slice(-3);
     }
-    
+
     this._notifications.next(notifications);
 
-    // Auto-remove notification after duration if specified
     if (notification.duration && notification.duration > 0) {
       setTimeout(() => {
         this.removeNotification(notification.id);

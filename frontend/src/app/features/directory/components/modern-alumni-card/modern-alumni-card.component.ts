@@ -29,11 +29,11 @@ import { AlumniCard } from '../../services/directory.service';
           <p class="text-xs text-neutral-500 truncate mb-2 leading-tight">{{ alumni.jobTitle }}</p>
         }
         <div class="space-y-1 mt-auto">
-          @if (alumni.course || alumni.graduationYear) {
+          @if (alumni.course || alumni.batch || alumni.graduationYear) {
             <div class="flex items-center gap-1.5">
               <lucide-icon [img]="graduationIcon" [size]="11" class="text-green-600 shrink-0"></lucide-icon>
               <span class="text-xs text-green-700 font-medium truncate">
-                {{ alumni.course }}@if (alumni.course && alumni.graduationYear) { · }{{ alumni.graduationYear }}
+                {{ alumni.course }}@if (alumni.course && (alumni.batch || alumni.graduationYear)) { · }{{ alumni.batch || alumni.graduationYear }}
               </span>
             </div>
           }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using IHCAE.Api.IntegrationTests.Infrastructure;
 using IHCAE.Api.Shared.Data;
+using IHCAE.Api.Shared.DTOs;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Features.Auth.Models.DTOs;
 using IHCAE.Api.Features.Forums.Models.Entities;
@@ -164,6 +165,142 @@ public class ForumModerationTests : IntegrationTestBase
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var topic = await context.DiscussionTopics.FirstAsync(t => t.Id == topicId);
             topic.IsPinned.Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    public async Task FlagPost_AsUser_ReturnsSuccess()
+    {
+        // Arrange
+        var adminId = Guid.NewGuid();
+        var topicId = Guid.NewGuid();
+        var postId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedAdminAndForumDataAsync(context, adminId, topicId, postId);
+        }
+
+        var token = await GetAdminTokenAsync("admin.mod@example.com", "Password123!");
+        
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/forums/posts/{postId}/flag");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = JsonContent.Create(new { Reason = "Spam", Details = "Contains unsolicited advertising links." });
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var flag = await context.ForumFlags.FirstOrDefaultAsync(f => f.PostId == postId);
+            flag.Should().NotBeNull();
+            flag!.Reason.Should().Be("Spam");
+            flag.Details.Should().Be("Contains unsolicited advertising links.");
+            flag.Status.Should().Be(FlagStatus.Pending);
+        }
+    }
+
+    [Fact]
+    public async Task GetFlags_AsAdmin_ReturnsFlags()
+    {
+        // Arrange
+        var adminId = Guid.NewGuid();
+        var topicId = Guid.NewGuid();
+        var postId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedAdminAndForumDataAsync(context, adminId, topicId, postId);
+
+            var actualAdmin = await context.Users.FirstAsync(u => u.Email == "admin.mod@example.com");
+
+            // Add a flag
+            var flag = new ForumFlag
+            {
+                PostId = postId,
+                FlaggedById = actualAdmin.Id,
+                Reason = "Inappropriate",
+                Details = "Violates guidelines.",
+                Status = FlagStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.ForumFlags.Add(flag);
+            await context.SaveChangesAsync();
+        }
+
+        var token = await GetAdminTokenAsync("admin.mod@example.com", "Password123!");
+        
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/admin/forums/flags?status=Pending");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResult<IHCAE.Api.Features.Forums.Models.DTOs.ForumFlagDto>>();
+        result.Should().NotBeNull();
+        result!.Items.Should().NotBeEmpty();
+        result.Items.Any(f => f.PostId == postId && f.Reason == "Inappropriate").Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ResolveFlag_AsAdmin_ReturnsSuccess()
+    {
+        // Arrange
+        var adminId = Guid.NewGuid();
+        var topicId = Guid.NewGuid();
+        var postId = Guid.NewGuid();
+        var flagId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedAdminAndForumDataAsync(context, adminId, topicId, postId);
+
+            var actualAdmin = await context.Users.FirstAsync(u => u.Email == "admin.mod@example.com");
+
+            // Add a flag
+            var flag = new ForumFlag
+            {
+                Id = flagId,
+                PostId = postId,
+                FlaggedById = actualAdmin.Id,
+                Reason = "Harassment",
+                Status = FlagStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.ForumFlags.Add(flag);
+            await context.SaveChangesAsync();
+        }
+
+        var token = await GetAdminTokenAsync("admin.mod@example.com", "Password123!");
+        
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/admin/forums/flags/{flagId}/resolve");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = JsonContent.Create(new { Status = "Dismissed", Notes = "No violation found upon review." });
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var flag = await context.ForumFlags.FindAsync(flagId);
+            flag.Should().NotBeNull();
+            flag!.Status.Should().Be(FlagStatus.Dismissed);
+            flag.ResolutionNotes.Should().Be("No violation found upon review.");
+            flag.ResolvedById.Should().Be(adminId);
+            flag.ResolvedAt.Should().NotBeNull();
         }
     }
 }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { UserAuthStore } from '../../../core/state/user-auth.store';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { environment } from '../../../../environments/environment';
 import { 
   LucideAngularModule, 
@@ -36,7 +37,7 @@ import {
 @Component({
   selector: 'app-content-management',
   standalone: true,
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <!-- Header -->
@@ -476,6 +477,14 @@ import {
         </div>
       }
     </div>
+
+    <app-confirmation-modal
+      [isVisible]="showConfirmModal()"
+      [title]="confirmModalConfig().title"
+      [message]="confirmModalConfig().message"
+      [confirmText]="confirmModalConfig().confirmText"
+      (confirm)="onConfirm()"
+      (cancel)="onCancelConfirm()" />
     `,
   styles: []
 })
@@ -497,6 +506,17 @@ export class ContentManagementComponent implements OnInit {
   readonly refreshIcon = RefreshCw;
   readonly alertIcon = AlertCircle;
   readonly arrowLeftIcon = X; // Using X as back arrow for now
+
+  // Confirmation modal
+  showConfirmModal = signal(false);
+  confirmModalConfig = signal<{ title: string; message: string; confirmText: string; action: () => void }>({ title: '', message: '', confirmText: 'Confirm', action: () => {} });
+
+  openConfirm(title: string, message: string, confirmText: string, action: () => void) {
+    this.confirmModalConfig.set({ title, message, confirmText, action });
+    this.showConfirmModal.set(true);
+  }
+  onConfirm() { this.confirmModalConfig().action(); this.showConfirmModal.set(false); }
+  onCancelConfirm() { this.showConfirmModal.set(false); }
 
   // State
   isLoading = signal(false);
@@ -670,12 +690,17 @@ export class ContentManagementComponent implements OnInit {
   }
 
   deleteArticle(article: any) {
-    if (confirm(`Are you sure you want to delete "${article.title}"?`)) {
-      // Mock delete - replace with actual API call
-      this.notificationService.showSuccess('Article Deleted', 'Article has been deleted successfully');
-      this.loadArticles();
-      this.loadStats();
-    }
+    this.openConfirm(
+      'Delete Article',
+      `Delete "${article.title}"? This cannot be undone.`,
+      'Delete',
+      () => {
+        // Mock delete - replace with actual API call
+        this.notificationService.showSuccess('Article Deleted', 'Article has been deleted successfully');
+        this.loadArticles();
+        this.loadStats();
+      }
+    );
   }
 
   closeArticleModal() {
@@ -730,12 +755,17 @@ export class ContentManagementComponent implements OnInit {
   }
 
   deleteEvent(event: any) {
-    if (confirm(`Are you sure you want to delete "${event.title}"?`)) {
-      // Mock delete - replace with actual API call
-      this.notificationService.showSuccess('Event Deleted', 'Event has been deleted successfully');
-      this.loadEvents();
-      this.loadStats();
-    }
+    this.openConfirm(
+      'Delete Event',
+      `Delete "${event.title}"? This cannot be undone.`,
+      'Delete',
+      () => {
+        // Mock delete - replace with actual API call
+        this.notificationService.showSuccess('Event Deleted', 'Event has been deleted successfully');
+        this.loadEvents();
+        this.loadStats();
+      }
+    );
   }
 
   closeEventModal() {

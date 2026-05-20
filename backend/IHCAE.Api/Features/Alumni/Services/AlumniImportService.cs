@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using IHCAE.Api.Features.Alumni.Models.Entities;
 using IHCAE.Api.Features.Alumni.Models.DTOs;
 using IHCAE.Api.Shared.Data;
@@ -8,27 +9,23 @@ using System.Text;
 
 namespace IHCAE.Api.Features.Alumni.Services;
 
-/// <summary>
-/// Service implementation for alumni database import operations.
-/// Handles importing alumni data from CSV files for auto-approval matching.
-/// </summary>
 public class AlumniImportService : IAlumniImportService
 {
     private readonly AppDbContext _context;
     private readonly ILogger<AlumniImportService> _logger;
     private readonly IHCAE.Api.Shared.Services.IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
-    /// <summary>
-    /// Initializes a new instance of the AlumniImportService.
-    /// </summary>
-    /// <param name="context">The database context</param>
-    /// <param name="logger">Logger for import operations</param>
-    /// <param name="emailService">Email service</param>
-    public AlumniImportService(AppDbContext context, ILogger<AlumniImportService> logger, IHCAE.Api.Shared.Services.IEmailService emailService)
+    public AlumniImportService(
+        AppDbContext context,
+        ILogger<AlumniImportService> logger,
+        IHCAE.Api.Shared.Services.IEmailService emailService,
+        IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
         _emailService = emailService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -66,12 +63,17 @@ public class AlumniImportService : IAlumniImportService
         var phoneIndex = Array.IndexOf(headers, "phone");
         var locationIndex = Array.IndexOf(headers, "location");
 
+        // Load all existing emails once to avoid N+1 queries and detect intra-CSV duplicates
+        var existingEmails = new HashSet<string>(
+            await _context.AlumniDatabase.Select(a => a.Email).ToListAsync(),
+            StringComparer.OrdinalIgnoreCase);
+
         for (int i = 1; i < lines.Length; i++)
         {
             try
             {
                 var values = ParseCsvLine(lines[i]);
-                
+
                 if (values.Length <= Math.Max(firstNameIndex, Math.Max(lastNameIndex, emailIndex)))
                 {
                     result.Errors.Add($"Row {i + 1}: Insufficient data columns.");
@@ -90,11 +92,8 @@ public class AlumniImportService : IAlumniImportService
                     continue;
                 }
 
-                // Check if alumni record already exists
-                var existingAlumni = await _context.AlumniDatabase
-                    .FirstOrDefaultAsync(a => a.Email == email);
-
-                if (existingAlumni != null)
+                // HashSet.Add returns false if already present (catches DB duplicates AND intra-CSV duplicates)
+                if (!existingEmails.Add(email))
                 {
                     result.SkippedRecords++;
                     continue;
@@ -134,6 +133,76 @@ public class AlumniImportService : IAlumniImportService
         return result;
     }
 
+    public async Task<AlumniImportResult> PreviewImportAsync(string csvContent)
+    {
+        var result = new AlumniImportResult();
+        var lines = csvContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        if (lines.Length < 2)
+        {
+            result.Errors.Add("CSV file must contain at least a header row and one data row.");
+            return result;
+        }
+
+        var headers = lines[0].Split(',').Select(h => h.Trim().ToLower()).ToArray();
+        result.TotalRecords = lines.Length - 1;
+
+        var firstNameIndex = Array.IndexOf(headers, "firstname");
+        var lastNameIndex = Array.IndexOf(headers, "lastname");
+        var emailIndex = Array.IndexOf(headers, "email");
+
+        if (firstNameIndex == -1 || lastNameIndex == -1 || emailIndex == -1)
+        {
+            result.Errors.Add("CSV must contain FirstName, LastName, and Email columns.");
+            return result;
+        }
+
+        var existingEmails = new HashSet<string>(
+            await _context.AlumniDatabase.Select(a => a.Email).ToListAsync(),
+            StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            try
+            {
+                var values = ParseCsvLine(lines[i]);
+
+                if (values.Length <= Math.Max(firstNameIndex, Math.Max(lastNameIndex, emailIndex)))
+                {
+                    result.Errors.Add($"Row {i + 1}: Insufficient data columns.");
+                    result.SkippedRecords++;
+                    continue;
+                }
+
+                var firstName = values[firstNameIndex]?.Trim();
+                var lastName = values[lastNameIndex]?.Trim();
+                var email = values[emailIndex]?.Trim().ToLower();
+
+                if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(email))
+                {
+                    result.Errors.Add($"Row {i + 1}: Missing required fields (FirstName, LastName, or Email).");
+                    result.SkippedRecords++;
+                    continue;
+                }
+
+                if (!existingEmails.Add(email))
+                {
+                    result.SkippedRecords++;
+                    continue;
+                }
+
+                result.ImportedRecords++;
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"Row {i + 1}: {ex.Message}");
+                result.SkippedRecords++;
+            }
+        }
+
+        return result;
+    }
+
     /// <summary>
     /// Searches for a matching alumni record by email.
     /// </summary>
@@ -157,7 +226,8 @@ public class AlumniImportService : IAlumniImportService
         string? searchTerm = null, 
         bool? matchedOnly = null, 
         int page = 1, 
-        int pageSize = 50)
+        int pageSize = 50,
+        string? status = null)
     {
         var query = _context.AlumniDatabase.AsQueryable();
 
@@ -171,8 +241,24 @@ public class AlumniImportService : IAlumniImportService
                 a.Email.ToLower().Contains(lowerSearchTerm));
         }
 
-        // Apply matched filter
-        if (matchedOnly.HasValue)
+        // Apply status or matchedOnly filter
+        if (!string.IsNullOrEmpty(status))
+        {
+            var lowerStatus = status.ToLower();
+            if (lowerStatus == "registered")
+            {
+                query = query.Where(a => a.MatchedUserId != null && a.MatchedUser != null && a.MatchedUser.LastLoginAt != null);
+            }
+            else if (lowerStatus == "invited" || lowerStatus == "unclaimed")
+            {
+                query = query.Where(a => a.MatchedUserId != null && (a.MatchedUser == null || a.MatchedUser.LastLoginAt == null));
+            }
+            else if (lowerStatus == "pending" || lowerStatus == "unmatched")
+            {
+                query = query.Where(a => a.MatchedUserId == null);
+            }
+        }
+        else if (matchedOnly.HasValue)
         {
             query = matchedOnly.Value 
                 ? query.Where(a => a.MatchedUserId != null)
@@ -182,6 +268,7 @@ public class AlumniImportService : IAlumniImportService
         var totalCount = await query.CountAsync();
         
         var items = await query
+            .Include(a => a.MatchedUser)
             .OrderBy(a => a.FirstName)
             .ThenBy(a => a.LastName)
             .Skip((page - 1) * pageSize)
@@ -259,10 +346,6 @@ public class AlumniImportService : IAlumniImportService
 
         return result.ToArray();
     }
-    /// <summary>
-    /// Updates multiple alumni database records at once.
-    /// </summary>
-    /// <param name="records">The list of updated records</param>
     public async Task UpdateAlumniRecordsAsync(IEnumerable<AlumniDatabaseDto> records)
     {
         foreach (var record in records)
@@ -277,6 +360,29 @@ public class AlumniImportService : IAlumniImportService
                 existing.Batch = record.Batch;
                 existing.Phone = record.Phone;
                 existing.Location = record.Location;
+
+                // If linked to an active user account, sync all fields
+                if (existing.MatchedUserId != null)
+                {
+                    var user = await _context.Users.FindAsync(existing.MatchedUserId);
+                    if (user != null)
+                    {
+                        user.FirstName = record.FirstName;
+                        user.LastName = record.LastName;
+                        user.Email = record.Email.ToLower();
+                        user.Phone = record.Phone;
+                    }
+
+                    // Also sync Course/Batch/Location to AlumniProfile
+                    var profile = await _context.AlumniProfiles.FirstOrDefaultAsync(p => p.UserId == existing.MatchedUserId);
+                    if (profile != null)
+                    {
+                        profile.Course = record.Course;
+                        profile.Batch = record.Batch;
+                        profile.Location = record.Location;
+                        profile.UpdatedAt = DateTime.UtcNow;
+                    }
+                }
             }
         }
         await _context.SaveChangesAsync();
@@ -286,127 +392,226 @@ public class AlumniImportService : IAlumniImportService
     /// Generates user accounts for the specified alumni records.
     /// </summary>
     /// <param name="alumniIds">The list of alumni IDs</param>
-    /// <returns>The number of accounts generated</returns>
-    public async Task<int> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds)
+    /// <returns>The bulk generation result containing generated and linked counts</returns>
+    public async Task<BulkGenerateResultDto> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds)
     {
-        int generatedCount = 0;
-        
-        
+        var result = new BulkGenerateResultDto();
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+
+        // Fetch Alumni role once outside the loop
+        var alumniRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Alumni");
+
         foreach (var id in alumniIds)
         {
-            var alumni = await _context.AlumniDatabase.FindAsync(id);
-            if (alumni == null || alumni.MatchedUserId != null) continue;
-
-            // Check if user already exists
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == alumni.Email);
-            if (existingUser != null)
+            try
             {
-                // Just link it
-                alumni.MatchedUserId = existingUser.Id;
-                continue;
-            }
+                var alumni = await _context.AlumniDatabase.FindAsync(id);
+                if (alumni == null || alumni.MatchedUserId != null) continue;
 
-            // Create User
-            var user = new IHCAE.Api.Features.Auth.Models.Entities.User
-            {
-                Id = Guid.NewGuid(),
-                FirstName = alumni.FirstName,
-                LastName = alumni.LastName,
-                Email = alumni.Email,
-                // Assign a temporary unguessable password hash, they will set it via the setup link
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString(), 12),
-                Status = IHCAE.Api.Features.Auth.Models.Entities.UserStatus.Approved,
-                EmailVerified = true, // Consider verified since admin imported
-                IsBanned = false,
-                CreatedAt = DateTime.UtcNow
-            };
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == alumni.Email);
+                if (existingUser != null)
+                {
+                    if (existingUser.Status == IHCAE.Api.Features.Auth.Models.Entities.UserStatus.Approved)
+                    {
+                        // Already active — just link
+                        alumni.MatchedUserId = existingUser.Id;
+                        await _context.SaveChangesAsync();
+                        result.LinkedCount++;
+                        continue;
+                    }
 
-            _context.Users.Add(user);
+                    // Pending or Rejected — activate, update profile, send setup email
+                    existingUser.Status = IHCAE.Api.Features.Auth.Models.Entities.UserStatus.Approved;
+                    existingUser.FirstName = alumni.FirstName;
+                    existingUser.LastName = alumni.LastName;
+                    existingUser.Phone = alumni.Phone;
 
-            // Create AlumniProfile
-            var profile = new IHCAE.Api.Features.Auth.Models.Entities.AlumniProfile
-            {
-                UserId = user.Id,
-                Course = alumni.Course,
-                Batch = alumni.Batch,
-                
-                Location = alumni.Location,
-                CreatedAt = DateTime.UtcNow
-            };
-            
-            _context.AlumniProfiles.Add(profile);
-            
-            // Assign Alumni role
-            var alumniRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Alumni");
-            if (alumniRole != null)
-            {
-                _context.UserRoles.Add(new IHCAE.Api.Shared.Models.UserRole
+                    var existingProfile = await _context.AlumniProfiles.FirstOrDefaultAsync(p => p.UserId == existingUser.Id);
+                    if (existingProfile == null)
+                    {
+                        _context.AlumniProfiles.Add(new IHCAE.Api.Features.Auth.Models.Entities.AlumniProfile
+                        {
+                            UserId = existingUser.Id,
+                            Course = alumni.Course,
+                            Batch = alumni.Batch,
+                            Location = alumni.Location,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                    else
+                    {
+                        existingProfile.Course = alumni.Course;
+                        existingProfile.Batch = alumni.Batch;
+                        existingProfile.Location = alumni.Location;
+                        existingProfile.UpdatedAt = DateTime.UtcNow;
+                    }
+
+                    if (alumniRole != null)
+                    {
+                        var hasRole = await _context.UserRoles.AnyAsync(ur => ur.UserId == existingUser.Id && ur.RoleId == alumniRole.Id);
+                        if (!hasRole)
+                            _context.UserRoles.Add(new IHCAE.Api.Shared.Models.UserRole { UserId = existingUser.Id, RoleId = alumniRole.Id });
+                    }
+
+                    alumni.MatchedUserId = existingUser.Id;
+                    var (setupToken, setupTokenHash) = GenerateToken();
+                    _context.PasswordResetTokens.Add(new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = existingUser.Id,
+                        TokenHash = setupTokenHash,
+                        CreatedAt = DateTime.UtcNow,
+                        ExpiresAt = DateTime.UtcNow.AddDays(7),
+                        IsUsed = false
+                    });
+                    await _context.SaveChangesAsync();
+
+                    var setupUrl = $"{frontendUrl}/setup-account?token={Uri.EscapeDataString(setupToken)}";
+                    await _emailService.SendClaimAccountEmailAsync(existingUser.Email, existingUser.FirstName, setupUrl);
+
+                    result.GeneratedCount++;
+                    continue;
+                }
+
+                // No user exists — create one
+                var user = new IHCAE.Api.Features.Auth.Models.Entities.User
+                {
+                    Id = Guid.NewGuid(),
+                    FirstName = alumni.FirstName,
+                    LastName = alumni.LastName,
+                    Email = alumni.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString(), 12),
+                    Status = IHCAE.Api.Features.Auth.Models.Entities.UserStatus.Approved,
+                    EmailVerified = true,
+                    IsBanned = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Users.Add(user);
+                _context.AlumniProfiles.Add(new IHCAE.Api.Features.Auth.Models.Entities.AlumniProfile
                 {
                     UserId = user.Id,
-                    RoleId = alumniRole.Id
+                    Course = alumni.Course,
+                    Batch = alumni.Batch,
+                    Location = alumni.Location,
+                    CreatedAt = DateTime.UtcNow
                 });
+
+                if (alumniRole != null)
+                    _context.UserRoles.Add(new IHCAE.Api.Shared.Models.UserRole { UserId = user.Id, RoleId = alumniRole.Id });
+
+                alumni.MatchedUserId = user.Id;
+
+                var (token, tokenHash) = GenerateToken();
+                _context.PasswordResetTokens.Add(new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    TokenHash = tokenHash,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddDays(7),
+                    IsUsed = false
+                });
+                await _context.SaveChangesAsync();
+
+                var claimUrl = $"{frontendUrl}/setup-account?token={Uri.EscapeDataString(token)}";
+                await _emailService.SendClaimAccountEmailAsync(user.Email, user.FirstName, claimUrl);
+
+                result.GeneratedCount++;
             }
-
-            alumni.MatchedUserId = user.Id;
-
-            // Generate Setup Token (Password Reset Token)
-            var token = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
-            var tokenHash = Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
-
-            var resetToken = new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
+            catch (Exception ex)
             {
-                Id = Guid.NewGuid(),
-                UserId = user.Id,
-                TokenHash = tokenHash,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7), // Give them 7 days to setup
-                IsUsed = false
-            };
-
-            _context.PasswordResetTokens.Add(resetToken);
-            
-            await _context.SaveChangesAsync();
-
-            // Send Setup Email
-            if (_emailService != null)
-            {
-                var setupUrl = $"http://localhost:4200/reset-password?token={Uri.EscapeDataString(token)}&setup=true";
-                var emailBody = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #059669, #047857); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-        .button {{ display: inline-block; background: #059669; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>🏔️ Welcome to IHCAE Alumni Network</h1>
-            <p>Your Account is Ready</p>
-        </div>
-        <div class='content'>
-            <h2>Hello {user.FirstName},</h2>
-            <p>We are excited to invite you to the new IHCAE Alumni Network!</p>
-            <p>An account has been created for you using your past enrollment records. To claim your account and join the community, please click the button below to set up your password:</p>
-            <div style='text-align: center;'>
-                <a href='{setupUrl}' class='button'>Claim My Account</a>
-            </div>
-            <p>This link will expire in 7 days.</p>
-        </div>
-    </div>
-</body>
-</html>";
-                await _emailService.SendEmailAsync(user.Email, "Welcome to IHCAE Alumni Network - Claim Your Account", emailBody);
+                _logger.LogError(ex, "Failed generating account for alumni {AlumniId}", id);
+                result.Errors.Add($"Alumni {id}: {ex.Message}");
             }
-
-            generatedCount++;
         }
 
-        return generatedCount;
+        return result;
+    }
+
+    private static (string token, string hash) GenerateToken()
+    {
+        // URL-safe base64: replace +→-, /→_, strip = padding so the token
+        // survives email clients and URL encoding/decoding unchanged
+        var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+        var token = Convert.ToBase64String(bytes)
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+        var hash = Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
+        return (token, hash);
+    }
+
+    public async Task<bool> DeleteAlumniRecordAsync(Guid id)
+    {
+        var alumni = await _context.AlumniDatabase.FindAsync(id);
+        if (alumni == null) return false;
+
+        _context.AlumniDatabase.Remove(alumni);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task ResendInvitationAsync(Guid alumniId)
+    {
+        var alumni = await _context.AlumniDatabase
+            .Include(a => a.MatchedUser)
+            .FirstOrDefaultAsync(a => a.Id == alumniId)
+            ?? throw new KeyNotFoundException("Alumni record not found.");
+
+        if (alumni.MatchedUserId == null || alumni.MatchedUser == null)
+            throw new InvalidOperationException("This alumni record does not have a linked user account. Generate an account first.");
+
+        if (alumni.MatchedUser.LastLoginAt != null)
+            throw new InvalidOperationException("This account has already been claimed by the alumni.");
+
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+        var (token, tokenHash) = GenerateToken();
+
+        _context.PasswordResetTokens.Add(new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = alumni.MatchedUserId.Value,
+            TokenHash = tokenHash,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            IsUsed = false
+        });
+        await _context.SaveChangesAsync();
+
+        var claimUrl = $"{frontendUrl}/setup-account?token={Uri.EscapeDataString(token)}";
+        await _emailService.SendClaimAccountEmailAsync(alumni.MatchedUser.Email, alumni.MatchedUser.FirstName, claimUrl);
+
+        _logger.LogInformation("Resent invitation to alumni {AlumniId} ({Email})", alumniId, alumni.MatchedUser.Email);
+    }
+
+    public async Task<AlumniDatabase> CreateAlumniRecordAsync(AlumniDatabaseDto record)
+    {
+        var existing = await _context.AlumniDatabase.FirstOrDefaultAsync(x => x.Email == record.Email.ToLower());
+        if (existing != null)
+        {
+            throw new InvalidOperationException("An alumnus record with this email already exists.");
+        }
+
+        var userExists = await _context.Users.AnyAsync(u => u.Email == record.Email.ToLower());
+        if (userExists)
+        {
+            throw new InvalidOperationException("A registered user account with this email already exists.");
+        }
+
+        var alumni = new AlumniDatabase
+        {
+            Id = Guid.NewGuid(),
+            FirstName = record.FirstName,
+            LastName = record.LastName,
+            Email = record.Email.ToLower(),
+            Course = record.Course,
+            Batch = record.Batch,
+            Phone = record.Phone,
+            Location = record.Location,
+            ImportedAt = DateTime.UtcNow,
+            MatchedUserId = null
+        };
+
+        _context.AlumniDatabase.Add(alumni);
+        await _context.SaveChangesAsync();
+        return alumni;
     }
 }

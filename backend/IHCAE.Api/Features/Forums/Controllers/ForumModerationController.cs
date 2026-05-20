@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using IHCAE.Api.Features.Forums.Models.DTOs;
+using IHCAE.Api.Features.Forums.Models.Entities;
 using IHCAE.Api.Features.Forums.Services;
+using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.DTOs;
 using System.Security.Claims;
 
@@ -17,11 +20,13 @@ namespace IHCAE.Api.Features.Forums.Controllers;
 public class ForumModerationController : ControllerBase
 {
     private readonly IForumService _forumService;
+    private readonly AppDbContext _context;
     private readonly ILogger<ForumModerationController> _logger;
 
-    public ForumModerationController(IForumService forumService, ILogger<ForumModerationController> logger)
+    public ForumModerationController(IForumService forumService, AppDbContext context, ILogger<ForumModerationController> logger)
     {
         _forumService = forumService;
+        _context = context;
         _logger = logger;
     }
 
@@ -191,6 +196,115 @@ public class ForumModerationController : ControllerBase
         {
             _logger.LogError(ex, "Error updating post {PostId}", postId);
             return StatusCode(500, new ErrorResponse { Message = "An error occurred while updating the post." });
+        }
+    }
+
+    // ===================== Flagged Content =====================
+
+    /// <summary>
+    /// Gets all flagged posts with optional status filtering.
+    /// </summary>
+    [HttpGet("flags")]
+    [ProducesResponseType(typeof(PaginatedResult<ForumFlagDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFlags(
+        [FromQuery] string? status = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var query = _context.ForumFlags
+                .Include(f => f.Post)
+                    .ThenInclude(p => p.Author)
+                .Include(f => f.Post)
+                    .ThenInclude(p => p.Topic)
+                .Include(f => f.FlaggedBy)
+                .Include(f => f.ResolvedBy)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<FlagStatus>(status, true, out var flagStatus))
+            {
+                query = query.Where(f => f.Status == flagStatus);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var flags = await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(f => new ForumFlagDto
+                {
+                    Id = f.Id,
+                    PostId = f.PostId,
+                    PostContent = f.Post.Content,
+                    TopicTitle = f.Post.Topic.Title,
+                    TopicId = f.Post.TopicId,
+                    PostAuthorName = f.Post.Author.FirstName + " " + f.Post.Author.LastName,
+                    PostAuthorId = f.Post.AuthorId,
+                    FlaggedByName = f.FlaggedBy.FirstName + " " + f.FlaggedBy.LastName,
+                    FlaggedById = f.FlaggedById,
+                    Reason = f.Reason,
+                    Details = f.Details,
+                    Status = f.Status.ToString(),
+                    ResolvedByName = f.ResolvedBy != null ? f.ResolvedBy.FirstName + " " + f.ResolvedBy.LastName : null,
+                    ResolutionNotes = f.ResolutionNotes,
+                    CreatedAt = f.CreatedAt,
+                    ResolvedAt = f.ResolvedAt
+                })
+                .ToListAsync();
+
+            return Ok(new PaginatedResult<ForumFlagDto>
+            {
+                Items = flags,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving flags");
+            return StatusCode(500, new ErrorResponse { Message = "An error occurred while retrieving flags." });
+        }
+    }
+
+    /// <summary>
+    /// Resolves a flag (dismiss or take action).
+    /// </summary>
+    [HttpPut("flags/{flagId}/resolve")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ResolveFlag(Guid flagId, [FromBody] ResolveFlagRequest request)
+    {
+        try
+        {
+            var adminUserId = GetCurrentUserId();
+
+            var flag = await _context.ForumFlags.FindAsync(flagId);
+            if (flag == null)
+                return NotFound(new ErrorResponse { Message = "Flag not found." });
+
+            if (!Enum.TryParse<FlagStatus>(request.Status, true, out var newStatus) ||
+                (newStatus != FlagStatus.Dismissed && newStatus != FlagStatus.ActionTaken && newStatus != FlagStatus.Reviewed))
+            {
+                return BadRequest(new ErrorResponse { Message = "Invalid status. Use 'Dismissed', 'Reviewed', or 'ActionTaken'." });
+            }
+
+            flag.Status = newStatus;
+            flag.ResolvedById = adminUserId;
+            flag.ResolutionNotes = request.Notes;
+            flag.ResolvedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Admin {AdminId} resolved flag {FlagId} with status {Status}", adminUserId, flagId, newStatus);
+            return Ok(new { Message = $"Flag resolved as {newStatus}." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resolving flag {FlagId}", flagId);
+            return StatusCode(500, new ErrorResponse { Message = "An error occurred while resolving the flag." });
         }
     }
 

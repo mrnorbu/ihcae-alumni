@@ -91,6 +91,11 @@ public class AppDbContext : DbContext
     public DbSet<DiscussionTopicTag> DiscussionTopicTags { get; set; } = null!;
 
     /// <summary>
+    /// ForumFlags table - user-reported flags on forum posts
+    /// </summary>
+    public DbSet<ForumFlag> ForumFlags { get; set; } = null!;
+
+    /// <summary>
     /// NewsCategories table - categories for news articles
     /// </summary>
     public DbSet<NewsCategory> NewsCategories { get; set; } = null!;
@@ -396,6 +401,44 @@ public class AppDbContext : DbContext
                   
             // Index for filtering by tag
             entity.HasIndex(e => e.TagId);
+        });
+
+        // Configure ForumFlag entity
+        modelBuilder.Entity<ForumFlag>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Reason).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Details).HasMaxLength(500);
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.ResolutionNotes).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+
+            // Foreign key to ForumPost
+            entity.HasOne(e => e.Post)
+                  .WithMany()
+                  .HasForeignKey(e => e.PostId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Foreign key to User (flagger)
+            entity.HasOne(e => e.FlaggedBy)
+                  .WithMany()
+                  .HasForeignKey(e => e.FlaggedById)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Foreign key to User (resolver)
+            entity.HasOne(e => e.ResolvedBy)
+                  .WithMany()
+                  .HasForeignKey(e => e.ResolvedById)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            // Unique constraint: one flag per user per post
+            entity.HasIndex(e => new { e.PostId, e.FlaggedById }).IsUnique();
+
+            // Indexes for performance
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.PostId);
+            entity.HasIndex(e => e.CreatedAt);
         });
 
         // Configure NewsCategory entity

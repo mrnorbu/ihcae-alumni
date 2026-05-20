@@ -72,12 +72,11 @@ public class PasswordResetService : IPasswordResetService
 
             // Send password reset email
             var resetUrl = GenerateResetUrl(token);
-            var emailBody = GenerateResetEmailBody(user.FirstName, resetUrl);
 
-            await _emailService.SendEmailAsync(
+            await _emailService.SendPasswordResetAsync(
                 user.Email,
-                "Reset Your IHCAE Alumni Network Password",
-                emailBody
+                user.FirstName,
+                resetUrl
             );
 
             _logger.LogInformation("Password reset email sent to {Email} for user {UserId}", user.Email, user.Id);
@@ -135,10 +134,9 @@ public class PasswordResetService : IPasswordResetService
             await _context.SaveChangesAsync();
 
             // Send confirmation email
-            await _emailService.SendEmailAsync(
+            await _emailService.SendPasswordResetConfirmationAsync(
                 resetToken.User.Email,
-                "Password Reset Successful - IHCAE Alumni Network",
-                GeneratePasswordResetConfirmationEmailBody(resetToken.User.FirstName)
+                resetToken.User.FirstName
             );
 
             _logger.LogInformation("Password reset successfully for user {UserId}", resetToken.UserId);
@@ -206,7 +204,17 @@ public class PasswordResetService : IPasswordResetService
         var randomBytes = new byte[32];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomBytes);
-        return Convert.ToBase64String(randomBytes);
+        // URL-safe base64: survives email clients and URL encoding round-trips
+        return Convert.ToBase64String(randomBytes)
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+    }
+
+    public async Task<bool> ValidateTokenAsync(string token)
+    {
+        var tokenHash = HashToken(token);
+        var resetToken = await _context.PasswordResetTokens
+            .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash && !rt.IsUsed);
+        return resetToken != null && resetToken.ExpiresAt >= DateTime.UtcNow;
     }
 
     /// <summary>
@@ -233,125 +241,5 @@ public class PasswordResetService : IPasswordResetService
         return $"{baseUrl}/reset-password?token={Uri.EscapeDataString(token)}";
     }
 
-    /// <summary>
-    /// Generates the HTML email body for password reset.
-    /// </summary>
-    /// <param name="firstName">The user's first name</param>
-    /// <param name="resetUrl">The reset URL</param>
-    /// <returns>The HTML email body</returns>
-    private static string GenerateResetEmailBody(string firstName, string resetUrl)
-    {
-        return $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Reset Your Password - IHCAE Alumni Network</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #059669, #047857); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-        .button {{ display: inline-block; background: #059669; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-        .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 14px; }}
-        .warning {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>🏔️ IHCAE Alumni Network</h1>
-            <p>Password Reset Request</p>
-        </div>
-        <div class='content'>
-            <h2>Hello {firstName}!</h2>
-            <p>We received a request to reset your password for your IHCAE Alumni Network account.</p>
-            <p>If you made this request, click the button below to reset your password:</p>
-            <div style='text-align: center;'>
-                <a href='{resetUrl}' class='button'>Reset My Password</a>
-            </div>
-            <div class='warning'>
-                <p><strong>⚠️ Important Security Information:</strong></p>
-                <ul>
-                    <li>This link will expire in <strong>1 hour</strong> for security reasons</li>
-                    <li>If you didn't request this reset, please ignore this email</li>
-                    <li>Your password will remain unchanged until you click the link above</li>
-                </ul>
-            </div>
-            <p><strong>Password Requirements:</strong></p>
-            <ul>
-                <li>At least 8 characters long</li>
-                <li>Contains uppercase and lowercase letters</li>
-                <li>Contains at least one number</li>
-                <li>Contains at least one special character</li>
-            </ul>
-            <hr style='margin: 30px 0; border: none; border-top: 1px solid #ddd;'>
-            <p><strong>Need Help?</strong></p>
-            <p>If you're having trouble with the link above, copy and paste the following URL into your browser:</p>
-            <p style='word-break: break-all; background: #f0f0f0; padding: 10px; border-radius: 3px; font-family: monospace;'>{resetUrl}</p>
-        </div>
-        <div class='footer'>
-            <p>© 2024 IHCAE Alumni Network. All rights reserved.</p>
-            <p>Gangtok, Sikkim, India</p>
-        </div>
-    </div>
-</body>
-</html>";
-    }
 
-    /// <summary>
-    /// Generates the HTML email body for password reset confirmation.
-    /// </summary>
-    /// <param name="firstName">The user's first name</param>
-    /// <returns>The HTML email body</returns>
-    private static string GeneratePasswordResetConfirmationEmailBody(string firstName)
-    {
-        return $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Password Reset Successful - IHCAE Alumni Network</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #059669, #047857); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-        .success {{ background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0; }}
-        .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 14px; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>🏔️ IHCAE Alumni Network</h1>
-            <p>Password Reset Successful</p>
-        </div>
-        <div class='content'>
-            <h2>Hello {firstName}!</h2>
-            <div class='success'>
-                <p><strong>✅ Your password has been successfully reset!</strong></p>
-            </div>
-            <p>Your IHCAE Alumni Network account password has been updated. You can now sign in with your new password.</p>
-            <p><strong>Security Tips:</strong></p>
-            <ul>
-                <li>Use a unique password that you don't use elsewhere</li>
-                <li>Consider using a password manager</li>
-                <li>Never share your password with anyone</li>
-                <li>Sign out of your account when using shared computers</li>
-            </ul>
-            <hr style='margin: 30px 0; border: none; border-top: 1px solid #ddd;'>
-            <p><strong>Didn't make this change?</strong></p>
-            <p>If you didn't reset your password, please contact our support team immediately as your account may have been compromised.</p>
-        </div>
-        <div class='footer'>
-            <p>© 2024 IHCAE Alumni Network. All rights reserved.</p>
-            <p>Gangtok, Sikkim, India</p>
-        </div>
-    </div>
-</body>
-</html>";
-    }
 }

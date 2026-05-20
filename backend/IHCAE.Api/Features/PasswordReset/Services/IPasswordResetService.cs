@@ -22,6 +22,11 @@ public interface IPasswordResetService
     Task<bool> ResetPasswordAsync(string token, string newPassword);
 
     /// <summary>
+    /// Checks whether a token exists, is unused, and has not expired — without consuming it.
+    /// </summary>
+    Task<bool> ValidateTokenAsync(string token);
+
+    /// <summary>
     /// Validates if a password meets the security requirements.
     /// </summary>
     /// <param name="password">The password to validate</param>

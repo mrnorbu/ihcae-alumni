@@ -32,6 +32,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
+    path: 'setup-account',
+    loadComponent: () => import('./features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
+  {
     path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [AuthGuard]
@@ -58,9 +62,12 @@ export const routes: Routes = [
     children: [
       { path: '', loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
       { path: 'content-review', loadComponent: () => import('./features/admin/content-review/content-review.component').then(m => m.ContentReviewComponent) },
-      { path: 'alumni', loadComponent: () => import('./features/admin/alumni-management/alumni-management.component').then(m => m.AlumniManagementComponent) },
+      { path: 'alumni-hub', loadComponent: () => import('./features/admin/alumni-hub/alumni-hub.component').then(m => m.AlumniHubComponent) },
+      { path: 'alumni', redirectTo: 'alumni-hub', pathMatch: 'full' },
+      { path: 'directory', redirectTo: 'alumni-hub', pathMatch: 'full' },
       { path: 'forums', loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent) },
-      { path: 'content', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Content Management' } },
+      { path: 'content', loadComponent: () => import('./features/admin/news-events-management/news-events-management.component').then(m => m.NewsEventsManagementComponent) },
+      { path: 'users', loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent) },
       { path: 'analytics', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Analytics' } },
       { path: 'settings', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Settings' } },
     ]

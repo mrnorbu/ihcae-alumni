@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LucideAngularModule, Lock, CheckCircle, ArrowRight, Key, AlertCircle } from 'lucide-angular';
+import { HeaderComponent } from '../../../shared/components';
 
 interface ResetPasswordResponse {
   success: boolean;
@@ -16,11 +17,7 @@ interface ResetPasswordResponse {
  * Reset Password Component
  * 
  * Modern split-screen design for password reset completion.
- * Features:
- * - Split-screen layout with brand gradient
- * - Lucide icons
- * - Password strength validation
- * - Success state with redirect
+ * Standardized to match the main login and setup screens.
  * 
  * @author IHCAE Development Team
  * @version 2.0.0
@@ -28,219 +25,272 @@ interface ResetPasswordResponse {
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, LucideAngularModule],
+  imports: [ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent],
   template: `
-    <div class="min-h-screen flex">
-      <!-- Left Side - Brand Section -->
-      <div class="hidden lg:flex lg:w-2/5 bg-gradient-brand relative overflow-hidden">
-        <div class="absolute inset-0 bg-black bg-opacity-10"></div>
-        <div class="relative z-10 flex flex-col justify-center p-12 text-white">
-          <!-- Logo & Brand -->
-          <div>
-            <div class="flex items-center gap-3 mb-8">
-              <img src="images/logo.png" alt="IHCAE Logo" class="h-12 w-auto">
-              <div>
-                <h1 class="text-xl font-bold">IHCAE Alumni</h1>
-                <p class="text-sm text-white/80">Sikkim, India</p>
+    <div class="h-screen bg-neutral-50 flex flex-col overflow-hidden">
+      <app-header></app-header>
+
+      <div class="flex-1 flex pt-16 overflow-hidden">
+        <!-- Left Side - Flat Brand Panel -->
+        <div class="hidden lg:flex lg:w-2/5 bg-slate-900 relative">
+          <div class="flex flex-col justify-between p-10 text-white w-full h-full">
+            <div>
+              <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center">
+                  <img src="images/logo.png" alt="IHCAE" class="w-6 h-6 object-contain brightness-200">
+                </div>
+                <div>
+                  <h1 class="text-lg font-bold">IHCAE Alumni</h1>
+                  <p class="text-xs text-slate-400">Sikkim, India</p>
+                </div>
+              </div>
+              @if (isSetupMode()) {
+                <h2 class="text-2xl font-bold mb-3 leading-tight">
+                  Welcome to IHCAE<br/>Alumni Network
+                </h2>
+                <p class="text-sm text-slate-300 leading-relaxed max-w-sm">
+                  Your account has been created by the IHCAE admin team. Set your password below to claim your account and access the network.
+                </p>
+              } @else {
+                <h2 class="text-2xl font-bold mb-3 leading-tight">
+                  Create New Password
+                </h2>
+                <p class="text-sm text-slate-300 leading-relaxed max-w-sm">
+                  Choose a strong password to keep your account secure and private.
+                </p>
+              }
+            </div>
+
+            <!-- Sleek requirements list using the rounded card icon blocks -->
+            <div class="space-y-3">
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Password requirements:</p>
+              
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="lockIcon" [size]="16" class="text-green-400"></lucide-icon>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">At least 8 characters</p>
+                  <p class="text-xs text-slate-400">Length requirement</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="checkIcon" [size]="16" class="text-blue-400"></lucide-icon>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">Mix of letters & numbers</p>
+                  <p class="text-xs text-slate-400">Complexity requirement</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="keyIcon" [size]="16" class="text-red-400"></lucide-icon>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">Not easily guessable</p>
+                  <p class="text-xs text-slate-400">Security requirement</p>
+                </div>
               </div>
             </div>
-            <h2 class="text-3xl font-display font-bold mb-4">
-              Create New Password
-            </h2>
-            <p class="text-lg text-white/90 leading-relaxed">
-              Choose a strong password to keep your account secure.
-            </p>
-          </div>
-    
-          <!-- Password Requirements -->
-          <div class="mt-12 space-y-3">
-            <p class="text-sm font-semibold mb-3">Password must contain:</p>
-            <div class="flex items-start gap-3">
-              <lucide-icon [img]="checkIcon" [size]="16" class="text-white/80 flex-shrink-0 mt-0.5"></lucide-icon>
-              <p class="text-sm text-white/80">At least 8 characters</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <lucide-icon [img]="checkIcon" [size]="16" class="text-white/80 flex-shrink-0 mt-0.5"></lucide-icon>
-              <p class="text-sm text-white/80">Mix of letters and numbers</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <lucide-icon [img]="checkIcon" [size]="16" class="text-white/80 flex-shrink-0 mt-0.5"></lucide-icon>
-              <p class="text-sm text-white/80">Not easily guessable</p>
-            </div>
-          </div>
-    
-          <!-- Footer -->
-          <div class="mt-auto text-sm text-white/70">
-            © 2024 IHCAE Sikkim. All rights reserved.
           </div>
         </div>
-      </div>
-    
-      <!-- Right Side - Form -->
-      <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-neutral-50">
-        <div class="w-full max-w-md">
-          <!-- Mobile Logo -->
-          <div class="lg:hidden text-center mb-8">
-            <img src="images/logo.png" alt="IHCAE Logo" class="h-16 w-auto mx-auto mb-3">
-            <h1 class="text-2xl font-bold text-neutral-900">IHCAE Alumni</h1>
-          </div>
-    
-          <!-- Invalid/Expired Token State -->
-          @if (isTokenInvalid()) {
-            <div class="space-y-6">
-              <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <lucide-icon [img]="alertIcon" [size]="32" class="text-error-600"></lucide-icon>
-                </div>
-                <h2 class="text-2xl font-bold text-neutral-900 mb-2">
-                  Invalid or Expired Link
-                </h2>
-                <p class="text-sm text-neutral-600">
-                  This password reset link is invalid or has expired.
-                </p>
+
+        <!-- Right Side - Form -->
+        <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto bg-neutral-50">
+          <div class="w-full max-w-md">
+            <!-- Mobile Logo -->
+            <div class="lg:hidden text-center mb-8">
+              <div class="w-12 h-12 rounded-lg bg-green-600 flex items-center justify-center mx-auto mb-3">
+                <img src="images/logo.png" alt="IHCAE" class="w-7 h-7 object-contain brightness-200">
               </div>
-              <div class="card">
-                <p class="text-sm text-neutral-600 mb-4">
-                  Password reset links expire after 1 hour for security reasons. Please request a new password reset link.
-                </p>
-                <a routerLink="/forgot-password" class="btn-primary w-full flex items-center justify-center gap-2">
-                  <span>Request New Link</span>
-                  <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
-                </a>
-              </div>
-              <div class="text-center">
-                <a routerLink="/login" class="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
-                  Back to sign in
-                </a>
-              </div>
+              <h1 class="text-xl font-bold text-neutral-900">IHCAE Alumni</h1>
             </div>
-          }
-    
-          <!-- Success State -->
-          @if (isPasswordReset()) {
-            <div class="space-y-6">
-              <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <lucide-icon [img]="checkIcon" [size]="32" class="text-success-600"></lucide-icon>
-                </div>
-                <h2 class="text-2xl font-bold text-neutral-900 mb-2">
-                  Password Reset Successful!
-                </h2>
-                <p class="text-sm text-neutral-600">
-                  Your password has been updated successfully
-                </p>
-              </div>
-              <div class="card">
-                <p class="text-sm text-neutral-600 mb-4">
-                  You can now sign in with your new password. You'll be redirected to the login page in <strong>{{countdown()}}</strong> seconds.
-                </p>
-                <button (click)="goToLogin()" class="btn-primary w-full flex items-center justify-center gap-2">
-                  <span>Sign In Now</span>
-                  <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
-                </button>
-              </div>
-            </div>
-          }
-    
-          <!-- Form State -->
-          @if (!isTokenInvalid() && !isPasswordReset()) {
-            <div>
-              <div class="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
-                <div class="mb-6">
-                  <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-                    <lucide-icon [img]="keyIcon" [size]="24" class="text-primary-600"></lucide-icon>
+
+            <!-- Invalid/Expired Token State -->
+            @if (isTokenInvalid()) {
+              <div>
+                <!-- Icon + heading -->
+                <div class="text-center mb-8">
+                  <div class="w-14 h-14 bg-red-50 border border-red-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                    <lucide-icon [img]="alertIcon" [size]="24" class="text-red-500"></lucide-icon>
                   </div>
                   <h2 class="text-2xl font-bold text-neutral-900 mb-2">
-                    Reset Password
+                    {{ isSetupMode() ? 'Setup Link Expired' : 'Link Invalid or Expired' }}
                   </h2>
-                  <p class="text-sm text-neutral-600">
-                    Enter your new password below
+                  <p class="text-sm text-neutral-500 leading-relaxed">
+                    {{ isSetupMode()
+                      ? 'This account setup link has already been used or has expired.'
+                      : 'This password reset link is no longer valid.' }}
                   </p>
                 </div>
-                <form [formGroup]="resetPasswordForm" (ngSubmit)="onSubmit()" class="space-y-4">
-                  <!-- Password Field -->
-                  <div class="form-group">
-                    <label for="password" class="input-label">
-                      <div class="flex items-center gap-1.5">
-                        <lucide-icon [img]="lockIcon" [size]="14" class="text-neutral-500"></lucide-icon>
-                        <span>New Password</span>
+
+                <!-- Info box -->
+                <div class="bg-white border border-neutral-200 rounded-xl p-5 mb-5">
+                  @if (isSetupMode()) {
+                    <div class="flex gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+                        <lucide-icon [img]="alertIcon" [size]="14" class="text-amber-600"></lucide-icon>
                       </div>
-                    </label>
-                    <input
-                      id="password"
-                      type="password"
-                      formControlName="password"
-                      class="input-field-lg"
-                      [class.input-error]="resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched"
-                      placeholder="Enter new password (min. 8 characters)"
-                      />
-                    @if (resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched) {
-                      <div class="form-error">
-                        @if (resetPasswordForm.get('password')?.errors?.['required']) {
-                          <p>Password is required</p>
-                        }
-                        @if (resetPasswordForm.get('password')?.errors?.['minlength']) {
-                          <p>Password must be at least 8 characters</p>
-                        }
+                      <div>
+                        <p class="text-sm font-semibold text-neutral-800 mb-1">What happened?</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed">
+                          Setup links are single-use and expire after 7 days. If you've already set your password, you can sign in below. Otherwise, contact the IHCAE admin team and ask them to resend your invitation.
+                        </p>
                       </div>
-                    }
+                    </div>
+                  } @else {
+                    <div class="flex gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+                        <lucide-icon [img]="alertIcon" [size]="14" class="text-amber-600"></lucide-icon>
+                      </div>
+                      <div>
+                        <p class="text-sm font-semibold text-neutral-800 mb-1">What happened?</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed">
+                          Password reset links expire after 1 hour for security reasons. Request a new link and check your inbox.
+                        </p>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Primary action -->
+                @if (isSetupMode()) {
+                  <a routerLink="/login"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-neutral-900 text-white text-sm font-semibold rounded-xl hover:bg-neutral-700 transition-colors">
+                    <span>Go to Sign In</span>
+                    <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
+                  </a>
+                } @else {
+                  <a routerLink="/forgot-password"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-neutral-900 text-white text-sm font-semibold rounded-xl hover:bg-neutral-700 transition-colors">
+                    <span>Request New Link</span>
+                    <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
+                  </a>
+                  <div class="text-center mt-4">
+                    <a routerLink="/login" class="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
+                      Back to sign in
+                    </a>
                   </div>
-                  <!-- Confirm Password Field -->
-                  <div class="form-group">
-                    <label for="confirmPassword" class="input-label">
-                      <div class="flex items-center gap-1.5">
-                        <lucide-icon [img]="checkIcon" [size]="14" class="text-neutral-500"></lucide-icon>
-                        <span>Confirm Password</span>
-                      </div>
-                    </label>
-                    <input
-                      id="confirmPassword"
-                      type="password"
-                      formControlName="confirmPassword"
-                      class="input-field-lg"
-                      [class.input-error]="resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched"
-                      placeholder="Confirm your password"
-                      />
-                    @if (resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched) {
-                      <div class="form-error">
-                        @if (resetPasswordForm.get('confirmPassword')?.errors?.['required']) {
-                          <p>Please confirm your password</p>
-                        }
-                        @if (resetPasswordForm.get('confirmPassword')?.errors?.['mismatch']) {
-                          <p>Passwords do not match</p>
-                        }
-                      </div>
-                    }
+                }
+              </div>
+            }
+
+            <!-- Success State -->
+            @if (isPasswordReset()) {
+              <div class="space-y-6">
+                <div class="text-center mb-6">
+                  <div class="w-16 h-16 bg-green-50 border border-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <lucide-icon [img]="checkIcon" [size]="32" class="text-green-600"></lucide-icon>
                   </div>
-                  <!-- Submit Button -->
-                  <button
-                    type="submit"
-                    [disabled]="resetPasswordForm.invalid || isLoading()"
-                    class="btn-primary btn-lg w-full flex items-center justify-center gap-2"
-                    >
-                    @if (isLoading()) {
-                      <span>
-                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                      </span>
-                    }
-                    <span>{{ isLoading() ? 'Resetting Password...' : 'Reset Password' }}</span>
-                    @if (!isLoading()) {
-                      <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
-                    }
+                  <h2 class="text-2xl font-bold text-neutral-900 mb-2">
+                    {{ isSetupMode() ? 'Account Activated!' : 'Password Reset Successful!' }}
+                  </h2>
+                  <p class="text-sm text-neutral-600">
+                    {{ isSetupMode() ? 'Your password has been set. You can now sign in to the alumni network.' : 'Your password has been updated successfully.' }}
+                  </p>
+                </div>
+                <div class="bg-white border border-neutral-200 rounded-xl p-5">
+                  <p class="text-sm text-neutral-600 mb-4">
+                    You'll be redirected to the login page in <strong>{{countdown()}}</strong> seconds.
+                  </p>
+                  <button (click)="goToLogin()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 transition-colors">
+                    <span>Sign In Now</span>
+                    <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
                   </button>
-                </form>
+                </div>
               </div>
-              <!-- Back to Login Link -->
-              <div class="mt-6 text-center">
-                <a routerLink="/login" class="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
-                  Back to sign in
-                </a>
+            }
+
+            <!-- Form State -->
+            @if (!isTokenInvalid() && !isPasswordReset()) {
+              <div>
+                <div class="bg-white border border-neutral-200 rounded-xl p-6 sm:p-8">
+                  <div class="mb-6">
+                    <h2 class="text-xl font-bold text-neutral-900 mb-1">
+                      {{ isSetupMode() ? 'Set Your Password' : 'Reset Password' }}
+                    </h2>
+                    <p class="text-xs text-neutral-500">
+                      {{ isSetupMode() ? 'Create a password to activate your alumni account.' : 'Enter your new password below.' }}
+                    </p>
+                  </div>
+                  <form [formGroup]="resetPasswordForm" (ngSubmit)="onSubmit()" class="space-y-4">
+                    <!-- Password Field -->
+                    <div>
+                      <label for="password" class="block text-xs font-medium text-neutral-700 mb-1.5">
+                        <span class="inline-flex items-center gap-1">
+                          <lucide-icon [img]="lockIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                          New Password
+                        </span>
+                      </label>
+                      <input
+                        id="password"
+                        type="password"
+                        formControlName="password"
+                        class="w-full px-3 py-2.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:bg-white transition-colors"
+                        [class.border-red-300]="resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched"
+                        placeholder="Enter new password (min. 8 characters)"
+                        />
+                      @if (resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched) {
+                        <p class="mt-1 text-xs text-red-500 flex flex-col gap-0.5">
+                          @if (resetPasswordForm.get('password')?.errors?.['required']) { <span>Password is required</span> }
+                          @if (resetPasswordForm.get('password')?.errors?.['minlength']) { <span>Password must be at least 8 characters</span> }
+                          @if (resetPasswordForm.get('password')?.errors?.['pattern']) { <span>Must contain uppercase, lowercase, number, and special character</span> }
+                        </p>
+                      }
+                    </div>
+                    <!-- Confirm Password Field -->
+                    <div>
+                      <label for="confirmPassword" class="block text-xs font-medium text-neutral-700 mb-1.5">
+                        <span class="inline-flex items-center gap-1">
+                          <lucide-icon [img]="checkIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                          Confirm Password
+                        </span>
+                      </label>
+                      <input
+                        id="confirmPassword"
+                        type="password"
+                        formControlName="confirmPassword"
+                        class="w-full px-3 py-2.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:bg-white transition-colors"
+                        [class.border-red-300]="resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched"
+                        placeholder="Confirm your password"
+                        />
+                      @if (resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched) {
+                        <p class="mt-1 text-xs text-red-500">
+                          @if (resetPasswordForm.get('confirmPassword')?.errors?.['required']) { Please confirm your password }
+                          @if (resetPasswordForm.get('confirmPassword')?.errors?.['mismatch']) { Passwords do not match }
+                        </p>
+                      }
+                    </div>
+                    <!-- Submit Button -->
+                    <button
+                      type="submit"
+                      [disabled]="resetPasswordForm.invalid || isLoading()"
+                      class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors"
+                      >
+                      @if (isLoading()) {
+                        <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                      }
+                      <span>{{ isLoading() ? (isSetupMode() ? 'Setting Password...' : 'Resetting Password...') : (isSetupMode() ? 'Set Password & Continue' : 'Reset Password') }}</span>
+                      @if (!isLoading()) {
+                        <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
+                      }
+                    </button>
+                  </form>
+                </div>
+                <!-- Back to Login Link -->
+                <div class="mt-5 text-center">
+                  <a routerLink="/login" class="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">
+                    Back to sign in
+                  </a>
+                </div>
               </div>
-            </div>
-          }
+            }
+
+            <p class="mt-6 text-center text-[10px] text-neutral-400">
+              © 2026 IHCAE Sikkim. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -265,23 +315,53 @@ export class ResetPasswordComponent implements OnInit {
   isLoading = signal(false);
   isTokenInvalid = signal(false);
   isPasswordReset = signal(false);
+  isSetupMode = signal(false);
   countdown = signal(5);
   token = '';
 
   constructor() {
     this.resetPasswordForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [
+        Validators.required, 
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/)
+      ]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
 
   ngOnInit(): void {
+    // Detect setup mode from route path OR query param
+    const isSetupRoute = this.router.url.startsWith('/setup-account');
+    if (isSetupRoute) {
+      this.isSetupMode.set(true);
+    }
     this.route.queryParams.subscribe(params => {
-      this.token = params['token'];
+      this.token = (params['token'] ?? '').trim();
+      if (!isSetupRoute) {
+        this.isSetupMode.set(params['setup'] === 'true');
+      }
       if (!this.token) {
         this.isTokenInvalid.set(true);
+      } else {
+        this.validateToken();
       }
     });
+  }
+
+  async validateToken(): Promise<void> {
+    try {
+      const response = await this.http.get<{ valid: boolean }>(
+        `${environment.apiUrl}/api/v1/passwordreset/validate-token`,
+        { params: { token: this.token } }
+      ).toPromise();
+
+      if (!response || !response.valid) {
+        this.isTokenInvalid.set(true);
+      }
+    } catch (error) {
+      this.isTokenInvalid.set(true);
+    }
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -310,17 +390,27 @@ export class ResetPasswordComponent implements OnInit {
 
         if (response?.success) {
           this.isPasswordReset.set(true);
-          this.notificationService.showSuccess('Success', 'Your password has been reset successfully');
+          const successMessage = this.isSetupMode() 
+            ? 'Your account has been set up successfully' 
+            : 'Your password has been reset successfully';
+          this.notificationService.showSuccess('Success', successMessage);
           this.startCountdown();
         } else {
-          this.notificationService.showError('Reset Failed', response?.message || 'Failed to reset password');
+          const failTitle = this.isSetupMode() ? 'Setup Failed' : 'Reset Failed';
+          const failMsg = this.isSetupMode() ? 'Failed to complete account setup' : 'Failed to reset password';
+          this.notificationService.showError(failTitle, response?.message || failMsg);
         }
       } catch (error: any) {
-        console.error('Reset password error:', error);
-        if (error.status === 400 || error.status === 404) {
+        const errorMessage = error.error?.message || '';
+        if (errorMessage && (errorMessage.includes('Password') || errorMessage.includes('password'))) {
+          this.notificationService.showError('Validation Error', errorMessage);
+        } else if (error.status === 400 || error.status === 404) {
           this.isTokenInvalid.set(true);
+          // Don't show a toast — the expired/invalid state page is self-explanatory
+        } else {
+          const failTitle = this.isSetupMode() ? 'Setup Failed' : 'Reset Failed';
+          this.notificationService.showError(failTitle, 'An error occurred. Please try again.');
         }
-        this.notificationService.showError('Reset Failed', 'An error occurred. Please try again.');
       } finally {
         this.isLoading.set(false);
       }

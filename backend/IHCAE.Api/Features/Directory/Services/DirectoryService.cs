@@ -135,6 +135,7 @@ public class DirectoryService : IDirectoryService
             Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            Email = user.Email,
             ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(user.AlumniProfile?.ProfileImageUrl),
             Batch = user.AlumniProfile?.Batch,
             Course = user.AlumniProfile?.Course,

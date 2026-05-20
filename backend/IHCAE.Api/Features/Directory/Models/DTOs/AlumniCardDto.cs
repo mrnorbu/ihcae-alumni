@@ -60,5 +60,10 @@ public class AlumniCardDto
     /// Examples: "Gangtok, Sikkim", "Kathmandu, Nepal", "Darjeeling, West Bengal"
     /// </summary>
     public string? Location { get; set; }
+
+    /// <summary>
+    /// Email address of the alumnus
+    /// </summary>
+    public string Email { get; set; } = string.Empty;
 }
 

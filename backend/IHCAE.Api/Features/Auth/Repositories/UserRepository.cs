@@ -259,5 +259,26 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+    /// <summary>
+    /// Removes a role from a user.
+    /// </summary>
+    /// <param name="userId">The user's unique identifier</param>
+    /// <param name="roleName">The name of the role to remove</param>
+    /// <returns>True if role was removed successfully, false if user or role not found</returns>
+    public async Task<bool> RemoveRoleAsync(Guid userId, string roleName)
+    {
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+        if (role == null) return false;
+
+        var userRole = await _context.UserRoles
+            .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == role.Id);
+
+        if (userRole == null) return true; // Role not assigned, nothing to remove
+
+        _context.UserRoles.Remove(userRole);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
 

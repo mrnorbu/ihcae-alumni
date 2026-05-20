@@ -101,5 +101,13 @@ public interface IUserRepository
     /// <param name="roleName">The name of the role to assign</param>
     /// <returns>True if role was assigned successfully, false if user or role not found</returns>
     Task<bool> AssignRoleAsync(Guid userId, string roleName);
+
+    /// <summary>
+    /// Removes a role from a user.
+    /// </summary>
+    /// <param name="userId">The user's unique identifier</param>
+    /// <param name="roleName">The name of the role to remove</param>
+    /// <returns>True if role was removed successfully, false if user or role not found</returns>
+    Task<bool> RemoveRoleAsync(Guid userId, string roleName);
 }
 

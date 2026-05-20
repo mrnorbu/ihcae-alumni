@@ -5,20 +5,20 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LucideAngularModule, Mail, Lock, ArrowRight, Mountain, Users, Heart } from 'lucide-angular';
-import { HeaderComponent, FooterComponent } from '../../../shared/components';
+import { HeaderComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent, FooterComponent],
+  imports: [ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent],
   template: `
-    <div class="min-h-screen bg-neutral-50 flex flex-col">
+    <div class="h-screen bg-neutral-50 flex flex-col overflow-hidden">
       <app-header></app-header>
 
-      <div class="flex-1 flex pt-16">
+      <div class="flex-1 flex pt-16 overflow-hidden">
         <!-- Left Side - Flat Brand Panel -->
         <div class="hidden lg:flex lg:w-2/5 bg-slate-900 relative">
-          <div class="flex flex-col justify-between p-10 text-white w-full">
+          <div class="flex flex-col justify-between p-10 text-white w-full h-full">
             <div>
               <div class="flex items-center gap-3 mb-10">
                 <div class="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center">
@@ -70,7 +70,7 @@ import { HeaderComponent, FooterComponent } from '../../../shared/components';
         </div>
 
         <!-- Right Side - Login Form -->
-        <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto bg-neutral-50">
           <div class="w-full max-w-sm">
             <!-- Mobile Logo -->
             <div class="lg:hidden text-center mb-8">
@@ -155,11 +155,13 @@ import { HeaderComponent, FooterComponent } from '../../../shared/components';
                 Back to home
               </a>
             </div>
+
+            <p class="mt-6 text-center text-[10px] text-neutral-400">
+              © 2026 IHCAE Sikkim. All rights reserved.
+            </p>
           </div>
         </div>
       </div>
-
-      <app-footer></app-footer>
     </div>
     `,
   styles: []

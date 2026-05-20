@@ -502,6 +502,9 @@ public class NewsService : INewsService
     {
         try
         {
+            var article = await _context.NewsArticles.FindAsync(articleId);
+            var articleTitle = article?.Title ?? "New Success Story / Article";
+
             // Get admin emails
             var adminEmails = await _context.UserRoles
                 .Include(ur => ur.User)
@@ -512,10 +515,10 @@ public class NewsService : INewsService
 
             foreach (var email in adminEmails)
             {
-                await _emailService.SendEmailAsync(
+                await _emailService.SendNewsSubmittedNotificationAsync(
                     email,
-                    "New Content Pending Review",
-                    $"A new article has been submitted and is awaiting your review. Article ID: {articleId}");
+                    articleTitle,
+                    articleId);
             }
         }
         catch (Exception ex)
@@ -529,12 +532,14 @@ public class NewsService : INewsService
         try
         {
             var author = await _context.Users.FindAsync(authorId);
-            if (author != null)
+            var article = await _context.NewsArticles.FindAsync(articleId);
+            if (author != null && article != null)
             {
-                await _emailService.SendEmailAsync(
+                await _emailService.SendNewsStatusNotificationAsync(
                     author.Email,
-                    "Your Article Has Been Approved",
-                    $"Congratulations! Your article has been approved and is now published on the IHCAE Alumni Network.");
+                    author.FirstName,
+                    article.Title,
+                    "Approved");
             }
         }
         catch (Exception ex)
@@ -547,10 +552,12 @@ public class NewsService : INewsService
     {
         try
         {
-            await _emailService.SendEmailAsync(
+            await _emailService.SendNewsStatusNotificationAsync(
                 email,
-                "Article Submission Update",
-                $"Dear {name},\n\nYour article '{title}' was not approved for publication.\n\nReason: {reason}\n\nPlease feel free to revise and resubmit.");
+                name,
+                title,
+                "Rejected",
+                reason);
         }
         catch (Exception ex)
         {

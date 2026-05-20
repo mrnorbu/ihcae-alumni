@@ -208,10 +208,10 @@ public class EventRegistrationService : IEventRegistrationService
             var registration = await _context.EventRegistrations.FindAsync(registrationId);
             if (registration != null)
             {
-                await _emailService.SendEmailAsync(
+                await _emailService.SendEventRegistrationConfirmationAsync(
                     registration.Email,
-                    $"Event Registration Confirmation - {eventTitle}",
-                    $"Dear {registration.Name},\n\nYour registration for '{eventTitle}' has been confirmed.\n\nThank you for registering!\n\nBest regards,\nIHCAE Alumni Network");
+                    registration.Name,
+                    eventTitle);
             }
         }
         catch (Exception ex)

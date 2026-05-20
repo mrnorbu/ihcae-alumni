@@ -19,12 +19,16 @@ export interface AlumniCard {
   profileImageUrl?: string;
   /** Year the alumnus graduated from IHCAE */
   graduationYear?: number;
+  /** Batch/Year the alumnus graduated from IHCAE (Backend DTO compatibility) */
+  batch?: string;
   /** Course/program the alumnus completed at IHCAE */
   course?: string;
   /** Current job title or position */
   jobTitle?: string;
   /** Current location (city, state, country) */
   location?: string;
+  /** Email address of the alumnus */
+  email: string;
 }
 
 /**
@@ -47,6 +51,8 @@ export interface AlumniDetail {
   profileImageUrl?: string;
   /** Year the alumnus graduated from IHCAE */
   graduationYear?: number;
+  /** Batch/Year the alumnus graduated from IHCAE (Backend DTO compatibility) */
+  batch?: string;
   /** Course/program the alumnus completed at IHCAE */
   course?: string;
   /** Personal biography or description */

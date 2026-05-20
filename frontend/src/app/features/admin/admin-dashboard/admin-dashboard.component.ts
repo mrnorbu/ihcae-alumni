@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { TitleCasePipe } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/services/auth.service';
@@ -15,25 +15,30 @@ import {
   XCircle,
   RefreshCw,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  ArrowRight,
+  Newspaper,
+  MessageSquare,
+  UserCheck,
+  Upload
 } from 'lucide-angular';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [FormsModule, LucideAngularModule, TitleCasePipe],
+  imports: [FormsModule, LucideAngularModule, RouterModule],
   template: `
     <div class="p-4 sm:p-6 space-y-5">
 
       <!-- Page header -->
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-bold text-neutral-900">Dashboard</h2>
-          <p class="text-xs text-neutral-500">Overview of your alumni platform</p>
+          <h2 class="text-xl font-bold text-neutral-900">Dashboard</h2>
+          <p class="text-sm text-neutral-500">Overview of your alumni platform</p>
         </div>
         <button (click)="refreshData()" [disabled]="isLoading()"
           class="p-2 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors disabled:opacity-50">
-          <lucide-icon [img]="refreshIcon" [size]="16" [class.animate-spin]="isLoading()"></lucide-icon>
+          <lucide-icon [img]="refreshIcon" [size]="18" [class.animate-spin]="isLoading()"></lucide-icon>
         </button>
       </div>
 
@@ -41,162 +46,131 @@ import {
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="bg-white rounded-lg border border-neutral-200 p-4">
           <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
+            <span class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <lucide-icon [img]="usersIcon" [size]="18"></lucide-icon>
             </span>
-            <span class="text-xs font-medium text-neutral-500">Total Users</span>
+            <span class="text-sm font-medium text-neutral-500">Total Users</span>
           </div>
           <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().totalUsers }}</span>
         </div>
         <div class="bg-white rounded-lg border border-neutral-200 p-4">
           <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="clockIcon" [size]="16"></lucide-icon>
+            <span class="w-9 h-9 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <lucide-icon [img]="clockIcon" [size]="18"></lucide-icon>
             </span>
-            <span class="text-xs font-medium text-neutral-500">Pending</span>
+            <span class="text-sm font-medium text-neutral-500">Pending</span>
           </div>
           <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().pendingUsers }}</span>
         </div>
         <div class="bg-white rounded-lg border border-neutral-200 p-4">
           <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="checkIcon" [size]="16"></lucide-icon>
+            <span class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+              <lucide-icon [img]="checkIcon" [size]="18"></lucide-icon>
             </span>
-            <span class="text-xs font-medium text-neutral-500">Approved</span>
+            <span class="text-sm font-medium text-neutral-500">Approved</span>
           </div>
           <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().approvedUsers }}</span>
         </div>
         <div class="bg-white rounded-lg border border-neutral-200 p-4">
           <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-8 h-8 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="trendingIcon" [size]="16"></lucide-icon>
+            <span class="w-9 h-9 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+              <lucide-icon [img]="trendingIcon" [size]="18"></lucide-icon>
             </span>
-            <span class="text-xs font-medium text-neutral-500">Active Today</span>
+            <span class="text-sm font-medium text-neutral-500">Active Today</span>
           </div>
           <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().activeToday }}</span>
         </div>
       </div>
 
-      <!-- User management panel -->
+      <!-- Pending approvals queue -->
       <div class="bg-white rounded-lg border border-neutral-200 p-5">
-        <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+        <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="text-sm font-bold text-neutral-900">User Management</h3>
-            <p class="text-xs text-neutral-400 mt-0.5">Approve, review and manage member accounts</p>
+            <h3 class="text-base font-bold text-neutral-900">Pending Approvals</h3>
+            <p class="text-sm text-neutral-400 mt-0.5">Users waiting for account approval</p>
           </div>
-          <div class="flex flex-wrap gap-1.5">
-            @for (f of ['all', 'pending', 'approved', 'rejected']; track f) {
-              <button (click)="setFilter($any(f))"
-                class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
-                [class.bg-neutral-900]="currentFilter() === f"
-                [class.text-white]="currentFilter() === f"
-                [class.border-neutral-900]="currentFilter() === f"
-                [class.border-neutral-200]="currentFilter() !== f"
-                [class.text-neutral-600]="currentFilter() !== f"
-                [class.hover:border-neutral-400]="currentFilter() !== f">
-                {{ f | titlecase }} ({{ getFilterCount($any(f)) }})
-              </button>
-            }
-          </div>
+          @if (getPendingUsers().length > 5) {
+            <a routerLink="/admin/alumni-hub" class="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">
+              View all ({{ getPendingUsers().length }})
+              <lucide-icon [img]="arrowRightIcon" [size]="14"></lucide-icon>
+            </a>
+          }
         </div>
 
         @if (isLoadingUsers()) {
           <div class="py-10 text-center">
             <lucide-icon [img]="refreshIcon" [size]="20" class="animate-spin text-neutral-300 mx-auto mb-2"></lucide-icon>
-            <p class="text-xs text-neutral-400">Loading users...</p>
+            <p class="text-sm text-neutral-400">Loading...</p>
           </div>
         }
 
         @if (!isLoadingUsers()) {
-          <div class="overflow-x-auto -mx-5">
-            @if (getFilteredUsers().length > 0) {
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="border-y border-neutral-100">
-                    <th class="text-left py-2 px-5 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">User</th>
-                    <th class="text-left py-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 hidden sm:table-cell">Email</th>
-                    <th class="text-left py-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Status</th>
-                    <th class="text-left py-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 hidden md:table-cell">Registered</th>
-                    <th class="text-right py-2 px-5 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-neutral-50">
-                  @for (user of getFilteredUsers(); track user) {
-                    <tr class="hover:bg-neutral-50/50 transition-colors">
-                      <td class="py-2.5 px-5">
-                        <div class="flex items-center gap-2.5">
-                          <div class="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center shrink-0">
-                            <span class="text-[10px] font-semibold text-neutral-600">
-                              {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
-                            </span>
-                          </div>
-                          <div>
-                            <p class="text-sm font-medium text-neutral-900">{{ user.firstName }} {{ user.lastName }}</p>
-                            @if (user.emailVerified) {
-                              <p class="text-[10px] text-green-600 flex items-center gap-0.5">
-                                <lucide-icon [img]="checkIcon" [size]="10"></lucide-icon> Verified
-                              </p>
-                            }
-                            @if (!user.emailVerified) {
-                              <p class="text-[10px] text-amber-600 flex items-center gap-0.5">
-                                <lucide-icon [img]="alertIcon" [size]="10"></lucide-icon> Unverified
-                              </p>
-                            }
-                          </div>
-                        </div>
-                      </td>
-                      <td class="py-2.5 px-3 text-xs text-neutral-500 hidden sm:table-cell">{{ user.email }}</td>
-                      <td class="py-2.5 px-3">
-                        @if (user.status === 'Pending') {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
-                        }
-                        @if (user.status === 'Approved') {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-700 border border-green-200">Approved</span>
-                        }
-                        @if (user.status === 'Rejected') {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-700 border border-red-200">Rejected</span>
-                        }
-                      </td>
-                      <td class="py-2.5 px-3 text-xs text-neutral-400 hidden md:table-cell">{{ formatDate(user.createdAt) }}</td>
-                      <td class="py-2.5 px-5 text-right">
-                        @if (user.status === 'Pending') {
-                          <div class="flex items-center justify-end gap-1.5">
-                            <button (click)="approveUser(user)" [disabled]="isProcessingUser(user.id)"
-                              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 disabled:opacity-50 transition-colors">
-                              @if (isProcessingUser(user.id)) {
-                                <lucide-icon [img]="refreshIcon" [size]="12" class="animate-spin"></lucide-icon>
-                              }
-                              Approve
-                            </button>
-                            <button (click)="rejectUser(user)" [disabled]="isProcessingUser(user.id)"
-                              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium border border-neutral-200 text-neutral-600 hover:border-red-300 hover:text-red-600 disabled:opacity-50 transition-colors">
-                              Reject
-                            </button>
-                          </div>
-                        }
-                        @if (user.status !== 'Pending') {
-                          <span class="text-xs text-neutral-300">—</span>
-                        }
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            }
-
-            @if (getFilteredUsers().length === 0) {
-              <div class="py-12 text-center">
-                <lucide-icon [img]="usersIcon" [size]="32" class="text-neutral-200 mx-auto mb-2"></lucide-icon>
-                <p class="text-sm font-medium text-neutral-500">
-                  @if (currentFilter() === 'pending') { No pending users }
-                  @if (currentFilter() === 'approved') { No approved users }
-                  @if (currentFilter() === 'rejected') { No rejected users }
-                  @if (currentFilter() === 'all') { No users found }
-                </p>
-              </div>
-            }
-          </div>
+          @if (getPendingUsers().length > 0) {
+            <div class="space-y-2.5">
+              @for (user of getPendingUsers().slice(0, 5); track user.id) {
+                <div class="flex items-center justify-between p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 transition-colors">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center shrink-0">
+                      <span class="text-xs font-semibold text-neutral-600">
+                        {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                      </span>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-neutral-900">{{ user.firstName }} {{ user.lastName }}</p>
+                      <p class="text-xs text-neutral-400">{{ user.email }} · {{ formatDate(user.createdAt) }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <button (click)="approveUser(user)" [disabled]="isProcessingUser(user.id)"
+                      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-700 disabled:opacity-50 transition-colors">
+                      @if (isProcessingUser(user.id)) {
+                        <lucide-icon [img]="refreshIcon" [size]="14" class="animate-spin"></lucide-icon>
+                      }
+                      Approve
+                    </button>
+                    <button (click)="rejectUser(user)" [disabled]="isProcessingUser(user.id)"
+                      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium border border-neutral-200 text-neutral-600 hover:border-red-300 hover:text-red-600 disabled:opacity-50 transition-colors">
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="py-10 text-center">
+              <lucide-icon [img]="checkIcon" [size]="32" class="text-green-300 mx-auto mb-2"></lucide-icon>
+              <p class="text-sm font-medium text-neutral-500">No pending approvals</p>
+              <p class="text-xs text-neutral-400 mt-0.5">All caught up!</p>
+            </div>
+          }
         }
+      </div>
+
+      <!-- Quick links -->
+      <div>
+        <h3 class="text-base font-bold text-neutral-900 mb-3">Quick Actions</h3>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <a routerLink="/admin/content" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
+            <lucide-icon [img]="newspaperIcon" [size]="20" class="text-blue-500 mb-2"></lucide-icon>
+            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">News & Events</p>
+            <p class="text-xs text-neutral-400 mt-0.5">Create articles and events</p>
+          </a>
+          <a routerLink="/admin/content-review" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
+            <lucide-icon [img]="userCheckIcon" [size]="20" class="text-green-500 mb-2"></lucide-icon>
+            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">Story Review</p>
+            <p class="text-xs text-neutral-400 mt-0.5">Review alumni success stories</p>
+          </a>
+          <a routerLink="/admin/forums" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
+            <lucide-icon [img]="messageSquareIcon" [size]="20" class="text-purple-500 mb-2"></lucide-icon>
+            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">Forum Moderation</p>
+            <p class="text-xs text-neutral-400 mt-0.5">Manage topics and posts</p>
+          </a>
+          <a routerLink="/admin/alumni-hub" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
+            <lucide-icon [img]="uploadIcon" [size]="20" class="text-orange-500 mb-2"></lucide-icon>
+            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">Alumni Hub</p>
+            <p class="text-xs text-neutral-400 mt-0.5">Roster imports, verifications, and directory</p>
+          </a>
+        </div>
       </div>
     </div>
 
@@ -209,16 +183,16 @@ import {
               <lucide-icon [img]="checkIcon" [size]="18" class="text-green-600"></lucide-icon>
             </div>
             <div>
-              <h3 class="text-sm font-bold text-neutral-900">Approve User</h3>
-              <p class="text-xs text-neutral-600 mt-0.5">
+              <h3 class="text-base font-bold text-neutral-900">Approve User</h3>
+              <p class="text-sm text-neutral-600 mt-0.5">
                 Approve <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>?
               </p>
-              <p class="text-[11px] text-neutral-400 mt-0.5">{{ selectedUser()?.email }}</p>
+              <p class="text-xs text-neutral-400 mt-0.5">{{ selectedUser()?.email }}</p>
             </div>
           </div>
           <div class="flex justify-end gap-2">
-            <button (click)="closeApprovalModal()" class="px-3.5 py-1.5 rounded-md text-xs border border-neutral-200 text-neutral-600 hover:border-neutral-300 transition-colors">Cancel</button>
-            <button (click)="confirmApproval()" class="px-3.5 py-1.5 rounded-md text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors">Approve</button>
+            <button (click)="closeApprovalModal()" class="px-4 py-2 rounded-md text-sm border border-neutral-200 text-neutral-600 hover:border-neutral-300 transition-colors">Cancel</button>
+            <button (click)="confirmApproval()" class="px-4 py-2 rounded-md text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors">Approve</button>
           </div>
         </div>
       </div>
@@ -233,22 +207,22 @@ import {
               <lucide-icon [img]="xIcon" [size]="18" class="text-red-600"></lucide-icon>
             </div>
             <div>
-              <h3 class="text-sm font-bold text-neutral-900">Reject User</h3>
-              <p class="text-xs text-neutral-600 mt-0.5">
+              <h3 class="text-base font-bold text-neutral-900">Reject User</h3>
+              <p class="text-sm text-neutral-600 mt-0.5">
                 Reject <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>?
               </p>
-              <p class="text-[11px] text-neutral-400 mt-0.5">{{ selectedUser()?.email }}</p>
+              <p class="text-xs text-neutral-400 mt-0.5">{{ selectedUser()?.email }}</p>
             </div>
           </div>
           <div class="mb-3">
-            <label class="block text-[11px] font-medium text-neutral-600 mb-1">Reason (optional)</label>
+            <label class="block text-xs font-medium text-neutral-600 mb-1">Reason (optional)</label>
             <textarea [(ngModel)]="rejectionReason" rows="3"
               class="w-full text-sm border border-neutral-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-300 resize-none"
               placeholder="Provide a reason for rejection..."></textarea>
           </div>
           <div class="flex justify-end gap-2">
-            <button (click)="closeRejectionModal()" class="px-3.5 py-1.5 rounded-md text-xs border border-neutral-200 text-neutral-600 hover:border-neutral-300 transition-colors">Cancel</button>
-            <button (click)="confirmRejection()" class="px-3.5 py-1.5 rounded-md text-xs font-medium bg-red-600 text-white hover:bg-red-700 transition-colors">Reject</button>
+            <button (click)="closeRejectionModal()" class="px-4 py-2 rounded-md text-sm border border-neutral-200 text-neutral-600 hover:border-neutral-300 transition-colors">Cancel</button>
+            <button (click)="confirmRejection()" class="px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors">Reject</button>
           </div>
         </div>
       </div>
@@ -269,6 +243,11 @@ export class AdminDashboardComponent implements OnInit {
   readonly refreshIcon = RefreshCw;
   readonly trendingIcon = TrendingUp;
   readonly alertIcon = AlertCircle;
+  readonly arrowRightIcon = ArrowRight;
+  readonly newspaperIcon = Newspaper;
+  readonly messageSquareIcon = MessageSquare;
+  readonly userCheckIcon = UserCheck;
+  readonly uploadIcon = Upload;
 
   user = signal<User | null>(null);
   sidebarOpen = signal(true);
@@ -285,7 +264,6 @@ export class AdminDashboardComponent implements OnInit {
   showRejectionModal = signal(false);
   selectedUser = signal<any>(null);
   rejectionReason = '';
-  currentFilter = signal<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   isLoadingUsers = signal(false);
 
   ngOnInit() {
@@ -344,39 +322,8 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  getFilteredUsers() {
-    const users = this.allUsers();
-    const filter = this.currentFilter();
-    
-    switch (filter) {
-      case 'pending':
-        return users.filter(user => user.status === 'Pending');
-      case 'approved':
-        return users.filter(user => user.status === 'Approved');
-      case 'rejected':
-        return users.filter(user => user.status === 'Rejected');
-      default:
-        return users;
-    }
-  }
-
-  setFilter(filter: 'all' | 'pending' | 'approved' | 'rejected') {
-    this.currentFilter.set(filter);
-  }
-
-  getFilterCount(filter: 'all' | 'pending' | 'approved' | 'rejected'): number {
-    const users = this.allUsers();
-    
-    switch (filter) {
-      case 'pending':
-        return users.filter(user => user.status === 'Pending').length;
-      case 'approved':
-        return users.filter(user => user.status === 'Approved').length;
-      case 'rejected':
-        return users.filter(user => user.status === 'Rejected').length;
-      default:
-        return users.length;
-    }
+  getPendingUsers() {
+    return this.allUsers().filter(user => user.status === 'Pending');
   }
 
   approveUser(user: any) {

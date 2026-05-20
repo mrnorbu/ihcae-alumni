@@ -459,6 +459,9 @@ public class EventService : IEventService
     {
         try
         {
+            var eventEntity = await _context.Events.FindAsync(eventId);
+            var eventTitle = eventEntity?.Title ?? "New Submitted Event";
+
             var adminEmails = await _context.UserRoles
                 .Include(ur => ur.User)
                 .Include(ur => ur.Role)
@@ -468,10 +471,10 @@ public class EventService : IEventService
 
             foreach (var email in adminEmails)
             {
-                await _emailService.SendEmailAsync(
+                await _emailService.SendEventSubmittedNotificationAsync(
                     email,
-                    "New Event Pending Review",
-                    $"A new event has been submitted and is awaiting your review. Event ID: {eventId}");
+                    eventTitle,
+                    eventId);
             }
         }
         catch (Exception ex)
@@ -485,12 +488,14 @@ public class EventService : IEventService
         try
         {
             var creator = await _context.Users.FindAsync(creatorId);
-            if (creator != null)
+            var eventEntity = await _context.Events.FindAsync(eventId);
+            if (creator != null && eventEntity != null)
             {
-                await _emailService.SendEmailAsync(
+                await _emailService.SendEventStatusNotificationAsync(
                     creator.Email,
-                    "Your Event Has Been Approved",
-                    $"Congratulations! Your event has been approved and is now published on the IHCAE Alumni Network.");
+                    creator.FirstName,
+                    eventEntity.Title,
+                    "Approved");
             }
         }
         catch (Exception ex)
@@ -503,10 +508,12 @@ public class EventService : IEventService
     {
         try
         {
-            await _emailService.SendEmailAsync(
+            await _emailService.SendEventStatusNotificationAsync(
                 email,
-                "Event Submission Update",
-                $"Dear {name},\n\nYour event '{title}' was not approved for publication.\n\nReason: {reason}\n\nPlease feel free to revise and resubmit.");
+                name,
+                title,
+                "Rejected",
+                reason);
         }
         catch (Exception ex)
         {

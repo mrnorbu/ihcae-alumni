@@ -1,663 +1,859 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, inject, OnInit, signal, ViewChild, ElementRef, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { environment } from '../../../../environments/environment';
-import { 
-  LucideAngularModule, 
-  UserCheck, 
-  Search, 
-  Filter, 
-  Download, 
-  Upload, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  LucideAngularModule,
+  UserCheck,
+  Search,
+  Filter,
+  Download,
+  Upload,
   RefreshCw,
   Users,
   GraduationCap,
-  MapPin,
-  Calendar,
-  Mail,
-  Phone,
-  ArrowLeft,
   CheckCircle,
-  XCircle,
   Save,
-  Send
+  Send,
+  Database,
+  Link2,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  Plus,
+  Trash2,
+  Pencil,
+  MailOpen,
+  Mail,
+  Clock
 } from 'lucide-angular';
 import { lastValueFrom } from 'rxjs';
+
+interface AlumniRecord {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  course: string;
+  batch: string;
+  phone: string;
+  location?: string;
+  matchedUserId: string | null;
+  createdAt: string;
+  lastLoginAt?: string | null;
+}
 
 @Component({
   selector: 'app-alumni-management',
   standalone: true,
-  imports: [FormsModule, LucideAngularModule, DatePipe],
+  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent],
   template: `
-    <div class="p-4 sm:p-6 space-y-4">
+    <div class="p-1 sm:p-2 space-y-3">
+ 
+       <!-- Compact Header & Actions Bar -->
+       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-2">
+         <div class="flex items-center gap-3">
+           <h2 class="text-base font-bold text-neutral-900">Legacy Database</h2>
+           <!-- Compact Inline Stats Badge Row -->
+           <div class="hidden md:flex items-center gap-1.5 text-[11px]">
+             <span (click)="filterByStatus('all')"
+               [class.ring-2]="filterStatus === 'all'" [class.ring-neutral-900]="filterStatus === 'all'"
+               class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold border border-blue-100 cursor-pointer hover:bg-blue-100 transition-all select-none">
+               <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> {{ stats().total }} Total
+             </span>
+             <span (click)="filterByStatus('registered')"
+               [class.ring-2]="filterStatus === 'registered'" [class.ring-neutral-900]="filterStatus === 'registered'"
+               class="inline-flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-semibold border border-green-100 cursor-pointer hover:bg-green-100 transition-all select-none">
+               <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> {{ stats().registered }} Registered
+             </span>
+              <span (click)="filterByStatus('invited')"
+                [class.ring-2]="filterStatus === 'invited'" [class.ring-neutral-900]="filterStatus === 'invited'"
+                class="inline-flex items-center gap-1 bg-blue-50 text-blue-800 px-2 py-0.5 rounded-full font-semibold border border-blue-200 cursor-pointer hover:bg-blue-100 transition-all select-none">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div> {{ stats().invitationSent }} Invited
+              </span>
+             <span (click)="filterByStatus('pending')"
+               [class.ring-2]="filterStatus === 'pending'" [class.ring-neutral-900]="filterStatus === 'pending'"
+               class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold border border-amber-100 cursor-pointer hover:bg-amber-100 transition-all select-none">
+               <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div> {{ stats().pendingInvitation }} Pending Invitation
+             </span>
+             <span
+               class="inline-flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-semibold border border-purple-100 select-none">
+               <div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div> {{ stats().courses }} Courses
+             </span>
+           </div>
+         </div>
+         <div class="flex items-center gap-1.5">
+           <input type="file" #fileInput class="hidden" accept=".csv" (change)="onFileSelected($event)" />
+           <button (click)="downloadTemplate()"
+             class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-neutral-200 text-neutral-600 rounded-lg hover:bg-neutral-50 transition-colors">
+             <lucide-icon [img]="downloadIcon" [size]="12"></lucide-icon> Template
+           </button>
+           <button (click)="openAddModal()" [disabled]="isLoading()"
+             class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-neutral-200 text-neutral-600 rounded-lg hover:bg-neutral-50 transition-colors">
+             <lucide-icon [img]="plusIcon" [size]="12"></lucide-icon> Add Record
+           </button>
+           <button (click)="triggerFileInput()" [disabled]="isLoading()"
+             class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+             <lucide-icon [img]="uploadIcon" [size]="12"></lucide-icon> Import CSV
+           </button>
+           <button (click)="loadRecords()" [disabled]="isLoading()"
+             class="p-1.5 rounded-lg border border-neutral-200 text-neutral-500 hover:bg-neutral-100 disabled:opacity-40 transition-colors">
+             <lucide-icon [img]="refreshIcon" [size]="13" [class.animate-spin]="isLoading()"></lucide-icon>
+           </button>
+         </div>
+       </div>
 
-      <!-- Header + Actions -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 class="text-lg font-bold text-neutral-900">Alumni Management</h1>
-          <p class="text-xs text-neutral-500">Manage alumni profiles, import data, and generate accounts</p>
-        </div>
-        <div class="flex items-center gap-2">
-          @if (viewMode() === 'directory') {
-            <button (click)="exportAlumni()" [disabled]="isLoading()"
-              class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-40 transition-colors">
-              <lucide-icon [img]="downloadIcon" [size]="14"></lucide-icon> Export
-            </button>
-            <input type="file" #fileInput class="hidden" accept=".csv" (change)="onFileSelected($event)" />
-            <button (click)="triggerFileInput()" [disabled]="isLoading()"
-              class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
-              <lucide-icon [img]="uploadIcon" [size]="14"></lucide-icon> Import CSV
-            </button>
-            <button (click)="refreshData()" [disabled]="isLoading()"
-              class="p-2 rounded-lg border border-neutral-200 text-neutral-500 hover:bg-neutral-100 disabled:opacity-40 transition-colors">
-              <lucide-icon [img]="refreshIcon" [size]="16" [class.animate-spin]="isLoading()"></lucide-icon>
-            </button>
-          } @else {
-            <button (click)="viewMode.set('directory')" [disabled]="isLoading()"
-              class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-40 transition-colors">
-              <lucide-icon [img]="arrowLeftIcon" [size]="14"></lucide-icon> Back
-            </button>
-            <button (click)="bulkUpdateRecords()" [disabled]="isLoading() || selectedImportRecords().length === 0"
-              class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 disabled:opacity-40 transition-colors">
-              <lucide-icon [img]="saveIcon" [size]="14"></lucide-icon> Save {{ selectedImportRecords().length }} Edits
-            </button>
-            <button (click)="bulkGenerateAccounts()" [disabled]="isLoading() || selectedImportRecords().length === 0"
-              class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
-              <lucide-icon [img]="sendIcon" [size]="14"></lucide-icon> Generate {{ selectedImportRecords().length }} Accounts
-            </button>
-          }
-        </div>
-      </div>
+       <!-- Mobile Stats Bar -->
+       <div class="flex md:hidden items-center justify-between gap-1.5 text-[10px] bg-neutral-50 p-2 rounded-lg border border-neutral-100 overflow-x-auto">
+         <span (click)="filterByStatus('all')" [class.font-bold]="filterStatus === 'all'" class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Total: {{ stats().total }}</span>
+         <span (click)="filterByStatus('registered')" [class.font-bold]="filterStatus === 'registered'" class="text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Reg: {{ stats().registered }}</span>
+          <span (click)="filterByStatus('invited')" [class.font-bold]="filterStatus === 'invited'" class="text-blue-800 bg-blue-50/70 px-1.5 py-0.5 rounded-full cursor-pointer select-none font-medium">Inv: {{ stats().invitationSent }}</span>
+         <span (click)="filterByStatus('pending')" [class.font-bold]="filterStatus === 'pending'" class="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Pend: {{ stats().pendingInvitation }}</span>
+       </div>
 
-      @if (viewMode() === 'directory') {
-        <!-- Stats -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="bg-white border border-neutral-200 rounded-xl p-3.5">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                <lucide-icon [img]="usersIcon" [size]="16" class="text-blue-600"></lucide-icon>
-              </div>
-              <div>
-                <p class="text-lg font-bold text-neutral-900">{{ stats().totalAlumni }}</p>
-                <p class="text-[11px] text-neutral-500">Total Users</p>
-              </div>
-            </div>
-          </div>
-          <div class="bg-white border border-neutral-200 rounded-xl p-3.5">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center">
-                <lucide-icon [img]="userCheckIcon" [size]="16" class="text-green-600"></lucide-icon>
-              </div>
-              <div>
-                <p class="text-lg font-bold text-neutral-900">{{ stats().verifiedAlumni }}</p>
-                <p class="text-[11px] text-neutral-500">Approved</p>
-              </div>
-            </div>
-          </div>
-          <div class="bg-white border border-neutral-200 rounded-xl p-3.5">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
-                <lucide-icon [img]="graduationCapIcon" [size]="16" class="text-purple-600"></lucide-icon>
-              </div>
-              <div>
-                <p class="text-lg font-bold text-neutral-900">{{ stats().recentGraduates }}</p>
-                <p class="text-[11px] text-neutral-500">Recent Signups</p>
-              </div>
-            </div>
-          </div>
-          <div class="bg-white border border-neutral-200 rounded-xl p-3.5">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center">
-                <lucide-icon [img]="eyeIcon" [size]="16" class="text-orange-600"></lucide-icon>
-              </div>
-              <div>
-                <p class="text-lg font-bold text-neutral-900">{{ stats().activeAlumni }}</p>
-                <p class="text-[11px] text-neutral-500">Active</p>
-              </div>
-            </div>
-          </div>
-        </div>
+       <!-- Search & Filter & Bulk Actions Bar -->
+       <div class="flex flex-col sm:flex-row gap-2">
+         <div class="flex-1 relative">
+           <lucide-icon [img]="searchIcon" [size]="13" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
+           <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
+             placeholder="Search by name, email, or course..."
+             class="w-full pl-8 pr-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent">
+         </div>
+         <div class="flex items-center gap-2">
+           <select [(ngModel)]="filterStatus" (ngModelChange)="onSearch()"
+             class="px-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 cursor-pointer">
+             <option value="all">All Records</option>
+             <option value="registered">Registered</option>
+             <option value="pending">Pending Invitation</option>
+             <option value="invited">Invitation Sent (Unclaimed)</option>
+           </select>
+           @if (selectedIds().length > 0 && selectedUnmatchedCount() > 0) {
+             <button (click)="bulkGenerateAccounts()" [disabled]="isLoading() || isBulkProcessing()"
+               class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+               @if (isBulkProcessing()) {
+                 <div class="animate-spin w-3 h-3 border-2 border-neutral-300 border-t-white rounded-full"></div>
+               } @else {
+                 <lucide-icon [img]="sendIcon" [size]="12"></lucide-icon>
+               }
+               Generate {{ selectedUnmatchedCount() }} Accounts
+             </button>
+           }
+           @if (selectedIds().length > 0 && selectedUnclaimedCount() > 0) {
+             <button (click)="bulkResendInvitations()" [disabled]="isLoading() || isBulkProcessing()"
+               class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-40 transition-colors">
+               @if (isBulkProcessing()) {
+                 <div class="animate-spin w-3 h-3 border-2 border-neutral-300 border-t-white rounded-full"></div>
+               } @else {
+                 <lucide-icon [img]="mailIcon" [size]="12"></lucide-icon>
+               }
+               Send {{ selectedUnclaimedCount() }} Reminders
+             </button>
+           }
+         </div>
+       </div>
 
-        <!-- Search & Filters -->
-        <div class="bg-white border border-neutral-200 rounded-xl p-3">
-          <div class="flex flex-col sm:flex-row gap-2">
-            <div class="flex-1 relative">
-              <lucide-icon [img]="searchIcon" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
-              <input type="text" [(ngModel)]="searchQuery" (input)="onSearchChange()"
-                placeholder="Search by name or email..."
-                class="w-full pl-9 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
-            </div>
-            <div class="flex items-center gap-2">
-              <select [(ngModel)]="selectedStatus" (change)="applyFilters()"
-                class="px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                <option value="">All Status</option>
-                <option value="active">Approved</option>
-                <option value="inactive">Pending/Rejected</option>
-                <option value="verified">Email Verified</option>
-                <option value="unverified">Email Unverified</option>
-              </select>
-              <button (click)="clearFilters()"
-                class="flex items-center gap-1.5 px-3 py-2 text-sm border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-                <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon> Clear
+      <!-- Records Table -->
+      <div class="bg-white border border-neutral-200 rounded-lg overflow-hidden">
+        @if (isLoading()) {
+          <div class="p-12 text-center">
+            <div class="animate-spin w-6 h-6 border-2 border-neutral-300 border-t-neutral-900 rounded-full mx-auto"></div>
+            <p class="text-sm text-neutral-500 mt-3">Loading records...</p>
+          </div>
+        } @else if (filteredRecords().length === 0) {
+          <div class="py-12 text-center">
+            <lucide-icon [img]="databaseIcon" [size]="32" class="text-neutral-300 mx-auto"></lucide-icon>
+            <p class="text-sm font-medium text-neutral-600 mt-3 mb-1">No records found</p>
+            <p class="text-xs text-neutral-400 mb-4">
+              @if (searchQuery || filterStatus !== 'all') {
+                Try adjusting your search or filters.
+              } @else {
+                Import a CSV file to populate the alumni database.
+              }
+            </p>
+            @if (!searchQuery && filterStatus === 'all') {
+              <button (click)="triggerFileInput()"
+                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 transition-colors">
+                <lucide-icon [img]="uploadIcon" [size]="14"></lucide-icon> Import Alumni CSV
               </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Alumni Table -->
-        <div class="bg-white border border-neutral-200 rounded-xl overflow-hidden">
-          <div class="overflow-x-auto">
-            @if (getFilteredAlumni().length > 0) {
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="border-b border-neutral-100">
-                    <th class="text-left py-2.5 px-4 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">User</th>
-                    <th class="text-left py-2.5 px-4 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Roles</th>
-                    <th class="text-left py-2.5 px-4 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
-                    <th class="text-left py-2.5 px-4 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider hidden md:table-cell">Registered</th>
-                    <th class="text-right py-2.5 px-4 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-neutral-50">
-                  @for (alumni of getFilteredAlumni(); track alumni) {
-                    <tr class="hover:bg-neutral-50 transition-colors">
-                      <td class="py-3 px-4">
-                        <div class="flex items-center gap-2.5">
-                          <div class="w-8 h-8 bg-neutral-100 rounded-full flex items-center justify-center shrink-0">
-                            @if (alumni.profileImageUrl && !isDefaultImage(alumni.profileImageUrl)) {
-                              <img [src]="alumni.profileImageUrl" class="w-8 h-8 rounded-full object-cover" />
-                            }
-                            @if (!alumni.profileImageUrl || isDefaultImage(alumni.profileImageUrl)) {
-                              <span class="text-[10px] font-semibold text-neutral-500">{{ alumni.firstName.charAt(0) }}{{ alumni.lastName.charAt(0) }}</span>
-                            }
-                          </div>
-                          <div class="min-w-0">
-                            <p class="text-[13px] font-medium text-neutral-900 truncate">{{ alumni.firstName }} {{ alumni.lastName }}</p>
-                            <p class="text-[11px] text-neutral-400 truncate">{{ alumni.email }}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="py-3 px-4 hidden sm:table-cell">
-                        <div class="flex flex-wrap gap-1">
-                          @for (role of alumni.roles; track role) {
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">{{ role }}</span>
-                          }
-                        </div>
-                      </td>
-                      <td class="py-3 px-4 hidden sm:table-cell">
-                        @if (alumni.status === 'Approved') {
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-600 border border-green-100">Approved</span>
-                        }
-                        @if (alumni.status === 'Pending') {
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-100">Pending</span>
-                        }
-                        @if (alumni.status === 'Rejected') {
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-600 border border-red-100">Rejected</span>
-                        }
-                      </td>
-                      <td class="py-3 px-4 hidden md:table-cell">
-                        <span class="text-xs text-neutral-500">{{ formatDate(alumni.createdAt) }}</span>
-                      </td>
-                      <td class="py-3 px-4 text-right">
-                        <div class="flex items-center justify-end gap-0.5">
-                          <button (click)="viewAlumni(alumni)" title="View"
-                            class="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
-                            <lucide-icon [img]="eyeIcon" [size]="13"></lucide-icon>
-                          </button>
-                          <button (click)="editAlumni(alumni)" title="Edit"
-                            class="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
-                            <lucide-icon [img]="editIcon" [size]="13"></lucide-icon>
-                          </button>
-                          <button (click)="deleteAlumni(alumni)" title="Delete"
-                            class="p-1.5 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
-                            <lucide-icon [img]="trashIcon" [size]="13"></lucide-icon>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
             }
-
-            @if (getFilteredAlumni().length === 0) {
-              <div class="py-12 text-center">
-                <lucide-icon [img]="usersIcon" [size]="32" class="text-neutral-200 mx-auto mb-2"></lucide-icon>
-                <p class="text-sm font-medium text-neutral-600 mb-1">No alumni found</p>
-                <p class="text-xs text-neutral-400 mb-3">
-                  @if (searchQuery || selectedStatus) { Try adjusting your search or filters. }
-                  @if (!searchQuery && !selectedStatus) { No alumni registered yet. }
-                </p>
-                @if (!searchQuery && !selectedStatus) {
-                  <button (click)="triggerFileInput()"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 transition-colors">
-                    <lucide-icon [img]="uploadIcon" [size]="14"></lucide-icon> Import Alumni Data
-                  </button>
+          </div>
+        } @else {
+          <!-- Select all bar -->
+          <div class="flex items-center justify-between px-4 py-2.5 border-b border-neutral-100 bg-neutral-50">
+            <div class="flex items-center gap-3">
+              <button (click)="toggleAllSelection()"
+                class="px-2.5 py-1 text-xs font-medium border border-neutral-200 rounded hover:bg-white transition-colors">
+                {{ selectedIds().length === filteredRecords().length && filteredRecords().length > 0 ? 'Deselect All' : 'Select All' }}
+              </button>
+              @if (unmatchedRecords().length > 0) {
+                <button (click)="selectAllUnmatched()"
+                  class="px-2.5 py-1 text-xs font-medium border border-neutral-200 text-neutral-600 rounded hover:bg-neutral-50 transition-colors">
+                  Select Pending Invitation ({{ unmatchedRecords().length }})
+                </button>
+              }
+              <span class="text-xs text-neutral-500">
+                {{ totalCount() }} records total &middot; {{ allRecords().length }} on this page
+                @if (selectedIds().length > 0) {
+                  &middot; {{ selectedIds().length }} selected
                 }
-              </div>
-            }
-          </div>
-
-          @if (getFilteredAlumni().length > 0) {
-            <div class="flex items-center justify-between px-4 py-3 border-t border-neutral-100">
-              <span class="text-xs text-neutral-500">{{ getFilteredAlumni().length }} of {{ stats().totalAlumni }} alumni</span>
-              <div class="flex items-center gap-1.5">
-                <button (click)="previousPage()" [disabled]="currentPage() === 1"
-                  class="px-3 py-1.5 text-xs border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-40 transition-colors">
-                  Previous
-                </button>
-                <span class="text-xs text-neutral-500 px-2">{{ currentPage() }} / {{ totalPages() }}</span>
-                <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
-                  class="px-3 py-1.5 text-xs border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-40 transition-colors">
-                  Next
-                </button>
-              </div>
+              </span>
             </div>
-          }
-        </div>
-      } @else {
-        <!-- Bulk Import & Edit View -->
-        <div class="bg-white border border-neutral-200 rounded-xl overflow-hidden">
-          <div class="flex items-center justify-between p-4 border-b border-neutral-100">
-            <div>
-              <h2 class="text-sm font-bold text-neutral-900">Imported Alumni Records</h2>
-              <p class="text-xs text-neutral-500">Review, edit, and generate accounts for imported data.</p>
-            </div>
-            <button (click)="toggleAllSelection()"
-              class="px-3 py-1.5 text-xs font-medium border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-              Select All Pending
-            </button>
           </div>
 
           <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table class="w-full text-sm">
-              <thead class="sticky top-0 bg-white z-10 border-b border-neutral-100">
+            <table class="w-full">
+              <thead class="sticky top-0 bg-white z-10 border-b border-neutral-200">
                 <tr>
-                  <th class="py-2.5 px-3 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider w-10">Sel</th>
-                  <th class="py-2.5 px-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">First Name</th>
-                  <th class="py-2.5 px-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Last Name</th>
-                  <th class="py-2.5 px-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
-                  <th class="py-2.5 px-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Course</th>
-                  <th class="py-2.5 px-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Batch</th>
-                  <th class="py-2.5 px-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Phone</th>
-                  <th class="py-2.5 px-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
+                  <th class="py-2.5 px-3 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider w-10">Sel</th>
+                  <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">First Name</th>
+                  <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Last Name</th>
+                  <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+                  <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Course</th>
+                  <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Batch</th>
+                  <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone</th>
+                  <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider w-40">Status</th>
+                  <th class="py-2.5 px-3 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider w-20">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-neutral-50">
-                @for (record of importRecords(); track record.id; let idx = $index) {
+                @for (record of paginatedRecords(); track record.id) {
                   <tr [class.bg-green-50]="record.matchedUserId" class="hover:bg-neutral-50 transition-colors">
                     <td class="py-2 px-3 text-center">
                       <input type="checkbox"
-                        [disabled]="!!record.matchedUserId"
                         [checked]="isSelected(record.id)"
                         (change)="toggleSelection(record.id)"
-                        class="w-3.5 h-3.5 text-blue-600 rounded border-neutral-300 focus:ring-blue-500">
+                        class="w-3.5 h-3.5 text-neutral-900 rounded border-neutral-300 focus:ring-neutral-900">
                     </td>
-                    <td class="py-2 px-3">
-                      <input type="text" [(ngModel)]="record.firstName" [disabled]="!!record.matchedUserId"
-                        class="w-full text-xs border-transparent bg-transparent focus:border-blue-400 focus:ring-1 focus:ring-blue-400 rounded px-1.5 py-1">
+                    <td class="py-3 px-3 text-sm text-neutral-800 font-medium">
+                      {{ record.firstName }}
                     </td>
-                    <td class="py-2 px-3">
-                      <input type="text" [(ngModel)]="record.lastName" [disabled]="!!record.matchedUserId"
-                        class="w-full text-xs border-transparent bg-transparent focus:border-blue-400 focus:ring-1 focus:ring-blue-400 rounded px-1.5 py-1">
+                    <td class="py-3 px-3 text-sm text-neutral-800 font-medium">
+                      {{ record.lastName }}
                     </td>
-                    <td class="py-2 px-3">
-                      <input type="email" [(ngModel)]="record.email" [disabled]="!!record.matchedUserId"
-                        class="w-full text-xs border-transparent bg-transparent focus:border-blue-400 focus:ring-1 focus:ring-blue-400 rounded px-1.5 py-1">
+                    <td class="py-3 px-3 text-sm text-neutral-600">
+                      {{ record.email }}
                     </td>
-                    <td class="py-2 px-3">
-                      <input type="text" [(ngModel)]="record.course" [disabled]="!!record.matchedUserId"
-                        class="w-full text-xs border-transparent bg-transparent focus:border-blue-400 focus:ring-1 focus:ring-blue-400 rounded px-1.5 py-1">
+                    <td class="py-3 px-3 text-sm text-neutral-600">
+                      {{ record.course || '-' }}
                     </td>
-                    <td class="py-2 px-3">
-                      <input type="text" [(ngModel)]="record.batch" [disabled]="!!record.matchedUserId"
-                        class="w-20 text-xs border-transparent bg-transparent focus:border-blue-400 focus:ring-1 focus:ring-blue-400 rounded px-1.5 py-1">
+                    <td class="py-3 px-3 text-sm text-neutral-600">
+                      {{ record.batch || '-' }}
                     </td>
-                    <td class="py-2 px-3">
-                      <input type="text" [(ngModel)]="record.phone" [disabled]="!!record.matchedUserId"
-                        class="w-full text-xs border-transparent bg-transparent focus:border-blue-400 focus:ring-1 focus:ring-blue-400 rounded px-1.5 py-1">
+                    <td class="py-3 px-3 text-sm text-neutral-600 whitespace-nowrap">
+                      {{ record.phone || '-' }}
                     </td>
-                    <td class="py-2 px-3">
-                      @if (record.matchedUserId) {
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-600 border border-green-100">
+                    <td class="py-3 px-3">
+                      @if (record.matchedUserId && record.lastLoginAt) {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200 whitespace-nowrap">
                           <lucide-icon [img]="checkCircleIcon" [size]="10"></lucide-icon> Registered
                         </span>
+                      } @else if (record.matchedUserId && !record.lastLoginAt) {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 whitespace-nowrap">
+                          <lucide-icon [img]="mailOpenIcon" [size]="10"></lucide-icon> Invitation Sent
+                        </span>
                       } @else {
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-100">
-                          Pending
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500 border border-neutral-200 whitespace-nowrap">
+                          <lucide-icon [img]="clockIcon" [size]="10"></lucide-icon> Pending Invitation
                         </span>
                       }
+                    </td>
+                    <td class="py-2 px-3 text-center">
+                      <div class="inline-flex items-center justify-center gap-1">
+                        @if (record.matchedUserId && !record.lastLoginAt) {
+                          <button (click)="resendInvitation(record.id, record.email)" title="Resend invitation email"
+                            [disabled]="resendingId() === record.id"
+                            class="p-1 rounded text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-40">
+                            @if (resendingId() === record.id) {
+                              <div class="animate-spin w-3.5 h-3.5 border-2 border-amber-300 border-t-amber-600 rounded-full"></div>
+                            } @else {
+                              <lucide-icon [img]="mailOpenIcon" [size]="14"></lucide-icon>
+                            }
+                          </button>
+                        }
+                        <button (click)="openEditModal(record)" title="Edit this alumnus record"
+                          class="p-1 rounded text-blue-600 hover:bg-blue-50 transition-colors">
+                          <lucide-icon [img]="pencilIcon" [size]="14"></lucide-icon>
+                        </button>
+                        <button (click)="deleteRecord(record.id, record.firstName + ' ' + record.lastName)" title="Delete this alumnus record"
+                          class="p-1 rounded text-red-600 hover:bg-red-50 transition-colors">
+                          <lucide-icon [img]="trashIcon" [size]="14"></lucide-icon>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
-            @if (importRecords().length === 0 && !isLoading()) {
-              <div class="py-10 text-center">
-                <p class="text-xs text-neutral-400">No records to display. Try importing a CSV file.</p>
+          </div>
+
+          <!-- Pagination -->
+          @if (totalPages() > 1) {
+            <div class="flex items-center justify-between px-4 py-3 border-t border-neutral-200">
+              <p class="text-xs text-neutral-500">
+                Showing {{ (currentPage() - 1) * pageSize + 1 }}–{{ Math.min(currentPage() * pageSize, totalCount()) }} of {{ totalCount() }}
+              </p>
+              <div class="flex items-center gap-1">
+                <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                  class="p-1.5 rounded border border-neutral-200 text-neutral-500 hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  <lucide-icon [img]="chevronLeftIcon" [size]="14"></lucide-icon>
+                </button>
+                <span class="px-3 py-1 text-xs text-neutral-600">Page {{ currentPage() }} of {{ totalPages() }}</span>
+                <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                  class="p-1.5 rounded border border-neutral-200 text-neutral-500 hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                  <lucide-icon [img]="chevronRightIcon" [size]="14"></lucide-icon>
+                </button>
               </div>
-            }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Import result banner -->
+      @if (importResult()) {
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+          <lucide-icon [img]="checkCircleIcon" [size]="18" class="text-green-600 mt-0.5 shrink-0"></lucide-icon>
+          <div>
+            <p class="text-sm font-medium text-green-800">Import Complete</p>
+            <p class="text-xs text-green-700 mt-0.5">{{ importResult() }}</p>
+          </div>
+          <button (click)="importResult.set(null)" class="ml-auto p-1 rounded text-green-600 hover:bg-green-100 transition-colors">
+            <lucide-icon [img]="xIcon" [size]="14"></lucide-icon>
+          </button>
+        </div>
+      }
+
+      <!-- CSV Import Preview Modal -->
+      @if (showPreviewModal()) {
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-white border border-neutral-200 rounded-xl shadow-xl w-full max-w-5xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 bg-neutral-50">
+              <h2 class="text-base font-bold text-neutral-900 flex items-center gap-2">
+                <lucide-icon [img]="uploadIcon" [size]="16"></lucide-icon> Import Preview — {{ pendingFileName() }}
+              </h2>
+              <button (click)="cancelImport()" class="text-neutral-400 hover:text-neutral-600 transition-colors">
+                <lucide-icon [img]="xIcon" [size]="16"></lucide-icon>
+              </button>
+            </div>
+            <div class="p-6 space-y-5">
+              <!-- Stats Cards -->
+              <div class="grid grid-cols-4 gap-3 text-center">
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                  <p class="text-2xl font-bold text-blue-700">{{ previewStats().total }}</p>
+                  <p class="text-xs text-blue-600 mt-0.5 font-medium">Total Rows</p>
+                </div>
+                <div class="bg-green-50 border border-green-100 rounded-lg p-3">
+                  <p class="text-2xl font-bold text-green-700">{{ previewStats().ready }}</p>
+                  <p class="text-xs text-green-600 mt-0.5 font-medium">Ready to Import</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 rounded-lg p-3">
+                  <p class="text-2xl font-bold text-amber-700">{{ previewStats().duplicates }}</p>
+                  <p class="text-xs text-amber-600 mt-0.5 font-medium">Duplicates (Auto-Skipped)</p>
+                </div>
+                <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-3">
+                  <p class="text-2xl font-bold text-neutral-500">{{ previewStats().skipped }}</p>
+                  <p class="text-xs text-neutral-400 mt-0.5 font-medium">Manually Skipped</p>
+                </div>
+              </div>
+
+              <!-- Interactive Rows Table -->
+              <div class="bg-white border border-neutral-200 rounded-lg overflow-hidden">
+                <div class="overflow-x-auto max-h-[350px] overflow-y-auto">
+                  <table class="w-full">
+                    <thead class="sticky top-0 bg-neutral-50 z-10 border-b border-neutral-200">
+                      <tr>
+                        <th class="py-2.5 px-3 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider w-16">Skip</th>
+                        <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider w-32">Status</th>
+                        <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">First Name</th>
+                        <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Last Name</th>
+                        <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email</th>
+                        <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Course</th>
+                        <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider w-20">Batch</th>
+                        <th class="py-2.5 px-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Phone / Location</th>
+                        <th class="py-2.5 px-3 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider w-24">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-100">
+                      @for (row of previewRows(); track $index) {
+                        <tr [class.bg-neutral-50]="row.isSkipped"
+                            [class.bg-amber-50/40]="!row.isSkipped && row.isDuplicate"
+                            [class.bg-green-50/10]="!row.isSkipped && !row.isDuplicate"
+                            class="hover:bg-neutral-50/60 transition-colors">
+                          
+                          <!-- Skip Checkbox -->
+                          <td class="py-2.5 px-3 text-center">
+                            <input type="checkbox"
+                              [checked]="row.isSkipped"
+                              (change)="toggleSkipPreviewRow(row)"
+                              class="w-3.5 h-3.5 text-neutral-900 rounded border-neutral-300 focus:ring-neutral-900">
+                          </td>
+
+                          <!-- Status Badge -->
+                          <td class="py-2.5 px-3 whitespace-nowrap">
+                            @if (row.isSkipped) {
+                              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 text-neutral-500 border border-neutral-200">
+                                Skipped
+                              </span>
+                            } @else if (row.isDuplicate) {
+                              <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                                <lucide-icon [img]="alertIcon" [size]="9"></lucide-icon> Duplicate
+                              </span>
+                            } @else {
+                              <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700 border border-green-200">
+                                <lucide-icon [img]="checkCircleIcon" [size]="9"></lucide-icon> Ready
+                              </span>
+                            }
+                          </td>
+
+                          <!-- First Name -->
+                          <td class="py-2.5 px-3 text-sm">
+                            @if (row.isEditing) {
+                              <input type="text" [(ngModel)]="row.firstName" 
+                                class="w-full text-xs border border-neutral-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                            } @else {
+                              <span [class.line-through]="row.isSkipped" class="text-neutral-800 font-medium">{{ row.firstName }}</span>
+                            }
+                          </td>
+
+                          <!-- Last Name -->
+                          <td class="py-2.5 px-3 text-sm">
+                            @if (row.isEditing) {
+                              <input type="text" [(ngModel)]="row.lastName" 
+                                class="w-full text-xs border border-neutral-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                            } @else {
+                              <span [class.line-through]="row.isSkipped" class="text-neutral-800 font-medium">{{ row.lastName }}</span>
+                            }
+                          </td>
+
+                          <!-- Email -->
+                          <td class="py-2.5 px-3 text-sm">
+                            @if (row.isEditing) {
+                              <input type="email" [(ngModel)]="row.email" 
+                                class="w-full text-xs border border-neutral-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                            } @else {
+                              <span [class.text-amber-700]="row.isDuplicate && !row.isSkipped" 
+                                    [class.line-through]="row.isSkipped" 
+                                    class="text-neutral-600 font-mono text-xs">{{ row.email }}</span>
+                            }
+                          </td>
+
+                          <!-- Course -->
+                          <td class="py-2.5 px-3 text-sm">
+                            @if (row.isEditing) {
+                              <input type="text" [(ngModel)]="row.course" 
+                                class="w-full text-xs border border-neutral-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                            } @else {
+                              <span [class.line-through]="row.isSkipped" class="text-neutral-600 text-xs">{{ row.course || '-' }}</span>
+                            }
+                          </td>
+
+                          <!-- Batch -->
+                          <td class="py-2.5 px-3 text-sm">
+                            @if (row.isEditing) {
+                              <input type="text" [(ngModel)]="row.batch" 
+                                class="w-full text-xs border border-neutral-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                            } @else {
+                              <span [class.line-through]="row.isSkipped" class="text-neutral-600 text-xs">{{ row.batch || '-' }}</span>
+                            }
+                          </td>
+
+                          <!-- Phone / Location -->
+                          <td class="py-2.5 px-3 text-sm">
+                            @if (row.isEditing) {
+                              <div class="space-y-1">
+                                <input type="text" [(ngModel)]="row.phone" placeholder="Phone"
+                                  class="w-full text-xs border border-neutral-200 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                                <input type="text" [(ngModel)]="row.location" placeholder="Location"
+                                  class="w-full text-xs border border-neutral-200 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                              </div>
+                            } @else {
+                              <div [class.line-through]="row.isSkipped" class="text-[11px] text-neutral-500 leading-tight">
+                                <div>{{ row.phone || '-' }}</div>
+                                <div class="text-neutral-400">{{ row.location || '-' }}</div>
+                              </div>
+                            }
+                          </td>
+
+                          <!-- Inline Actions -->
+                          <td class="py-2.5 px-3 text-center">
+                            <div class="inline-flex items-center gap-1.5 font-medium">
+                              @if (row.isEditing) {
+                                <button (click)="savePreviewRow(row)" title="Save changes"
+                                  class="p-1 rounded bg-green-50 text-green-600 hover:bg-green-100 transition-colors">
+                                  <lucide-icon [img]="checkCircleIcon" [size]="13"></lucide-icon>
+                                </button>
+                                <button (click)="cancelEditPreviewRow(row)" title="Cancel editing"
+                                  class="p-1 rounded bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors">
+                                  <lucide-icon [img]="xIcon" [size]="13"></lucide-icon>
+                                </button>
+                              } @else {
+                                <button (click)="editPreviewRow(row)" title="Edit row inline"
+                                  class="p-1 rounded text-blue-600 hover:bg-blue-50 transition-colors">
+                                  <lucide-icon [img]="pencilIcon" [size]="13"></lucide-icon>
+                                </button>
+                                <button (click)="toggleSkipPreviewRow(row)" [title]="row.isSkipped ? 'Include row' : 'Skip row'"
+                                  [class.text-neutral-400]="row.isSkipped"
+                                  [class.text-red-500]="!row.isSkipped"
+                                  class="p-1 rounded hover:bg-red-50 transition-colors">
+                                  <lucide-icon [img]="row.isSkipped ? plusIcon : trashIcon" [size]="13"></lucide-icon>
+                                </button>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              @if (previewStats().duplicates > 0) {
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3.5 flex items-start gap-2.5">
+                  <lucide-icon [img]="alertIcon" [size]="16" class="text-amber-600 mt-0.5 shrink-0"></lucide-icon>
+                  <p class="text-xs text-amber-700 leading-normal">
+                    <strong>Notice:</strong> We detected <strong>{{ previewStats().duplicates }} duplicate records</strong>. 
+                    Duplicate email addresses cannot be imported. You can <strong>edit</strong> the emails directly inline to fix conflicts, or they will be automatically skipped during import.
+                  </p>
+                </div>
+              }
+            </div>
+            <div class="flex items-center justify-between px-6 py-4 border-t border-neutral-100 bg-neutral-50">
+              <span class="text-xs text-neutral-500 font-medium">
+                Only the <strong>{{ previewStats().ready }} Ready</strong> records will be imported.
+              </span>
+              <div class="flex items-center gap-2">
+                <button (click)="cancelImport()"
+                  class="px-4 py-2 text-sm font-medium border border-neutral-200 text-neutral-600 rounded-lg hover:bg-neutral-50 transition-colors">
+                  Cancel
+                </button>
+                <button (click)="confirmImport()" [disabled]="previewStats().ready === 0"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+                  <lucide-icon [img]="uploadIcon" [size]="14"></lucide-icon> Import {{ previewStats().ready }} Records
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+
+      <!-- Add/Edit Record Modal -->
+      @if (showAddModal()) {
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-white border border-neutral-200 rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 bg-neutral-50">
+              <h2 class="text-base font-bold text-neutral-900 flex items-center gap-2">
+                <lucide-icon [img]="isEditing() ? pencilIcon : plusIcon" [size]="16" [class.text-blue-600]="isEditing()" [class.text-neutral-900]="!isEditing()"></lucide-icon>
+                {{ isEditing() ? 'Edit Alumni Record' : 'Add Alumni Record Manually' }}
+              </h2>
+              <button (click)="closeAddModal()" class="text-neutral-400 hover:text-neutral-600 transition-colors">
+                <lucide-icon [img]="xIcon" [size]="16"></lucide-icon>
+              </button>
+            </div>
+
+            <!-- Modal Content -->
+            <form (submit)="saveRecord(); $event.preventDefault()" class="p-6 space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">First Name *</label>
+                  <input type="text" [(ngModel)]="newRecord.firstName" name="firstName" required
+                    class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Last Name *</label>
+                  <input type="text" [(ngModel)]="newRecord.lastName" name="lastName" required
+                    class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Email Address *</label>
+                <input type="email" [(ngModel)]="newRecord.email" name="email" required
+                  class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Course Name</label>
+                <input type="text" [(ngModel)]="newRecord.course" name="course" placeholder="e.g. Adventure Tourism Management"
+                  class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Batch Year</label>
+                  <input type="text" [(ngModel)]="newRecord.batch" name="batch" placeholder="e.g. 2020"
+                    class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Phone Number</label>
+                  <input type="text" [(ngModel)]="newRecord.phone" name="phone" placeholder="e.g. +91-98765-43210"
+                    class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Location</label>
+                <input type="text" [(ngModel)]="newRecord.location" name="location" placeholder="e.g. Manali, Himachal Pradesh"
+                  class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
+              </div>
+
+              <!-- Modal Footer -->
+              <div class="flex items-center justify-end gap-2 pt-4 border-t border-neutral-100 mt-6">
+                <button type="button" (click)="closeAddModal()"
+                  class="px-4 py-2 text-sm font-medium border border-neutral-200 text-neutral-600 rounded-lg hover:bg-neutral-50 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" [disabled]="isLoading()"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+                  <lucide-icon [img]="saveIcon" [size]="14"></lucide-icon> Save Record
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       }
     </div>
 
-    <!-- Alumni Detail Modal -->
-    @if (showAlumniModal()) {
-      <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" (click)="closeAlumniModal()">
-        <div class="bg-white rounded-xl border border-neutral-200 max-w-xl w-full mx-4 max-h-[85vh] overflow-y-auto" (click)="$event.stopPropagation()">
-          <div class="flex items-center justify-between p-4 border-b border-neutral-100 sticky top-0 bg-white z-10">
-            <h3 class="text-sm font-bold text-neutral-900">Alumni Profile</h3>
-            <button (click)="closeAlumniModal()" class="p-1 rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
-              <lucide-icon [img]="xIcon" [size]="16"></lucide-icon>
-            </button>
-          </div>
-
-          @if (selectedAlumni()) {
-            <div class="p-4 space-y-5">
-              <div class="flex items-start gap-3">
-                <div class="w-14 h-14 bg-neutral-100 rounded-full flex items-center justify-center shrink-0">
-                  @if (selectedAlumni()!.profileImageUrl && !isDefaultImage(selectedAlumni()!.profileImageUrl)) {
-                    <img [src]="selectedAlumni()!.profileImageUrl" class="w-14 h-14 rounded-full object-cover" />
-                  }
-                  @if (!selectedAlumni()!.profileImageUrl || isDefaultImage(selectedAlumni()!.profileImageUrl)) {
-                    <span class="text-lg font-semibold text-neutral-500">{{ selectedAlumni()!.firstName.charAt(0) }}{{ selectedAlumni()!.lastName.charAt(0) }}</span>
-                  }
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h4 class="text-base font-semibold text-neutral-900">{{ selectedAlumni()!.firstName }} {{ selectedAlumni()!.lastName }}</h4>
-                  <p class="text-xs text-neutral-500 mb-1.5">{{ selectedAlumni()!.email }}</p>
-                  <div class="flex items-center gap-1.5">
-                    @if (selectedAlumni()!.isVerified) {
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-600 border border-green-100">Verified</span>
-                    }
-                    @if (!selectedAlumni()!.isVerified) {
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-100">Unverified</span>
-                    }
-                    @if (selectedAlumni()!.isActive) {
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">Active</span>
-                    }
-                  </div>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <h5 class="text-xs font-semibold text-neutral-900 mb-2">Account</h5>
-                  <div class="space-y-1.5 text-xs">
-                    <div class="flex items-center gap-2">
-                      <lucide-icon [img]="userCheckIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                      <span class="text-neutral-500">Status:</span>
-                      <span class="font-medium text-neutral-700">{{ selectedAlumni()!.status }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <lucide-icon [img]="graduationCapIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                      <span class="text-neutral-500">Roles:</span>
-                      <span class="font-medium text-neutral-700">{{ selectedAlumni()!.roles?.join(', ') || 'Member' }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <lucide-icon [img]="calendarIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                      <span class="text-neutral-500">Registered:</span>
-                      <span class="font-medium text-neutral-700">{{ selectedAlumni()!.createdAt | date:'mediumDate' }}</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h5 class="text-xs font-semibold text-neutral-900 mb-2">Contact</h5>
-                  <div class="space-y-1.5 text-xs">
-                    <div class="flex items-center gap-2">
-                      <lucide-icon [img]="mailIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                      <span class="text-neutral-700">{{ selectedAlumni()!.email }}</span>
-                    </div>
-                    @if (selectedAlumni()!.phone) {
-                      <div class="flex items-center gap-2">
-                        <lucide-icon [img]="phoneIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                        <span class="text-neutral-700">{{ selectedAlumni()!.phone }}</span>
-                      </div>
-                    }
-                    @if (selectedAlumni()!.currentLocation) {
-                      <div class="flex items-center gap-2">
-                        <lucide-icon [img]="mapPinIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                        <span class="text-neutral-700">{{ selectedAlumni()!.currentLocation }}</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-
-              @if (selectedAlumni()!.currentJob) {
-                <div>
-                  <h5 class="text-xs font-semibold text-neutral-900 mb-1.5">Professional</h5>
-                  <p class="text-xs text-neutral-700">{{ selectedAlumni()!.currentJob }}</p>
-                </div>
-              }
-
-              <div>
-                <h5 class="text-xs font-semibold text-neutral-900 mb-2">Activity</h5>
-                <div class="space-y-1.5 text-xs">
-                  <div class="flex items-center gap-2">
-                    <lucide-icon [img]="calendarIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                    <span class="text-neutral-500">Last Active:</span>
-                    <span class="text-neutral-700">{{ formatDate(selectedAlumni()!.lastActiveAt) }}</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <lucide-icon [img]="calendarIcon" [size]="13" class="text-neutral-400"></lucide-icon>
-                    <span class="text-neutral-500">Created:</span>
-                    <span class="text-neutral-700">{{ formatDate(selectedAlumni()!.createdAt) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
-    `,
+    <app-confirmation-modal
+      [isVisible]="showConfirmModal()"
+      [title]="confirmModalConfig().title"
+      [message]="confirmModalConfig().message"
+      [confirmText]="confirmModalConfig().confirmText"
+      (confirm)="onConfirm()"
+      (cancel)="onCancelConfirm()" />
+  `,
   styles: []
 })
 export class AlumniManagementComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl + '/admin';
+  private apiUrl = environment.apiUrl + '/api/v1/admin';
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  // Lucide icons
+  // Icons
   readonly userCheckIcon = UserCheck;
   readonly searchIcon = Search;
   readonly filterIcon = Filter;
   readonly downloadIcon = Download;
   readonly uploadIcon = Upload;
-  readonly editIcon = Edit;
-  readonly trashIcon = Trash2;
-  readonly eyeIcon = Eye;
   readonly refreshIcon = RefreshCw;
   readonly usersIcon = Users;
   readonly graduationCapIcon = GraduationCap;
-  readonly mapPinIcon = MapPin;
-  readonly calendarIcon = Calendar;
-  readonly mailIcon = Mail;
-  readonly phoneIcon = Phone;
-  readonly arrowLeftIcon = ArrowLeft;
-  readonly xIcon = Trash2; 
   readonly checkCircleIcon = CheckCircle;
-  readonly xCircleIcon = XCircle;
   readonly saveIcon = Save;
   readonly sendIcon = Send;
+  readonly databaseIcon = Database;
+  readonly linkIcon = Link2;
+  readonly xIcon = X;
+  readonly chevronLeftIcon = ChevronLeft;
+  readonly chevronRightIcon = ChevronRight;
+  readonly alertIcon = AlertCircle;
+  readonly plusIcon = Plus;
+  readonly trashIcon = Trash2;
+  readonly pencilIcon = Pencil;
+  readonly mailOpenIcon = MailOpen;
+  readonly mailIcon = Mail;
+  readonly clockIcon = Clock;
+
+  Math = Math;
 
   // State
+  allRecords = signal<AlumniRecord[]>([]);
+  totalCount = signal(0);
   isLoading = signal(false);
+  isBulkProcessing = signal(false);
   searchQuery = '';
-  selectedStatus = '';
+  filterStatus = 'all';
   currentPage = signal(1);
-  itemsPerPage = 20;
+  pageSize = 50;
+  selectedIds = signal<string[]>([]);
+  importResult = signal<string | null>(null);
 
-  viewMode = signal<'directory' | 'import'>('directory');
-  importRecords = signal<any[]>([]);
-  selectedImportRecords = signal<string[]>([]);
+  resendingId = signal<string | null>(null);
 
-  stats = signal({
-    totalAlumni: 0,
-    verifiedAlumni: 0,
-    recentGraduates: 0,
-    activeAlumni: 0
+  // Confirmation modal
+  showConfirmModal = signal(false);
+  confirmModalConfig = signal<{ title: string; message: string; confirmText: string; action: () => void }>({ title: '', message: '', confirmText: 'Confirm', action: () => {} });
+
+  openConfirm(title: string, message: string, confirmText: string, action: () => void) {
+    this.confirmModalConfig.set({ title, message, confirmText, action });
+    this.showConfirmModal.set(true);
+  }
+  onConfirm() { this.confirmModalConfig().action(); this.showConfirmModal.set(false); }
+  onCancelConfirm() { this.showConfirmModal.set(false); }
+
+  // Import preview modal state
+  showPreviewModal = signal(false);
+  previewResult = signal<{ importedRecords: number; skippedRecords: number; totalRecords: number; errors: string[] } | null>(null);
+  pendingCsvText = signal<string | null>(null);
+  pendingFileName = signal<string>('');
+
+  // Interactive preview signals
+  previewRows = signal<any[]>([]);
+  dbEmailsSet = new Set<string>();
+
+  previewStats = computed(() => {
+    const rows = this.previewRows();
+    const total = rows.length;
+    const skipped = rows.filter(r => r.isSkipped).length;
+    const duplicates = rows.filter(r => !r.isSkipped && r.isDuplicate).length;
+    const ready = rows.filter(r => !r.isSkipped && !r.isDuplicate).length;
+    return { total, skipped, duplicates, ready };
   });
 
-  alumni = signal<any[]>([]);
+  // Manual Add/Edit Modal State
+  showAddModal = signal(false);
+  isEditing = signal(false);
+  newRecord = {
+    id: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    course: '',
+    batch: '',
+    phone: '',
+    location: ''
+  };
 
-  // Modal
-  showAlumniModal = signal(false);
-  selectedAlumni = signal<any>(null);
+  dbStats = signal<{
+    total: number;
+    registered: number;
+    invitationSent: number;
+    pendingInvitation: number;
+    courses: number;
+  }>({
+    total: 0,
+    registered: 0,
+    invitationSent: 0,
+    pendingInvitation: 0,
+    courses: 0
+  });
 
-  ngOnInit() {
-    this.loadData();
-  }
-
-  refreshData() {
-    this.loadData();
-  }
-
-  private loadData() {
-    this.isLoading.set(true);
-    this.loadAlumni();
-  }
-
-  private loadAlumni() {
-    this.http.get<any>(`${environment.apiUrl}/api/v1/usermanagement/all`).subscribe({
-      next: (response) => {
-        if (response.success && response.users) {
-          const users = response.users.map((u: any) => ({
-            id: u.id,
-            firstName: u.firstName,
-            lastName: u.lastName,
-            email: u.email,
-            phone: null,
-            graduationYear: null,
-            degree: u.roles?.join(', ') || 'Member',
-            currentLocation: null,
-            currentJob: null,
-            isVerified: u.emailVerified,
-            isActive: u.status === 'Approved',
-            lastActiveAt: u.updatedAt || u.createdAt,
-            createdAt: u.createdAt,
-            profileImageUrl: null,
-            status: u.status,
-            roles: u.roles || []
-          }));
-          this.alumni.set(users);
-
-          const approved = users.filter((u: any) => u.status === 'Approved');
-          const currentYear = new Date().getFullYear();
-          const recentCutoff = new Date();
-          recentCutoff.setDate(recentCutoff.getDate() - 30);
-          this.stats.set({
-            totalAlumni: users.length,
-            verifiedAlumni: approved.length,
-            recentGraduates: users.filter((u: any) => new Date(u.createdAt).getFullYear() >= currentYear - 1).length,
-            activeAlumni: users.filter((u: any) => u.lastActiveAt && new Date(u.lastActiveAt) > recentCutoff).length
-          });
-
-        }
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.notificationService.showError('Error', 'Failed to load alumni data');
-        this.isLoading.set(false);
-      }
-    });
-  }
-
-  private async loadImportRecords() {
-    this.isLoading.set(true);
+  async loadDbStats() {
     try {
-      const response = await lastValueFrom(this.http.get<any>(`${this.apiUrl}/alumni?pageSize=1000`));
-      if (response && response.items) {
-        this.importRecords.set(response.items);
+      const response = await lastValueFrom(
+        this.http.get<any>(`${this.apiUrl}/alumni/stats`)
+      );
+      if (response) {
+        this.dbStats.set({
+          total: response.total ?? 0,
+          registered: response.registered ?? 0,
+          invitationSent: response.invitationSent ?? 0,
+          pendingInvitation: response.pendingInvitation ?? 0,
+          courses: response.courses ?? 0
+        });
       }
     } catch (error) {
-      this.notificationService.showError('Error', 'Failed to load imported alumni records');
+      console.error('Failed to load db stats', error);
+    }
+  }
+
+  stats = computed(() => {
+    return this.dbStats();
+  });
+
+  filteredRecords = computed(() => {
+    return this.allRecords();
+  });
+
+  unmatchedRecords = computed(() => this.allRecords().filter(r => !r.matchedUserId));
+
+  unclaimedRecords = computed(() => this.allRecords().filter(r => r.matchedUserId && !r.lastLoginAt));
+
+  selectedUnmatchedCount = computed(() => {
+    const ids = this.selectedIds();
+    return this.allRecords().filter(r => ids.includes(r.id) && !r.matchedUserId).length;
+  });
+
+  selectedUnmatchedIds = computed(() => {
+    const ids = this.selectedIds();
+    return this.allRecords()
+      .filter(r => ids.includes(r.id) && !r.matchedUserId)
+      .map(r => r.id);
+  });
+
+  selectedUnclaimedCount = computed(() => {
+    const ids = this.selectedIds();
+    return this.allRecords().filter(r => ids.includes(r.id) && r.matchedUserId && !r.lastLoginAt).length;
+  });
+
+  selectedUnclaimedIds = computed(() => {
+    const ids = this.selectedIds();
+    return this.allRecords()
+      .filter(r => ids.includes(r.id) && r.matchedUserId && !r.lastLoginAt)
+      .map(r => r.id);
+  });
+
+  totalPages = computed(() => {
+    return Math.max(1, Math.ceil(this.totalCount() / this.pageSize));
+  });
+
+  paginatedRecords = computed(() => {
+    return this.filteredRecords();
+  });
+
+  ngOnInit() {
+    this.loadRecords();
+  }
+
+  async loadRecords(page = this.currentPage()) {
+    this.isLoading.set(true);
+    try {
+      const statusParam = this.filterStatus !== 'all' ? this.filterStatus : '';
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(this.pageSize),
+        ...(this.searchQuery.trim() ? { searchTerm: this.searchQuery.trim() } : {}),
+        ...(statusParam ? { status: statusParam } : {})
+      });
+      const response = await lastValueFrom(
+        this.http.get<any>(`${this.apiUrl}/alumni?${params}`)
+      );
+      if (response && response.items) {
+        this.allRecords.set(response.items);
+        this.totalCount.set(response.totalCount ?? response.items.length);
+      } else if (Array.isArray(response)) {
+        this.allRecords.set(response);
+        this.totalCount.set(response.length);
+      }
+      
+      // Load exact global database stats from the backend
+      await this.loadDbStats();
+    } catch (error) {
+      this.notificationService.showError('Error', 'Failed to load alumni database records');
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  onSearchChange() {
-    this.applyFilters();
-  }
-
-  applyFilters() {
+  onSearch() {
     this.currentPage.set(1);
+    this.loadRecords(1);
   }
 
-  clearFilters() {
-    this.searchQuery = '';
-    this.selectedStatus = '';
-    this.currentPage.set(1);
+  filterByStatus(status: string) {
+    this.filterStatus = status;
+    this.onSearch();
   }
 
-  getFilteredAlumni() {
-    let filtered = this.alumni();
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter((alumni: any) =>
-        alumni.firstName.toLowerCase().includes(query) ||
-        alumni.lastName.toLowerCase().includes(query) ||
-        alumni.email.toLowerCase().includes(query)
-      );
-    }
-    if (this.selectedStatus) {
-      if (this.selectedStatus === 'verified') filtered = filtered.filter((a: any) => a.isVerified);
-      if (this.selectedStatus === 'unverified') filtered = filtered.filter((a: any) => !a.isVerified);
-      if (this.selectedStatus === 'active') filtered = filtered.filter((a: any) => a.status === 'Approved');
-      if (this.selectedStatus === 'inactive') filtered = filtered.filter((a: any) => a.status !== 'Approved');
-    }
-    return filtered;
-  }
-
-  totalPages() {
-    return Math.ceil(this.getFilteredAlumni().length / this.itemsPerPage);
-  }
-
-  previousPage() {
+  prevPage() {
     if (this.currentPage() > 1) {
-      this.currentPage.set(this.currentPage() - 1);
+      const p = this.currentPage() - 1;
+      this.currentPage.set(p);
+      this.loadRecords(p);
     }
   }
 
   nextPage() {
     if (this.currentPage() < this.totalPages()) {
-      this.currentPage.set(this.currentPage() + 1);
+      const p = this.currentPage() + 1;
+      this.currentPage.set(p);
+      this.loadRecords(p);
     }
-  }
-
-  viewAlumni(alumni: any) {
-    this.selectedAlumni.set(alumni);
-    this.showAlumniModal.set(true);
-  }
-
-  editAlumni(alumni: any) {
-    this.notificationService.showInfo('Edit Alumni', 'Edit functionality will be implemented');
-  }
-
-  deleteAlumni(alumni: any) {
-    if (confirm(`Are you sure you want to delete ${alumni.firstName} ${alumni.lastName}?`)) {
-      this.notificationService.showSuccess('Alumni Deleted', 'Alumni has been deleted successfully');
-      this.loadAlumni();
-    }
-  }
-
-  closeAlumniModal() {
-    this.showAlumniModal.set(false);
-    this.selectedAlumni.set(null);
-  }
-
-  exportAlumni() {
-    this.notificationService.showSuccess('Export Started', 'Alumni data export has been initiated');
   }
 
   triggerFileInput() {
@@ -670,16 +866,30 @@ export class AlumniManagementComponent implements OnInit {
 
     this.isLoading.set(true);
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = async () => {
       const text = reader.result?.toString();
       if (text) {
         try {
-          await lastValueFrom(this.http.post(`${this.apiUrl}/alumni/import`, { csvContent: text }));
-          this.notificationService.showSuccess('Import Successful', 'CSV data imported correctly. Opening spreadsheet view.');
-          await this.loadImportRecords();
-          this.viewMode.set('import');
+          // 1. Fetch all DB emails for local duplicate checking
+          const dbEmails = await lastValueFrom(
+            this.http.get<string[]>(`${this.apiUrl}/alumni/emails`)
+          );
+          this.dbEmailsSet = new Set(dbEmails.map(e => e.toLowerCase()));
+
+          // 2. Parse CSV
+          const parsed = this.parseCsv(text);
+
+          // 3. Store filename and preview rows
+          this.pendingFileName.set(file.name);
+          this.previewRows.set(parsed);
+
+          // 4. Run duplicate detection
+          this.runDuplicateDetection();
+
+          // 5. Open Modal
+          this.showPreviewModal.set(true);
         } catch (error: any) {
-          this.notificationService.showError('Import Failed', error.error?.message || 'An error occurred during import.');
+          this.notificationService.showError('Preview Failed', error.message || 'An error occurred while reading the CSV');
         }
       }
       this.isLoading.set(false);
@@ -688,77 +898,419 @@ export class AlumniManagementComponent implements OnInit {
     reader.readAsText(file);
   }
 
+  parseCsv(text: string): any[] {
+    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+    if (lines.length < 2) return [];
+
+    const headers = this.parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+    const firstNameIndex = headers.indexOf('firstname');
+    const lastNameIndex = headers.indexOf('lastname');
+    const emailIndex = headers.indexOf('email');
+    const courseIndex = headers.indexOf('course');
+    const batchIndex = headers.indexOf('batch');
+    const phoneIndex = headers.indexOf('phone');
+    const locationIndex = headers.indexOf('location');
+
+    if (firstNameIndex === -1 || lastNameIndex === -1 || emailIndex === -1) {
+      throw new Error('CSV must contain FirstName, LastName, and Email columns.');
+    }
+
+    const parsedRows: any[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = this.parseCsvLine(lines[i]);
+      if (values.length <= Math.max(firstNameIndex, Math.max(lastNameIndex, emailIndex))) {
+        continue;
+      }
+      const email = values[emailIndex]?.trim() || '';
+      if (!email) continue;
+
+      parsedRows.push({
+        firstName: values[firstNameIndex]?.trim() || '',
+        lastName: values[lastNameIndex]?.trim() || '',
+        email: email,
+        course: courseIndex >= 0 && courseIndex < values.length ? values[courseIndex]?.trim() : '',
+        batch: batchIndex >= 0 && batchIndex < values.length ? values[batchIndex]?.trim() : '',
+        phone: phoneIndex >= 0 && phoneIndex < values.length ? values[phoneIndex]?.trim() : '',
+        location: locationIndex >= 0 && locationIndex < values.length ? values[locationIndex]?.trim() : '',
+        isDuplicate: false,
+        isSkipped: false,
+        isEditing: false
+      });
+    }
+    return parsedRows;
+  }
+
+  parseCsvLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (c === ',' && !inQuotes) {
+        result.push(current);
+        current = '';
+      } else {
+        current += c;
+      }
+    }
+    result.push(current);
+    return result;
+  }
+
+  runDuplicateDetection() {
+    const csvEmailSet = new Set<string>();
+    const rows = this.previewRows();
+    
+    for (const row of rows) {
+      if (row.isSkipped) {
+        row.isDuplicate = false;
+        continue;
+      }
+      const emailLower = row.email.trim().toLowerCase();
+      
+      if (this.dbEmailsSet.has(emailLower) || csvEmailSet.has(emailLower)) {
+        row.isDuplicate = true;
+      } else {
+        row.isDuplicate = false;
+      }
+      csvEmailSet.add(emailLower);
+    }
+    
+    this.previewRows.set([...rows]);
+  }
+
+  editPreviewRow(row: any) {
+    row.isEditing = true;
+    row._backup = { ...row };
+  }
+
+  savePreviewRow(row: any) {
+    if (!row.firstName.trim() || !row.lastName.trim() || !row.email.trim()) {
+      this.notificationService.showError('Required Fields', 'First Name, Last Name, and Email are required.');
+      return;
+    }
+    row.isEditing = false;
+    delete row._backup;
+    this.runDuplicateDetection();
+  }
+
+  cancelEditPreviewRow(row: any) {
+    if (row._backup) {
+      Object.assign(row, row._backup);
+      delete row._backup;
+    }
+    row.isEditing = false;
+  }
+
+  toggleSkipPreviewRow(row: any) {
+    row.isSkipped = !row.isSkipped;
+    this.runDuplicateDetection();
+  }
+
+  async confirmImport() {
+    const rowsToImport = this.previewRows().filter(r => !r.isSkipped && !r.isDuplicate);
+    if (rowsToImport.length === 0) {
+      this.notificationService.showError('Empty Import', 'No valid, unskipped records to import.');
+      return;
+    }
+    
+    this.showPreviewModal.set(false);
+    this.isLoading.set(true);
+    
+    try {
+      let csvContent = 'FirstName,LastName,Email,Course,Batch,Phone,Location\n';
+      for (const row of rowsToImport) {
+        const escape = (val: string) => {
+          const escaped = (val || '').replace(/"/g, '""');
+          return escaped.includes(',') || escaped.includes('"') ? `"${escaped}"` : escaped;
+        };
+        csvContent += `${escape(row.firstName)},${escape(row.lastName)},${escape(row.email)},${escape(row.course)},${escape(row.batch)},${escape(row.phone)},${escape(row.location)}\n`;
+      }
+      
+      const response = await lastValueFrom(
+        this.http.post<any>(`${this.apiUrl}/alumni/import`, { csvContent })
+      );
+      this.importResult.set(response?.message || `Successfully imported ${rowsToImport.length} records from ${this.pendingFileName()}`);
+      this.notificationService.showSuccess('Import Successful', `${rowsToImport.length} alumni records imported.`);
+      this.pendingCsvText.set(null);
+      this.previewRows.set([]);
+      await this.loadRecords();
+    } catch (error: any) {
+      this.notificationService.showError('Import Failed', error.error?.message || 'An error occurred during import');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  cancelImport() {
+    this.showPreviewModal.set(false);
+    this.pendingCsvText.set(null);
+    this.previewRows.set([]);
+  }
+
   isSelected(id: string): boolean {
-    return this.selectedImportRecords().includes(id);
+    return this.selectedIds().includes(id);
   }
 
   toggleSelection(id: string) {
-    const current = [...this.selectedImportRecords()];
+    const current = [...this.selectedIds()];
     const index = current.indexOf(id);
     if (index === -1) {
       current.push(id);
     } else {
       current.splice(index, 1);
     }
-    this.selectedImportRecords.set(current);
+    this.selectedIds.set(current);
   }
 
   toggleAllSelection() {
-    const pendingRecords = this.importRecords().filter(r => !r.matchedUserId);
-    if (this.selectedImportRecords().length === pendingRecords.length && pendingRecords.length > 0) {
-      this.selectedImportRecords.set([]);
+    const records = this.filteredRecords();
+    if (this.selectedIds().length === records.length && records.length > 0) {
+      this.selectedIds.set([]);
     } else {
-      this.selectedImportRecords.set(pendingRecords.map(r => r.id));
+      this.selectedIds.set(records.map(r => r.id));
     }
   }
 
   async bulkUpdateRecords() {
-    const selectedIds = this.selectedImportRecords();
-    if (selectedIds.length === 0) return;
+    const ids = this.selectedIds();
+    if (ids.length === 0) return;
 
     this.isLoading.set(true);
     try {
-      const recordsToUpdate = this.importRecords().filter(r => selectedIds.includes(r.id));
+      const recordsToUpdate = this.allRecords().filter(r => ids.includes(r.id));
       await lastValueFrom(this.http.put(`${this.apiUrl}/alumni/bulk-update`, recordsToUpdate));
-      this.notificationService.showSuccess('Success', `Updated ${recordsToUpdate.length} records.`);
+      this.notificationService.showSuccess('Updated', `Saved changes to ${recordsToUpdate.length} records`);
     } catch (error) {
-      this.notificationService.showError('Error', 'Failed to update records.');
+      this.notificationService.showError('Error', 'Failed to update records');
     } finally {
       this.isLoading.set(false);
     }
   }
 
   async bulkGenerateAccounts() {
-    const selectedIds = this.selectedImportRecords();
-    if (selectedIds.length === 0) return;
+    const ids = this.selectedUnmatchedIds();
+    if (ids.length === 0) return;
 
-    if (!confirm(`Are you sure you want to generate accounts and send welcome emails to ${selectedIds.length} alumni?`)) {
+    this.openConfirm(
+      'Send Invitations',
+      `Send invitation emails to ${ids.length} alumni? New accounts will be created and each person will receive a link to set their password. Alumni who already have active accounts will be linked silently with no email.`,
+      'Send Invitations',
+      () => this.executeBulkGenerate(ids)
+    );
+  }
+
+  async bulkResendInvitations() {
+    const ids = this.selectedUnclaimedIds();
+    if (ids.length === 0) return;
+
+    this.openConfirm(
+      'Resend Claim Reminders',
+      `Resend invitation emails to ${ids.length} selected alumni? They will receive a fresh link to set up and claim their account.`,
+      'Send Reminders',
+      () => this.executeBulkResend(ids)
+    );
+  }
+
+  private async executeBulkResend(ids: string[]) {
+    this.isBulkProcessing.set(true);
+    try {
+      const response = await lastValueFrom(
+        this.http.post<any>(`${this.apiUrl}/alumni/bulk-resend-invitation`, ids)
+      );
+      const successCount = response.successCount ?? 0;
+      const errors = response.errors ?? [];
+
+      if (successCount > 0) {
+        this.notificationService.showSuccess(
+          'Reminders Sent',
+          `Successfully sent ${successCount} account setup reminder${successCount > 1 ? 's' : ''}.`
+        );
+      }
+      if (errors.length > 0) {
+        this.notificationService.showError('Some Failed', `${errors.length} reminder${errors.length > 1 ? 's' : ''} could not be sent.`);
+      }
+
+      this.selectedIds.set([]);
+      await this.loadRecords();
+    } catch (error: any) {
+      this.notificationService.showError('Error', error.error?.message || 'Failed to send bulk reminders');
+    } finally {
+      this.isBulkProcessing.set(false);
+    }
+  }
+
+  private async executeBulkGenerate(ids: string[]) {
+    this.isBulkProcessing.set(true);
+    try {
+      const response = await lastValueFrom(
+        this.http.post<any>(`${this.apiUrl}/alumni/bulk-generate-accounts`, ids)
+      );
+      const generated: number = response.generatedCount ?? 0;
+      const linked: number = response.linkedCount ?? 0;
+      const errors: string[] = response.errors ?? [];
+
+      if (generated > 0) {
+        this.notificationService.showSuccess(
+          'Invitations Sent',
+          `${generated} invitation email${generated > 1 ? 's' : ''} sent. Alumni will receive a link to set their password.`
+        );
+      }
+      if (linked > 0) {
+        this.notificationService.showInfo(
+          'Already Registered',
+          `${linked} record${linked > 1 ? 's were' : ' was'} linked to an existing active account — no email needed.`
+        );
+      }
+      if (errors.length > 0) {
+        this.notificationService.showError('Some Failed', `${errors.length} record${errors.length > 1 ? 's' : ''} could not be processed. Check the backend logs.`);
+      }
+      if (generated === 0 && linked === 0 && errors.length === 0) {
+        this.notificationService.showInfo('Nothing to Do', 'All selected records already have active accounts.');
+      }
+
+      this.selectedIds.set([]);
+      await this.loadRecords();
+    } catch (error: any) {
+      this.notificationService.showError('Error', error.error?.message || 'Failed to generate accounts');
+    } finally {
+      this.isBulkProcessing.set(false);
+    }
+  }
+
+  openAddModal() {
+    this.isEditing.set(false);
+    this.newRecord = {
+      id: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      course: '',
+      batch: '',
+      phone: '',
+      location: ''
+    };
+    this.showAddModal.set(true);
+  }
+
+  openEditModal(record: AlumniRecord) {
+    this.isEditing.set(true);
+    this.newRecord = {
+      id: record.id,
+      firstName: record.firstName,
+      lastName: record.lastName,
+      email: record.email,
+      course: record.course || '',
+      batch: record.batch || '',
+      phone: record.phone || '',
+      location: record.location || ''
+    };
+    this.showAddModal.set(true);
+  }
+
+  closeAddModal() {
+    this.showAddModal.set(false);
+  }
+
+  async saveRecord() {
+    if (!this.newRecord.firstName || !this.newRecord.lastName || !this.newRecord.email) {
+      this.notificationService.showError('Required Fields', 'First Name, Last Name, and Email are required.');
       return;
     }
 
     this.isLoading.set(true);
     try {
-      const response = await lastValueFrom(this.http.post<any>(`${this.apiUrl}/alumni/bulk-generate-accounts`, selectedIds));
-      this.notificationService.showSuccess('Success', response.message);
-      this.selectedImportRecords.set([]);
-      await this.loadImportRecords(); // Refresh the list
+      if (this.isEditing()) {
+        await lastValueFrom(
+          this.http.put(`${this.apiUrl}/alumni/bulk-update`, [this.newRecord])
+        );
+        this.notificationService.showSuccess('Updated', 'Alumni record updated successfully.');
+      } else {
+        const { id, ...postPayload } = this.newRecord;
+        await lastValueFrom(
+          this.http.post(`${this.apiUrl}/alumni`, postPayload)
+        );
+        this.notificationService.showSuccess('Success', 'Alumni record created successfully.');
+      }
+      this.showAddModal.set(false);
+      await this.loadRecords();
     } catch (error: any) {
-      this.notificationService.showError('Error', error.error?.message || 'Failed to generate accounts.');
+      let errorMsg = 'Failed to save alumni record.';
+      if (error.error) {
+        if (typeof error.error === 'string') {
+          errorMsg = error.error;
+        } else if (error.error.message) {
+          errorMsg = error.error.message;
+        } else if (error.error.errors) {
+          const validationErrors = error.error.errors;
+          errorMsg = Object.keys(validationErrors)
+            .map(key => `${key}: ${validationErrors[key].join(', ')}`)
+            .join(' | ');
+        }
+      }
+      this.notificationService.showError('Error', errorMsg);
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  isDefaultImage(url: string): boolean {
-    return !url || url.includes('lucide') || url.includes('placeholder') || url.includes('default');
+  selectAllUnmatched() {
+    this.selectedIds.set(this.unmatchedRecords().map(r => r.id));
   }
 
-  formatDate(date: string | Date): string {
-    const d = new Date(date);
-    return d.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric'
-    });
+  async resendInvitation(id: string, email: string) {
+    this.resendingId.set(id);
+    try {
+      await lastValueFrom(
+        this.http.post(`${this.apiUrl}/alumni/${id}/resend-invitation`, {})
+      );
+      this.notificationService.showSuccess('Invitation Sent', `Invitation email resent to ${email}`);
+    } catch (error: any) {
+      this.notificationService.showError('Error', error.error?.message || 'Failed to resend invitation');
+    } finally {
+      this.resendingId.set(null);
+    }
+  }
+
+  downloadTemplate() {
+    const csv = 'FirstName,LastName,Email,Course,Batch,Phone,Location\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'alumni-import-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  deleteRecord(id: string, name: string) {
+    this.openConfirm(
+      'Delete Alumni Record',
+      `Delete ${name} from the roster? This cannot be undone.`,
+      'Delete',
+      () => this.executeDelete(id)
+    );
+  }
+
+  private async executeDelete(id: string) {
+    this.isLoading.set(true);
+    try {
+      await lastValueFrom(
+        this.http.delete(`${this.apiUrl}/alumni/${id}`)
+      );
+      this.notificationService.showSuccess('Deleted', 'Alumni record deleted successfully.');
+      await this.loadRecords();
+    } catch (error: any) {
+      this.notificationService.showError('Error', error.error?.message || 'Failed to delete record.');
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 }

@@ -75,6 +75,7 @@ public class PasswordResetController : ControllerBase
         // Validate password strength
         if (!_passwordResetService.IsValidPassword(request.NewPassword))
         {
+            _logger.LogWarning("Password validation failed: password does not meet strength requirements.");
             return BadRequest(new { 
                 success = false, 
                 message = "Password must be at least 8 characters long and contain uppercase, lowercase, digit, and special character" 
@@ -100,6 +101,28 @@ public class PasswordResetController : ControllerBase
         {
             _logger.LogError(ex, "Error resetting password with token");
             return StatusCode(500, new { success = false, message = "An error occurred while resetting your password" });
+        }
+    }
+
+    /// <summary>
+    /// Checks whether a token is valid and unused, without consuming it.
+    /// Used by the frontend to show the expired state immediately on page load.
+    /// </summary>
+    [HttpGet("validate-token")]
+    public async Task<IActionResult> ValidateToken([FromQuery] string token)
+    {
+        if (string.IsNullOrEmpty(token))
+            return BadRequest(new { valid = false });
+
+        try
+        {
+            var isValid = await _passwordResetService.ValidateTokenAsync(token);
+            return Ok(new { valid = isValid });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating token");
+            return Ok(new { valid = false });
         }
     }
 

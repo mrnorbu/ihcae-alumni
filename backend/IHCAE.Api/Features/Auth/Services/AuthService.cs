@@ -78,7 +78,7 @@ public class AuthService : IAuthService
         var matchingAlumni = await _alumniImportService.FindMatchingAlumniAsync(email);
         var userStatus = matchingAlumni != null ? UserStatus.Approved : UserStatus.Pending;
 
-        // Create user entity
+        // Create user entity — assign AlumniProfile as nav property so EF cascade-saves it
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -89,20 +89,18 @@ public class AuthService : IAuthService
             Status = userStatus,
             EmailVerified = false,
             IsBanned = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            AlumniProfile = new AlumniProfile
+            {
+                Course = matchingAlumni?.Course,
+                Batch = matchingAlumni?.Batch,
+                Location = matchingAlumni?.Location,
+                CreatedAt = DateTime.UtcNow
+            }
         };
 
-        // Add user to database
+        // Add user to database (cascade-saves AlumniProfile via nav property)
         var createdUser = await _userRepository.AddAsync(user);
-
-        // Create alumni profile
-        var alumniProfile = new AlumniProfile
-        {
-            UserId = createdUser.Id,
-            Course = matchingAlumni?.Course,
-            Batch = matchingAlumni?.Batch,
-            CreatedAt = DateTime.UtcNow
-        };
 
         // Link alumni record to user if match found
         if (matchingAlumni != null)
@@ -144,6 +142,15 @@ public class AuthService : IAuthService
             {
                 Success = false,
                 ErrorMessage = "Your account is pending approval. Please wait for an administrator to approve your registration."
+            };
+        }
+
+        if (!user.EmailVerified)
+        {
+            return new AuthResult
+            {
+                Success = false,
+                ErrorMessage = "Please verify your email before logging in. Check your inbox for a verification link."
             };
         }
 
