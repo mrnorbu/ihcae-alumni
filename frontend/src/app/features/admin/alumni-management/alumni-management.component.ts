@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { exportToCSV } from '../../../shared/utils/csv-exporter';
 import { environment } from '../../../../environments/environment';
 import {
   LucideAngularModule,
@@ -57,33 +58,33 @@ interface AlumniRecord {
        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-2">
          <div class="flex items-center gap-3">
            <h2 class="text-base font-bold text-neutral-900">Legacy Database</h2>
-           <!-- Compact Inline Stats Badge Row -->
-           <div class="hidden md:flex items-center gap-1.5 text-[11px]">
-             <span (click)="filterByStatus('all')"
-               [class.ring-2]="filterStatus === 'all'" [class.ring-neutral-900]="filterStatus === 'all'"
-               class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold border border-blue-100 cursor-pointer hover:bg-blue-100 transition-all select-none">
-               <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> {{ stats().total }} Total
-             </span>
-             <span (click)="filterByStatus('registered')"
-               [class.ring-2]="filterStatus === 'registered'" [class.ring-neutral-900]="filterStatus === 'registered'"
-               class="inline-flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-semibold border border-green-100 cursor-pointer hover:bg-green-100 transition-all select-none">
-               <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> {{ stats().registered }} Registered
-             </span>
-              <span (click)="filterByStatus('invited')"
-                [class.ring-2]="filterStatus === 'invited'" [class.ring-neutral-900]="filterStatus === 'invited'"
-                class="inline-flex items-center gap-1 bg-blue-50 text-blue-800 px-2 py-0.5 rounded-full font-semibold border border-blue-200 cursor-pointer hover:bg-blue-100 transition-all select-none">
-                <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div> {{ stats().invitationSent }} Invited
+            <!-- Compact Inline Stats Badge Row -->
+            <div class="hidden md:flex items-center gap-1.5 text-[11px]">
+              <span (click)="filterByStatus('all')"
+                [class.ring-2]="filterStatus === 'all'" [class.ring-primary-600]="filterStatus === 'all'"
+                class="inline-flex items-center gap-1 bg-secondary-50 text-secondary-700 px-2 py-0.5 rounded-full font-semibold border border-secondary-100 cursor-pointer hover:bg-secondary-100 transition-all select-none">
+                <div class="w-1.5 h-1.5 rounded-full bg-secondary-500"></div> {{ stats().total }} Total
               </span>
-             <span (click)="filterByStatus('pending')"
-               [class.ring-2]="filterStatus === 'pending'" [class.ring-neutral-900]="filterStatus === 'pending'"
-               class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold border border-amber-100 cursor-pointer hover:bg-amber-100 transition-all select-none">
-               <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div> {{ stats().pendingInvitation }} Pending Invitation
-             </span>
-             <span
-               class="inline-flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-semibold border border-purple-100 select-none">
-               <div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div> {{ stats().courses }} Courses
-             </span>
-           </div>
+              <span (click)="filterByStatus('registered')"
+                [class.ring-2]="filterStatus === 'registered'" [class.ring-primary-600]="filterStatus === 'registered'"
+                class="inline-flex items-center gap-1 bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full font-semibold border border-primary-100 cursor-pointer hover:bg-primary-100 transition-all select-none">
+                <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div> {{ stats().registered }} Registered
+              </span>
+               <span (click)="filterByStatus('invited')"
+                 [class.ring-2]="filterStatus === 'invited'" [class.ring-primary-600]="filterStatus === 'invited'"
+                 class="inline-flex items-center gap-1 bg-secondary-50/80 text-secondary-800 px-2 py-0.5 rounded-full font-semibold border border-secondary-200 cursor-pointer hover:bg-secondary-100/80 transition-all select-none">
+                 <div class="w-1.5 h-1.5 rounded-full bg-secondary-400"></div> {{ stats().invitationSent }} Invited
+               </span>
+              <span (click)="filterByStatus('pending')"
+                [class.ring-2]="filterStatus === 'pending'" [class.ring-amber-500]="filterStatus === 'pending'"
+                class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold border border-amber-100 cursor-pointer hover:bg-amber-100 transition-all select-none">
+                <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div> {{ stats().pendingInvitation }} Pending Invitation
+              </span>
+              <span
+                class="inline-flex items-center gap-1 bg-neutral-50 text-neutral-700 px-2 py-0.5 rounded-full font-semibold border border-neutral-200 select-none">
+                <div class="w-1.5 h-1.5 rounded-full bg-neutral-400"></div> {{ stats().courses }} Courses
+              </span>
+            </div>
          </div>
          <div class="flex items-center gap-1.5">
            <input type="file" #fileInput class="hidden" accept=".csv" (change)="onFileSelected($event)" />
@@ -99,6 +100,15 @@ interface AlumniRecord {
              class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
              <lucide-icon [img]="uploadIcon" [size]="12"></lucide-icon> Import CSV
            </button>
+           <button (click)="exportToExcel()" [disabled]="isLoading() || isExporting()"
+             class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors">
+             @if (isExporting()) {
+               <div class="animate-spin w-3 h-3 border-2 border-neutral-300 border-t-white rounded-full"></div>
+             } @else {
+               <lucide-icon [img]="downloadIcon" [size]="12"></lucide-icon>
+             }
+             Export Excel
+           </button>
            <button (click)="loadRecords()" [disabled]="isLoading()"
              class="p-1.5 rounded-lg border border-neutral-200 text-neutral-500 hover:bg-neutral-100 disabled:opacity-40 transition-colors">
              <lucide-icon [img]="refreshIcon" [size]="13" [class.animate-spin]="isLoading()"></lucide-icon>
@@ -108,19 +118,19 @@ interface AlumniRecord {
 
        <!-- Mobile Stats Bar -->
        <div class="flex md:hidden items-center justify-between gap-1.5 text-[10px] bg-neutral-50 p-2 rounded-lg border border-neutral-100 overflow-x-auto">
-         <span (click)="filterByStatus('all')" [class.font-bold]="filterStatus === 'all'" class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Total: {{ stats().total }}</span>
-         <span (click)="filterByStatus('registered')" [class.font-bold]="filterStatus === 'registered'" class="text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Reg: {{ stats().registered }}</span>
-          <span (click)="filterByStatus('invited')" [class.font-bold]="filterStatus === 'invited'" class="text-blue-800 bg-blue-50/70 px-1.5 py-0.5 rounded-full cursor-pointer select-none font-medium">Inv: {{ stats().invitationSent }}</span>
+         <span (click)="filterByStatus('all')" [class.font-bold]="filterStatus === 'all'" class="text-secondary-700 bg-secondary-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Total: {{ stats().total }}</span>
+         <span (click)="filterByStatus('registered')" [class.font-bold]="filterStatus === 'registered'" class="text-primary-700 bg-primary-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Reg: {{ stats().registered }}</span>
+          <span (click)="filterByStatus('invited')" [class.font-bold]="filterStatus === 'invited'" class="text-secondary-800 bg-secondary-50/70 px-1.5 py-0.5 rounded-full cursor-pointer select-none font-medium">Inv: {{ stats().invitationSent }}</span>
          <span (click)="filterByStatus('pending')" [class.font-bold]="filterStatus === 'pending'" class="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full cursor-pointer select-none">Pend: {{ stats().pendingInvitation }}</span>
        </div>
 
        <!-- Search & Filter & Bulk Actions Bar -->
        <div class="flex flex-col sm:flex-row gap-2">
          <div class="flex-1 relative">
-           <lucide-icon [img]="searchIcon" [size]="13" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
+           <lucide-icon [img]="searchIcon" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
            <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
              placeholder="Search by name, email, or course..."
-             class="w-full pl-8 pr-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent">
+             class="w-full pl-10 pr-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent">
          </div>
          <div class="flex items-center gap-2">
            <select [(ngModel)]="filterStatus" (ngModelChange)="onSearch()"
@@ -132,7 +142,7 @@ interface AlumniRecord {
            </select>
            @if (selectedIds().length > 0 && selectedUnmatchedCount() > 0) {
              <button (click)="bulkGenerateAccounts()" [disabled]="isLoading() || isBulkProcessing()"
-               class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+               class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors">
                @if (isBulkProcessing()) {
                  <div class="animate-spin w-3 h-3 border-2 border-neutral-300 border-t-white rounded-full"></div>
                } @else {
@@ -220,7 +230,7 @@ interface AlumniRecord {
               </thead>
               <tbody class="divide-y divide-neutral-50">
                 @for (record of paginatedRecords(); track record.id) {
-                  <tr [class.bg-green-50]="record.matchedUserId" class="hover:bg-neutral-50 transition-colors">
+                  <tr [class.bg-primary-50/20]="record.matchedUserId" class="hover:bg-neutral-50 transition-colors">
                     <td class="py-2 px-3 text-center">
                       <input type="checkbox"
                         [checked]="isSelected(record.id)"
@@ -247,11 +257,11 @@ interface AlumniRecord {
                     </td>
                     <td class="py-3 px-3">
                       @if (record.matchedUserId && record.lastLoginAt) {
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700 border border-primary-200 whitespace-nowrap">
                           <lucide-icon [img]="checkCircleIcon" [size]="10"></lucide-icon> Registered
                         </span>
                       } @else if (record.matchedUserId && !record.lastLoginAt) {
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-700 border border-secondary-200 whitespace-nowrap">
                           <lucide-icon [img]="mailOpenIcon" [size]="10"></lucide-icon> Invitation Sent
                         </span>
                       } @else {
@@ -274,7 +284,7 @@ interface AlumniRecord {
                           </button>
                         }
                         <button (click)="openEditModal(record)" title="Edit this alumnus record"
-                          class="p-1 rounded text-blue-600 hover:bg-blue-50 transition-colors">
+                          class="p-1 rounded text-secondary-600 hover:bg-secondary-50 transition-colors">
                           <lucide-icon [img]="pencilIcon" [size]="14"></lucide-icon>
                         </button>
                         <button (click)="deleteRecord(record.id, record.firstName + ' ' + record.lastName)" title="Delete this alumnus record"
@@ -313,13 +323,13 @@ interface AlumniRecord {
 
       <!-- Import result banner -->
       @if (importResult()) {
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-          <lucide-icon [img]="checkCircleIcon" [size]="18" class="text-green-600 mt-0.5 shrink-0"></lucide-icon>
+        <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 flex items-start gap-3">
+          <lucide-icon [img]="checkCircleIcon" [size]="18" class="text-primary-600 mt-0.5 shrink-0"></lucide-icon>
           <div>
-            <p class="text-sm font-medium text-green-800">Import Complete</p>
-            <p class="text-xs text-green-700 mt-0.5">{{ importResult() }}</p>
+            <p class="text-sm font-medium text-primary-800">Import Complete</p>
+            <p class="text-xs text-primary-700 mt-0.5">{{ importResult() }}</p>
           </div>
-          <button (click)="importResult.set(null)" class="ml-auto p-1 rounded text-green-600 hover:bg-green-100 transition-colors">
+          <button (click)="importResult.set(null)" class="ml-auto p-1 rounded text-primary-600 hover:bg-primary-100 transition-colors">
             <lucide-icon [img]="xIcon" [size]="14"></lucide-icon>
           </button>
         </div>
@@ -340,13 +350,13 @@ interface AlumniRecord {
             <div class="p-6 space-y-5">
               <!-- Stats Cards -->
               <div class="grid grid-cols-4 gap-3 text-center">
-                <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                  <p class="text-2xl font-bold text-blue-700">{{ previewStats().total }}</p>
-                  <p class="text-xs text-blue-600 mt-0.5 font-medium">Total Rows</p>
+                <div class="bg-secondary-50 border border-secondary-100 rounded-lg p-3">
+                  <p class="text-2xl font-bold text-secondary-700">{{ previewStats().total }}</p>
+                  <p class="text-xs text-secondary-600 mt-0.5 font-medium">Total Rows</p>
                 </div>
-                <div class="bg-green-50 border border-green-100 rounded-lg p-3">
-                  <p class="text-2xl font-bold text-green-700">{{ previewStats().ready }}</p>
-                  <p class="text-xs text-green-600 mt-0.5 font-medium">Ready to Import</p>
+                <div class="bg-primary-50 border border-primary-100 rounded-lg p-3">
+                  <p class="text-2xl font-bold text-primary-700">{{ previewStats().ready }}</p>
+                  <p class="text-xs text-primary-600 mt-0.5 font-medium">Ready to Import</p>
                 </div>
                 <div class="bg-amber-50 border border-amber-100 rounded-lg p-3">
                   <p class="text-2xl font-bold text-amber-700">{{ previewStats().duplicates }}</p>
@@ -379,7 +389,7 @@ interface AlumniRecord {
                       @for (row of previewRows(); track $index) {
                         <tr [class.bg-neutral-50]="row.isSkipped"
                             [class.bg-amber-50/40]="!row.isSkipped && row.isDuplicate"
-                            [class.bg-green-50/10]="!row.isSkipped && !row.isDuplicate"
+                            [class.bg-primary-50/10]="!row.isSkipped && !row.isDuplicate"
                             class="hover:bg-neutral-50/60 transition-colors">
                           
                           <!-- Skip Checkbox -->
@@ -401,7 +411,7 @@ interface AlumniRecord {
                                 <lucide-icon [img]="alertIcon" [size]="9"></lucide-icon> Duplicate
                               </span>
                             } @else {
-                              <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700 border border-green-200">
+                              <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary-100 text-primary-700 border border-primary-200">
                                 <lucide-icon [img]="checkCircleIcon" [size]="9"></lucide-icon> Ready
                               </span>
                             }
@@ -481,7 +491,7 @@ interface AlumniRecord {
                             <div class="inline-flex items-center gap-1.5 font-medium">
                               @if (row.isEditing) {
                                 <button (click)="savePreviewRow(row)" title="Save changes"
-                                  class="p-1 rounded bg-green-50 text-green-600 hover:bg-green-100 transition-colors">
+                                  class="p-1 rounded bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors">
                                   <lucide-icon [img]="checkCircleIcon" [size]="13"></lucide-icon>
                                 </button>
                                 <button (click)="cancelEditPreviewRow(row)" title="Cancel editing"
@@ -490,7 +500,7 @@ interface AlumniRecord {
                                 </button>
                               } @else {
                                 <button (click)="editPreviewRow(row)" title="Edit row inline"
-                                  class="p-1 rounded text-blue-600 hover:bg-blue-50 transition-colors">
+                                  class="p-1 rounded text-secondary-600 hover:bg-secondary-50 transition-colors">
                                   <lucide-icon [img]="pencilIcon" [size]="13"></lucide-icon>
                                 </button>
                                 <button (click)="toggleSkipPreviewRow(row)" [title]="row.isSkipped ? 'Include row' : 'Skip row'"
@@ -529,7 +539,7 @@ interface AlumniRecord {
                   Cancel
                 </button>
                 <button (click)="confirmImport()" [disabled]="previewStats().ready === 0"
-                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors">
                   <lucide-icon [img]="uploadIcon" [size]="14"></lucide-icon> Import {{ previewStats().ready }} Records
                 </button>
               </div>
@@ -546,7 +556,7 @@ interface AlumniRecord {
             <!-- Modal Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 bg-neutral-50">
               <h2 class="text-base font-bold text-neutral-900 flex items-center gap-2">
-                <lucide-icon [img]="isEditing() ? pencilIcon : plusIcon" [size]="16" [class.text-blue-600]="isEditing()" [class.text-neutral-900]="!isEditing()"></lucide-icon>
+                <lucide-icon [img]="isEditing() ? pencilIcon : plusIcon" [size]="16" [class.text-secondary-600]="isEditing()" [class.text-neutral-900]="!isEditing()"></lucide-icon>
                 {{ isEditing() ? 'Edit Alumni Record' : 'Add Alumni Record Manually' }}
               </h2>
               <button (click)="closeAddModal()" class="text-neutral-400 hover:text-neutral-600 transition-colors">
@@ -607,7 +617,7 @@ interface AlumniRecord {
                   Cancel
                 </button>
                 <button type="submit" [disabled]="isLoading()"
-                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors">
                   <lucide-icon [img]="saveIcon" [size]="14"></lucide-icon> Save Record
                 </button>
               </div>
@@ -666,6 +676,7 @@ export class AlumniManagementComponent implements OnInit {
   totalCount = signal(0);
   isLoading = signal(false);
   isBulkProcessing = signal(false);
+  isExporting = signal(false);
   searchQuery = '';
   filterStatus = 'all';
   currentPage = signal(1);
@@ -1288,6 +1299,59 @@ export class AlumniManagementComponent implements OnInit {
     a.download = 'alumni-import-template.csv';
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  exportToExcel() {
+    this.isExporting.set(true);
+    const statusParam = this.filterStatus !== 'all' ? this.filterStatus : '';
+    const totalToFetch = Math.max(500, this.totalCount() || 5000);
+    const params = new URLSearchParams({
+      page: '1',
+      pageSize: String(totalToFetch),
+      ...(this.searchQuery.trim() ? { searchTerm: this.searchQuery.trim() } : {}),
+      ...(statusParam ? { status: statusParam } : {})
+    });
+
+    this.http.get<any>(`${this.apiUrl}/alumni?${params}`).subscribe({
+      next: (response: any) => {
+        const records: AlumniRecord[] = response?.items || response || [];
+        if (records.length === 0) {
+          this.notificationService.showWarning('No Records', 'There are no alumni records matching the filters to export');
+          this.isExporting.set(false);
+          return;
+        }
+
+        const columns = [
+          { key: 'firstName', label: 'First Name' },
+          { key: 'lastName', label: 'Last Name' },
+          { key: 'email', label: 'Email' },
+          { key: 'course', label: 'Course' },
+          { key: 'batch', label: 'Batch' },
+          { key: 'phone', label: 'Phone' },
+          { key: 'location', label: 'Location', transform: (val: any) => val || '—' },
+          {
+            key: 'status',
+            label: 'Registration Status',
+            transform: (_: any, r: AlumniRecord) => {
+              if (r.matchedUserId && r.lastLoginAt) return 'Registered';
+              if (r.matchedUserId && !r.lastLoginAt) return 'Invitation Sent';
+              return 'Pending Invitation';
+            }
+          },
+          { key: 'lastLoginAt', label: 'Last Login', transform: (val: any) => val ? new Date(val).toLocaleDateString() : '—' },
+          { key: 'createdAt', label: 'Imported At', transform: (val: any) => val ? new Date(val).toLocaleDateString() : '—' }
+        ];
+
+        const dateStr = new Date().toISOString().slice(0, 10);
+        exportToCSV(records, columns, `IHCAE_Alumni_Roster_${dateStr}.csv`);
+        this.notificationService.showSuccess('Export Successful', `Exported ${records.length} records to Excel CSV`);
+        this.isExporting.set(false);
+      },
+      error: () => {
+        this.notificationService.showError('Error', 'Failed to fetch database records for export');
+        this.isExporting.set(false);
+      }
+    });
   }
 
   deleteRecord(id: string, name: string) {

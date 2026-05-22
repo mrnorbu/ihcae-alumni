@@ -1,10 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Calendar, User, Eye, Share2, Newspaper } from 'lucide-angular';
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
 import { NewsService } from '../../services/news.service';
-import type { NewsArticle } from '../../models';
+import type { NewsArticle, NewsArticleSummary } from '../../models';
 
 /**
  * News Detail Component
@@ -20,111 +19,150 @@ import type { NewsArticle } from '../../models';
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
       
-      <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
-        <!-- Back Button -->
-        <button 
-          (click)="goBack()"
-          class="btn-outline mb-6 inline-flex items-center gap-2"
+      <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 pt-20">
+        <!-- Back Link -->
+        <a 
+          routerLink="/news-events"
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-primary-700 transition-colors mb-4 cursor-pointer"
         >
-          <lucide-icon [img]="arrowLeftIcon" [size]="18"></lucide-icon>
-          Back
-        </button>
+          <lucide-icon [img]="arrowLeftIcon" [size]="12"></lucide-icon>
+          Back to News & Events
+        </a>
 
         @if (isLoading()) {
           <div class="flex justify-center items-center py-20">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
           </div>
         } @else if (error()) {
-          <div class="bg-white rounded-lg shadow p-12 text-center">
-            <div class="text-6xl mb-4">📰</div>
-            <h2 class="text-2xl font-bold text-neutral-900 mb-2">Article Not Found</h2>
-            <p class="text-neutral-600 mb-6">The article you're looking for doesn't exist or has been removed.</p>
-            <button (click)="goBack()" class="btn-primary">
+          <div class="bg-transparent border border-neutral-200/60 p-8 text-center rounded-lg max-w-md mx-auto">
+            <div class="text-4xl mb-3">📰</div>
+            <h2 class="text-lg font-bold text-neutral-900 mb-1">Article Not Found</h2>
+            <p class="text-sm text-neutral-500 mb-4">The article you're looking for doesn't exist or has been removed.</p>
+            <button routerLink="/news-events" class="btn-primary btn-sm">
               Go Back
             </button>
           </div>
         } @else if (article()) {
-          <!-- Article Content -->
-          <article class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <!-- Featured Image -->
-            @if (article()!.imageUrl) {
-              <div class="w-full h-96 relative overflow-hidden bg-neutral-100">
-                <img 
-                  [src]="article()!.imageUrl" 
-                  [alt]="article()!.title"
-                  class="w-full h-full object-cover"
-                  (error)="onImageError($event)"
-                >
-                <div 
-                  style="display: none;"
-                  class="absolute inset-0 bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center"
-                >
-                  <lucide-icon [img]="newspaperIcon" [size]="64" class="text-white opacity-80"></lucide-icon>
+          <!-- Layout Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Main Content (8 cols) -->
+            <article class="lg:col-span-8 bg-transparent">
+              <!-- Featured Image -->
+              @if (article()!.imageUrl) {
+                <div class="w-full h-72 md:h-96 relative overflow-hidden bg-neutral-100 rounded-lg mb-5">
+                  <img 
+                    [src]="article()!.imageUrl" 
+                    [alt]="article()!.title"
+                    class="w-full h-full object-cover"
+                    (error)="onImageError($event)"
+                  >
+                  <div 
+                    style="display: none;"
+                    class="absolute inset-0 bg-primary-950 flex items-center justify-center"
+                  >
+                    <lucide-icon [img]="newspaperIcon" [size]="48" class="text-white opacity-80"></lucide-icon>
+                  </div>
                 </div>
-              </div>
-            }
+              }
 
-            <div class="p-8 md:p-12">
               <!-- Category Badge -->
-              <div class="mb-4">
-                <span class="badge badge-primary text-sm">
+              <div class="mb-2">
+                <span class="badge badge-primary">
                   {{ article()!.category.name }}
                 </span>
               </div>
 
               <!-- Title -->
-              <h1 class="text-4xl font-bold text-neutral-900 mb-6 leading-tight">
+              <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight leading-tight">
                 {{ article()!.title }}
               </h1>
 
               <!-- Metadata -->
-              <div class="flex flex-wrap items-center gap-6 text-sm text-neutral-600 mb-8 pb-8 border-b border-neutral-200">
-                <div class="flex items-center gap-2">
-                  <lucide-icon [img]="userIcon" [size]="16"></lucide-icon>
-                  <span>{{ article()!.author.firstName }} {{ article()!.author.lastName }}</span>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-neutral-500 mb-5 pb-4 border-b border-neutral-200/60">
+                <div class="flex items-center gap-1">
+                  <lucide-icon [img]="userIcon" [size]="12"></lucide-icon>
+                  <span class="font-medium text-neutral-700">{{ article()!.author.firstName }} {{ article()!.author.lastName }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <lucide-icon [img]="calendarIcon" [size]="16"></lucide-icon>
+                <span class="text-neutral-300">•</span>
+                <div class="flex items-center gap-1">
+                  <lucide-icon [img]="calendarIcon" [size]="12"></lucide-icon>
                   <span>{{ formatDate(article()!.publishedAt) }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <lucide-icon [img]="eyeIcon" [size]="16"></lucide-icon>
+                <span class="text-neutral-300">•</span>
+                <div class="flex items-center gap-1">
+                  <lucide-icon [img]="eyeIcon" [size]="12"></lucide-icon>
                   <span>{{ article()!.viewCount }} views</span>
                 </div>
               </div>
 
               <!-- Article Content -->
-              <div class="prose prose-lg max-w-none">
+              <div class="prose prose-sm md:prose max-w-none text-neutral-700 leading-relaxed font-sans">
                 <div [innerHTML]="formatContent(article()!.content)"></div>
               </div>
 
               <!-- Share Section -->
-              <div class="mt-12 pt-8 border-t border-neutral-200">
-                <div class="flex items-center justify-between">
+              <div class="mt-8 pt-5 border-t border-neutral-200/60">
+                <div class="flex items-center justify-between gap-4">
                   <div>
-                    <h3 class="text-lg font-semibold text-neutral-900 mb-2">Share this article</h3>
-                    <p class="text-sm text-neutral-600">Help others discover this story</p>
+                    <h3 class="text-sm font-bold text-neutral-900 mb-0.5">Share this article</h3>
+                    <p class="text-xs text-neutral-500">Help others discover this story</p>
                   </div>
-                  <button class="btn-outline inline-flex items-center gap-2">
-                    <lucide-icon [img]="shareIcon" [size]="18"></lucide-icon>
+                  <button class="btn-outline btn-sm inline-flex items-center gap-1.5">
+                    <lucide-icon [img]="shareIcon" [size]="14"></lucide-icon>
                     Share
                   </button>
                 </div>
               </div>
-            </div>
-          </article>
+            </article>
 
-          <!-- Related Articles -->
-          <div class="mt-12">
-            <h2 class="text-2xl font-bold text-neutral-900 mb-6">More Articles</h2>
-            <div class="text-center py-8">
-              <button 
-                routerLink="/news-events"
-                class="btn-primary inline-flex items-center gap-2"
-              >
-                View All Articles
-              </button>
-            </div>
+            <!-- Sidebar (4 cols) -->
+            <aside class="lg:col-span-4 space-y-6">
+              <!-- Recent News Widget -->
+              <div class="bg-neutral-50/30 border border-neutral-200/60 rounded-lg p-4">
+                <h3 class="text-xs font-bold text-neutral-900 mb-3 uppercase tracking-wider text-neutral-500">Recent Updates</h3>
+                
+                @if (recentArticles().length === 0) {
+                  <p class="text-xs text-neutral-500">No other recent articles found.</p>
+                } @else {
+                  <div class="divide-y divide-neutral-200/60">
+                    @for (recent of recentArticles(); track recent.id) {
+                      <div 
+                        [routerLink]="['/news', recent.id]"
+                        class="group cursor-pointer py-3 first:pt-0 last:pb-0 block transition-colors"
+                      >
+                        <div class="flex gap-3">
+                          <!-- Small Image / Icon -->
+                          <div class="w-14 h-14 rounded bg-neutral-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                            @if (recent.thumbnailUrl) {
+                              <img [src]="recent.thumbnailUrl" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            } @else {
+                              <div class="w-full h-full bg-primary-50 text-primary-700/80 flex items-center justify-center">
+                                <lucide-icon [img]="newspaperIcon" [size]="16"></lucide-icon>
+                              </div>
+                            }
+                          </div>
+                          <!-- Text content -->
+                          <div class="flex-1 min-w-0">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-primary-700 block mb-0.5">{{ recent.category.name }}</span>
+                            <h4 class="text-xs font-bold text-neutral-900 group-hover:text-primary-700 transition-colors leading-snug line-clamp-2">{{ recent.title }}</h4>
+                            <span class="text-[10px] text-neutral-400 block mt-1">{{ formatDate(recent.publishedAt) }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Back to main list CTA -->
+              <div class="bg-neutral-50/30 border border-neutral-200/60 rounded-lg p-4 text-center">
+                <h4 class="text-xs font-bold text-neutral-900 mb-1">Want more updates?</h4>
+                <p class="text-[11px] text-neutral-500 mb-3">Browse all academic developments and event notifications.</p>
+                <button routerLink="/news-events" class="btn-outline btn-sm w-full">
+                  All News & Events
+                </button>
+              </div>
+            </aside>
           </div>
         }
       </div>
@@ -178,17 +216,21 @@ export class NewsDetailComponent implements OnInit {
 
   // State
   article = signal<NewsArticle | null>(null);
+  recentArticles = signal<NewsArticleSummary[]>([]);
   isLoading = signal(true);
   error = signal(false);
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadArticle(id);
-    } else {
-      this.error.set(true);
-      this.isLoading.set(false);
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.loadArticle(id);
+        this.loadRecentArticles(id);
+      } else {
+        this.error.set(true);
+        this.isLoading.set(false);
+      }
+    });
   }
 
   private loadArticle(id: string): void {
@@ -202,6 +244,21 @@ export class NewsDetailComponent implements OnInit {
         console.error('Error loading article:', err);
         this.error.set(true);
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  private loadRecentArticles(currentId: string): void {
+    this.newsService.getPublishedArticles(1, 6).subscribe({
+      next: (result) => {
+        // Exclude the current article and show at most 3
+        const filtered = result.items
+          .filter(item => item.id !== currentId)
+          .slice(0, 3);
+        this.recentArticles.set(filtered);
+      },
+      error: (err) => {
+        console.error('Error loading recent articles:', err);
       }
     });
   }

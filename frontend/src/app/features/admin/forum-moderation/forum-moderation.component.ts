@@ -117,7 +117,7 @@ import {
             <lucide-icon [img]="searchIcon" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
             <input type="text" [(ngModel)]="searchQuery" (input)="onSearchChange()"
               placeholder="Search topics..."
-              class="w-full pl-9 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
+              class="w-full pl-11 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
           </div>
           <div class="flex items-center gap-2">
             <select [(ngModel)]="selectedStatus" (change)="applyFilters()"

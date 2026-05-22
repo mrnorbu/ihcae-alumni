@@ -24,7 +24,7 @@ import type { NewsArticleSummary } from '../../news-events/models';
           <div class="flex items-center gap-2">
             <lucide-icon [img]="bookOpenIcon" [size]="16" class="text-neutral-400"></lucide-icon>
             <span class="text-sm font-semibold text-neutral-700">Pending Stories</span>
-            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/30">
               {{ pendingStories().length }}
             </span>
           </div>
@@ -37,19 +37,19 @@ import type { NewsArticleSummary } from '../../news-events/models';
             </div>
           } @else if (pendingStories().length === 0) {
             <div class="text-center py-10">
-              <lucide-icon [img]="checkCircleIcon" [size]="32" class="text-green-500 mx-auto mb-2"></lucide-icon>
+              <lucide-icon [img]="checkCircleIcon" [size]="32" class="text-primary-600 mx-auto mb-2"></lucide-icon>
               <p class="text-sm font-medium text-neutral-500">No pending success stories</p>
               <p class="text-xs text-neutral-400 mt-0.5">All stories have been reviewed</p>
             </div>
           } @else {
             <div class="space-y-3">
               @for (article of pendingStories(); track article.id) {
-                <div class="border border-neutral-200 rounded-lg p-4 hover:bg-neutral-50 transition-colors">
+                <div class="border border-neutral-200 rounded-lg p-4 hover:bg-neutral-50/50 transition-colors">
                   <div class="flex items-start justify-between gap-4">
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2 mb-1.5">
                         <h3 class="text-sm font-semibold text-neutral-900 truncate">{{ article.title }}</h3>
-                        <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
+                        <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/30">Pending</span>
                       </div>
 
                       <p class="text-sm text-neutral-500 mb-2 line-clamp-2">{{ article.excerpt }}</p>
@@ -64,7 +64,7 @@ import type { NewsArticleSummary } from '../../news-events/models';
                           {{ formatDate(article.createdAt) }}
                         </span>
                         @if (article.category) {
-                          <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-xs font-medium">{{ article.category.name }}</span>
+                          <span class="px-2 py-0.5 rounded-full bg-secondary-50 text-secondary-700 border border-secondary-200/30 text-xs font-medium">{{ article.category.name }}</span>
                         }
                       </div>
                     </div>
@@ -75,11 +75,11 @@ import type { NewsArticleSummary } from '../../news-events/models';
                         <lucide-icon [img]="eyeIcon" [size]="16"></lucide-icon>
                       </button>
                       <button (click)="approveArticle(article.id)" [disabled]="isProcessing()"
-                        class="p-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 transition-colors" title="Approve">
+                        class="p-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/20" title="Approve">
                         <lucide-icon [img]="checkCircleIcon" [size]="16"></lucide-icon>
                       </button>
                       <button (click)="openRejectModal(article.id)" [disabled]="isProcessing()"
-                        class="p-2 rounded-md border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40 transition-colors" title="Reject">
+                        class="p-2 rounded-md border border-red-200/60 text-red-650 hover:bg-red-50 disabled:opacity-40 transition-colors" title="Reject">
                         <lucide-icon [img]="xCircleIcon" [size]="16"></lucide-icon>
                       </button>
                     </div>
@@ -102,7 +102,7 @@ import type { NewsArticleSummary } from '../../news-events/models';
 
             <textarea
               [(ngModel)]="rejectReason"
-              class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:bg-white resize-none mb-4"
+              class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white resize-none mb-4"
               rows="3"
               placeholder="Enter rejection reason..."
             ></textarea>

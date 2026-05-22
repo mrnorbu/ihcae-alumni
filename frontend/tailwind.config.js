@@ -9,31 +9,31 @@ module.exports = {
         // IHCAE brand colors from logo
         primary: {
           // Forest green from outer ring and "conservation" text
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16', // Deep forest green
+          50: '#f0faf5',
+          100: '#daf2e6',
+          200: '#b7e4ce',
+          300: '#87cea9',
+          400: '#52b17f',
+          500: '#137247', // Base forest green
+          600: '#0d5e39',
+          700: '#0a4c2e',
+          800: '#073c24',
+          900: '#052e1b',
+          950: '#031f12', // Deep forest green
         },
         secondary: {
           // Rich blue from sky gradient and "exhilaration" text
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554', // Deep blue
+          50: '#f0f7fd',
+          100: '#dbebf9',
+          200: '#bcdbf4',
+          300: '#8dc2ec',
+          400: '#57a4e2',
+          500: '#1a6bb8', // Base sky/mountain blue
+          600: '#135290',
+          700: '#0f4273',
+          800: '#0b335a',
+          900: '#082643',
+          950: '#051b30', // Deep azure blue
         },
         accent: {
           // Metallic silver-grey from banner and rope
@@ -77,11 +77,11 @@ module.exports = {
         },
         // Status colors for compact badges
         success: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
+          50: '#f0faf5',
+          100: '#daf2e6',
+          500: '#137247',
+          600: '#0d5e39',
+          700: '#0a4c2e',
         },
         warning: {
           50: '#fffbeb',
@@ -98,11 +98,11 @@ module.exports = {
           700: '#b91c1c',
         },
         info: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+          50: '#f0f7fd',
+          100: '#dbebf9',
+          500: '#1a6bb8',
+          600: '#135290',
+          700: '#0f4273',
         }
       },
       fontFamily: {
@@ -110,8 +110,8 @@ module.exports = {
         display: ['Playfair Display', 'serif'],
       },
       backgroundImage: {
-        'gradient-sky': 'linear-gradient(to bottom, #3b82f6, #1e40af)', // Sky gradient from logo
-        'gradient-brand': 'linear-gradient(135deg, #16a34a 0%, #2563eb 100%)', // Primary to secondary
+        'gradient-sky': 'linear-gradient(to bottom, #1a6bb8, #0b335a)', // Sky gradient from logo
+        'gradient-brand': 'linear-gradient(135deg, #137247 0%, #1a6bb8 100%)', // Primary to secondary
       },
       spacing: {
         '18': '4.5rem',

@@ -22,70 +22,70 @@ import type { Event } from '../../models';
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
       
-      <div class="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
+      <div class="max-w-3xl mx-auto py-4 px-4 sm:px-6 lg:px-8 pt-20">
         <!-- Back Button -->
         <button 
           (click)="goBack()"
-          class="btn-outline mb-6 inline-flex items-center gap-2"
+          class="btn-outline btn-sm mb-4 inline-flex items-center gap-1.5"
         >
-          <lucide-icon [img]="arrowLeftIcon" [size]="18"></lucide-icon>
-          Back to Event
+          <lucide-icon [img]="arrowLeftIcon" [size]="14"></lucide-icon>
+          Back
         </button>
 
         @if (isLoadingEvent()) {
           <div class="flex justify-center items-center py-20">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
           </div>
         } @else if (registrationSuccess()) {
           <!-- Success Message -->
-          <div class="bg-white rounded-lg shadow-lg p-12 text-center">
-            <div class="w-20 h-20 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <lucide-icon [img]="checkIcon" [size]="40" class="text-success-600"></lucide-icon>
+          <div class="bg-white border border-neutral-200/60 rounded-lg p-8 text-center max-w-lg mx-auto">
+            <div class="w-14 h-14 bg-success-50 text-success-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [img]="checkIcon" [size]="28" class="text-success-600"></lucide-icon>
             </div>
-            <h2 class="text-3xl font-bold text-neutral-900 mb-4">Registration Successful!</h2>
-            <p class="text-lg text-neutral-600 mb-8">
+            <h2 class="text-xl font-bold text-neutral-900 mb-2">Registration Successful!</h2>
+            <p class="text-sm text-neutral-500 mb-6 leading-relaxed">
               You've successfully registered for this event. A confirmation email has been sent to your email address.
             </p>
-            <div class="flex gap-4 justify-center">
-              <button (click)="goToEvent()" class="btn-primary">
+            <div class="flex gap-3 justify-center">
+              <button (click)="goToEvent()" class="btn-primary btn-sm">
                 View Event Details
               </button>
-              <button routerLink="/news-events" class="btn-outline">
+              <button routerLink="/news-events" class="btn-outline btn-sm">
                 Browse More Events
               </button>
             </div>
           </div>
         } @else if (event()) {
-          <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <!-- Event Summary Header -->
-            <div class="bg-gradient-to-r from-primary-500 to-secondary-500 p-6 text-white">
-              <h1 class="text-2xl font-bold mb-4">Register for Event</h1>
-              <h2 class="text-xl mb-4">{{ event()!.title }}</h2>
-              <div class="flex flex-wrap gap-4 text-sm">
-                <div class="flex items-center gap-2">
-                  <lucide-icon [img]="calendarIcon" [size]="16"></lucide-icon>
+          <div class="bg-white border border-neutral-200/60 rounded-lg overflow-hidden">
+            <!-- Event Summary Header (Solid deep green) -->
+            <div class="bg-primary-950 p-5 text-white">
+              <h1 class="text-lg font-bold mb-1 tracking-tight">Register for Event</h1>
+              <h2 class="text-base text-primary-200 mb-3 font-semibold">{{ event()!.title }}</h2>
+              <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-primary-200/80">
+                <div class="flex items-center gap-1">
+                  <lucide-icon [img]="calendarIcon" [size]="12"></lucide-icon>
                   <span>{{ formatEventDate(event()!.eventDate) }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <lucide-icon [img]="clockIcon" [size]="16"></lucide-icon>
+                <div class="flex items-center gap-1">
+                  <lucide-icon [img]="clockIcon" [size]="12"></lucide-icon>
                   <span>{{ formatEventTime(event()!.eventDate) }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <lucide-icon [img]="mapPinIcon" [size]="16"></lucide-icon>
+                <div class="flex items-center gap-1">
+                  <lucide-icon [img]="mapPinIcon" [size]="12"></lucide-icon>
                   <span>{{ event()!.location }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Registration Form -->
-            <div class="p-8">
+            <div class="p-5 md:p-6">
               @if (errorMessage()) {
-                <div class="bg-error-50 border border-error-200 rounded-lg p-4 mb-6">
-                  <div class="flex items-start gap-3">
-                    <lucide-icon [img]="alertIcon" [size]="20" class="text-error-600 flex-shrink-0 mt-0.5"></lucide-icon>
+                <div class="bg-error-50/60 border border-error-200/60 rounded-lg p-3.5 mb-4">
+                  <div class="flex items-start gap-2">
+                    <lucide-icon [img]="alertIcon" [size]="14" class="text-error-700 flex-shrink-0 mt-0.5"></lucide-icon>
                     <div>
-                      <p class="font-semibold text-error-900 mb-1">Registration Failed</p>
-                      <p class="text-sm text-error-700">{{ errorMessage() }}</p>
+                      <p class="text-xs font-bold text-error-900 mb-0.5 leading-none">Registration Failed</p>
+                      <p class="text-[11px] text-error-700">{{ errorMessage() }}</p>
                     </div>
                   </div>
                 </div>
@@ -93,8 +93,8 @@ import type { Event } from '../../models';
 
               <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
                 <!-- Name Field -->
-                <div class="mb-6">
-                  <label for="name" class="block text-sm font-medium text-neutral-700 mb-2">
+                <div class="mb-4">
+                  <label for="name" class="block text-xs font-semibold text-neutral-700 mb-1.5">
                     Full Name <span class="text-error-600">*</span>
                   </label>
                   <input
@@ -106,13 +106,13 @@ import type { Event } from '../../models';
                     [class.border-error-500]="registrationForm.get('name')?.invalid && registrationForm.get('name')?.touched"
                   >
                   @if (registrationForm.get('name')?.invalid && registrationForm.get('name')?.touched) {
-                    <p class="mt-1 text-sm text-error-600">Name is required</p>
+                    <p class="mt-1 text-xs text-error-600">Name is required</p>
                   }
                 </div>
 
                 <!-- Email Field -->
-                <div class="mb-6">
-                  <label for="email" class="block text-sm font-medium text-neutral-700 mb-2">
+                <div class="mb-4">
+                  <label for="email" class="block text-xs font-semibold text-neutral-700 mb-1.5">
                     Email Address <span class="text-error-600">*</span>
                   </label>
                   <input
@@ -124,7 +124,7 @@ import type { Event } from '../../models';
                     [class.border-error-500]="registrationForm.get('email')?.invalid && registrationForm.get('email')?.touched"
                   >
                   @if (registrationForm.get('email')?.invalid && registrationForm.get('email')?.touched) {
-                    <p class="mt-1 text-sm text-error-600">
+                    <p class="mt-1 text-xs text-error-600">
                       @if (registrationForm.get('email')?.errors?.['required']) {
                         Email is required
                       } @else if (registrationForm.get('email')?.errors?.['email']) {
@@ -135,8 +135,8 @@ import type { Event } from '../../models';
                 </div>
 
                 <!-- Phone Field -->
-                <div class="mb-6">
-                  <label for="phone" class="block text-sm font-medium text-neutral-700 mb-2">
+                <div class="mb-4">
+                  <label for="phone" class="block text-xs font-semibold text-neutral-700 mb-1.5">
                     Phone Number <span class="text-neutral-500">(Optional)</span>
                   </label>
                   <input
@@ -149,24 +149,24 @@ import type { Event } from '../../models';
                 </div>
 
                 <!-- Terms -->
-                <div class="mb-6 p-4 bg-neutral-50 rounded-lg">
-                  <p class="text-sm text-neutral-600">
+                <div class="mb-5 p-3.5 bg-neutral-50 border border-neutral-200/60 rounded-lg">
+                  <p class="text-xs text-neutral-500 leading-relaxed">
                     By registering for this event, you agree to receive event-related communications and updates.
                   </p>
                 </div>
 
                 <!-- Submit Button -->
-                <div class="flex gap-4">
+                <div class="flex gap-3">
                   <button
                     type="submit"
                     [disabled]="registrationForm.invalid || isSubmitting()"
-                    class="btn-primary flex-1"
+                    class="btn-primary btn-sm flex-1"
                     [class.opacity-50]="registrationForm.invalid || isSubmitting()"
                     [class.cursor-not-allowed]="registrationForm.invalid || isSubmitting()"
                   >
                     @if (isSubmitting()) {
-                      <span class="flex items-center justify-center gap-2">
-                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span class="flex items-center justify-center gap-1.5">
+                        <div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white"></div>
                         Registering...
                       </span>
                     } @else {
@@ -176,7 +176,7 @@ import type { Event } from '../../models';
                   <button
                     type="button"
                     (click)="goBack()"
-                    class="btn-outline"
+                    class="btn-outline btn-sm"
                     [disabled]="isSubmitting()"
                   >
                     Cancel

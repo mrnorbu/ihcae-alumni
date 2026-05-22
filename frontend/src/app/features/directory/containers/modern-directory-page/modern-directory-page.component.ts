@@ -42,7 +42,7 @@ import {
               (ngModelChange)="onSearchChange($event)"
               type="text"
               placeholder="Search by name or role..."
-              class="w-full pl-9 pr-9 py-2.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-transparent transition-colors"
+              class="w-full pl-11 pr-9 py-2.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-transparent transition-colors"
             />
             @if (filters.search) {
               <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">

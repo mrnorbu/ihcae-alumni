@@ -72,12 +72,12 @@ import {
           <!-- Total Articles -->
           <div class="stat-card">
             <div class="stat-card-horizontal">
-              <div class="stat-icon bg-blue-100">
-                <lucide-icon [img]="fileTextIcon" [size]="20" class="text-blue-600"></lucide-icon>
+              <div class="stat-icon bg-secondary-50 text-secondary-700 border border-secondary-200/30">
+                <lucide-icon [img]="fileTextIcon" [size]="20"></lucide-icon>
               </div>
               <div class="flex-1">
-                <p class="text-xs font-medium text-neutral-600">Total Articles</p>
-                <p class="text-2xl font-bold text-neutral-900">{{ stats().totalArticles }}</p>
+                <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Total Articles</p>
+                <p class="text-2xl font-bold text-neutral-900 leading-none">{{ stats().totalArticles }}</p>
               </div>
             </div>
           </div>
@@ -85,12 +85,12 @@ import {
           <!-- Published Articles -->
           <div class="stat-card">
             <div class="stat-card-horizontal">
-              <div class="stat-icon bg-green-100">
-                <lucide-icon [img]="eyeIcon" [size]="20" class="text-green-600"></lucide-icon>
+              <div class="stat-icon bg-primary-50 text-primary-700 border border-primary-200/30">
+                <lucide-icon [img]="eyeIcon" [size]="20"></lucide-icon>
               </div>
               <div class="flex-1">
-                <p class="text-xs font-medium text-neutral-600">Published</p>
-                <p class="text-2xl font-bold text-neutral-900">{{ stats().publishedArticles }}</p>
+                <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Published</p>
+                <p class="text-2xl font-bold text-neutral-900 leading-none">{{ stats().publishedArticles }}</p>
               </div>
             </div>
           </div>
@@ -98,12 +98,12 @@ import {
           <!-- Draft Articles -->
           <div class="stat-card">
             <div class="stat-card-horizontal">
-              <div class="stat-icon bg-yellow-100">
-                <lucide-icon [img]="eyeOffIcon" [size]="20" class="text-yellow-600"></lucide-icon>
+              <div class="stat-icon bg-amber-50 text-amber-700 border border-amber-200/30">
+                <lucide-icon [img]="eyeOffIcon" [size]="20"></lucide-icon>
               </div>
               <div class="flex-1">
-                <p class="text-xs font-medium text-neutral-600">Drafts</p>
-                <p class="text-2xl font-bold text-neutral-900">{{ stats().draftArticles }}</p>
+                <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Drafts</p>
+                <p class="text-2xl font-bold text-neutral-900 leading-none">{{ stats().draftArticles }}</p>
               </div>
             </div>
           </div>
@@ -111,12 +111,12 @@ import {
           <!-- Total Events -->
           <div class="stat-card">
             <div class="stat-card-horizontal">
-              <div class="stat-icon bg-purple-100">
-                <lucide-icon [img]="calendarIcon" [size]="20" class="text-purple-600"></lucide-icon>
+              <div class="stat-icon bg-secondary-50 text-secondary-700 border border-secondary-200/30">
+                <lucide-icon [img]="calendarIcon" [size]="20"></lucide-icon>
               </div>
               <div class="flex-1">
-                <p class="text-xs font-medium text-neutral-600">Total Events</p>
-                <p class="text-2xl font-bold text-neutral-900">{{ stats().totalEvents }}</p>
+                <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Total Events</p>
+                <p class="text-2xl font-bold text-neutral-900 leading-none">{{ stats().totalEvents }}</p>
               </div>
             </div>
           </div>

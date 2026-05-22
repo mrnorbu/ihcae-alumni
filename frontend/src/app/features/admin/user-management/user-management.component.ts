@@ -75,9 +75,9 @@ interface UserStats {
       <div class="flex flex-col sm:flex-row gap-3">
         <div class="relative flex-1">
           <lucide-icon [img]="searchIcon" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
-          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
+          <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onSearch()"
             placeholder="Search by name or email..."
-            class="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent">
+            class="w-full pl-11 pr-4 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors">
         </div>
         <button (click)="loadUsers()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-600 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
           <lucide-icon [img]="refreshIcon" [size]="14"></lucide-icon>
@@ -128,11 +128,11 @@ interface UserStats {
                         </div>
                       </div>
                     </td>
-                    <!-- Status -->
+                     <!-- Status -->
                     <td class="px-4 py-3">
                       <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                         [ngClass]="{
-                          'bg-green-100 text-green-700': user.status === 'Approved' && !user.isBanned,
+                          'bg-primary-100 text-primary-700': user.status === 'Approved' && !user.isBanned,
                           'bg-red-100 text-red-700': user.status === 'Rejected' || user.isBanned,
                           'bg-neutral-100 text-neutral-600': !['Approved','Rejected'].includes(user.status)
                         }">
@@ -142,7 +142,7 @@ interface UserStats {
                     <!-- Email verified -->
                     <td class="px-4 py-3">
                       @if (user.emailVerified) {
-                        <lucide-icon [img]="mailCheckIcon" [size]="16" class="text-green-500"></lucide-icon>
+                        <lucide-icon [img]="mailCheckIcon" [size]="16" class="text-primary-600"></lucide-icon>
                       } @else {
                         <lucide-icon [img]="mailIcon" [size]="16" class="text-neutral-300"></lucide-icon>
                       }
@@ -154,7 +154,7 @@ interface UserStats {
                           <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
                             [ngClass]="{
                               'bg-purple-100 text-purple-700': role === 'Admin',
-                              'bg-blue-100 text-blue-700': role === 'Alumni',
+                              'bg-secondary-100 text-secondary-700': role === 'Alumni',
                               'bg-neutral-100 text-neutral-600': role !== 'Admin' && role !== 'Alumni'
                             }">
                             {{ role }}
@@ -177,7 +177,7 @@ interface UserStats {
                             </button>
                           } @else {
                             <button (click)="unbanUser(user)" title="Unban user"
-                              class="p-1.5 rounded text-green-600 hover:bg-green-50 transition-colors">
+                              class="p-1.5 rounded text-primary-600 hover:bg-primary-50 transition-colors">
                               <lucide-icon [img]="checkIcon" [size]="14"></lucide-icon>
                             </button>
                           }
@@ -273,9 +273,9 @@ interface UserStats {
               <div class="space-y-2">
                 @for (role of availableRoles; track role) {
                   <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-colors"
-                    [class]="editRoles.includes(role) ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-200 hover:border-neutral-300'">
+                    [class]="editRoles.includes(role) ? 'border-primary-600 bg-primary-50/20' : 'border-neutral-200 hover:border-neutral-300'">
                     <input type="checkbox" [checked]="editRoles.includes(role)" (change)="toggleRole(role)"
-                      class="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900">
+                      class="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500">
                     <div>
                       <span class="text-sm font-medium text-neutral-900">{{ role }}</span>
                       <p class="text-xs text-neutral-500">
@@ -292,7 +292,7 @@ interface UserStats {
             <div class="flex justify-end gap-2 px-5 py-3 border-t border-neutral-100 bg-neutral-50 rounded-b-lg">
               <button (click)="closeRoleModal()" class="px-3 py-1.5 text-sm text-neutral-600 border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors">Cancel</button>
               <button (click)="saveRoles()"
-                class="px-3 py-1.5 text-sm text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors">Save Roles</button>
+                class="px-3 py-1.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors">Save Roles</button>
             </div>
           </div>
         </div>
@@ -347,7 +347,7 @@ interface UserStats {
                       <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
                         [ngClass]="{
                           'bg-purple-100 text-purple-700': role === 'Admin',
-                          'bg-blue-100 text-blue-700': role === 'Alumni',
+                          'bg-secondary-100 text-secondary-700': role === 'Alumni',
                           'bg-neutral-200 text-neutral-600': role !== 'Admin' && role !== 'Alumni'
                         }">
                         {{ role }}
@@ -396,7 +396,7 @@ export class UserManagementComponent implements OnInit {
   stats = signal<UserStats>({ totalUsers: 0, pendingUsers: 0, approvedUsers: 0, rejectedUsers: 0, bannedUsers: 0, emailVerifiedUsers: 0, activeToday: 0 });
   isLoading = signal(true);
   currentFilter = signal('all');
-  searchQuery = '';
+  searchQuery = signal('');
   currentPage = signal(1);
   pageSize = 20;
 
@@ -423,7 +423,7 @@ export class UserManagementComponent implements OnInit {
     // Filter out users with Pending status entirely on this IT security screen
     let users = this.allUsers().filter(u => u.status !== 'Pending');
     const filter = this.currentFilter();
-    const query = this.searchQuery.toLowerCase().trim();
+    const query = this.searchQuery().toLowerCase().trim();
 
     if (filter === 'Approved') users = users.filter(u => u.status === 'Approved' && !u.isBanned);
     else if (filter === 'Banned') users = users.filter(u => u.isBanned);

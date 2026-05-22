@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
@@ -44,149 +44,152 @@ interface UserRecord {
 @Component({
   selector: 'app-alumni-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, DatePipe],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   template: `
     <div class="space-y-4">
       <!-- Search & Refresh -->
       <div class="flex flex-col sm:flex-row gap-3">
         <div class="relative flex-1">
           <lucide-icon [img]="searchIcon" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
-          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
+          <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)"
             placeholder="Search pending registrations by name or email..."
-            class="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent">
+            class="input-field pl-11">
         </div>
-        <button (click)="loadPendingUsers()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-600 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+        <button (click)="loadPendingUsers()" class="btn-outline btn-sm flex items-center gap-1.5 shrink-0 h-9">
           <lucide-icon [img]="refreshIcon" [size]="14"></lucide-icon>
           Refresh
         </button>
       </div>
 
       <!-- Info note -->
-      <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
-        <lucide-icon [img]="alertTriangleIcon" [size]="15" class="shrink-0 mt-0.5"></lucide-icon>
+      <div class="flex items-start gap-3 bg-amber-50/60 border border-amber-200/40 border-l-4 border-l-amber-500 rounded px-4 py-3 text-xs text-amber-800 shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+        <lucide-icon [img]="alertTriangleIcon" [size]="15" class="shrink-0 mt-0.5 text-amber-600"></lucide-icon>
         <p>These are self-registered users whose email was <strong>not found in the alumni roster</strong>. Click a row to see their registration details before approving.</p>
       </div>
 
-      <!-- Cards list -->
-      <div class="space-y-2">
+      <!-- Line-separated Feed List -->
+      <div class="space-y-3">
         @if (isLoading()) {
-          <div class="bg-white border border-neutral-200 rounded-lg p-12 text-center">
-            <div class="animate-spin w-6 h-6 border-2 border-neutral-300 border-t-neutral-900 rounded-full mx-auto"></div>
-            <p class="text-sm text-neutral-500 mt-3">Loading pending registrations...</p>
+          <div class="bg-neutral-50/50 border border-neutral-200/50 rounded-xl p-12 text-center">
+            <div class="animate-spin w-6 h-6 border-2 border-neutral-300 border-t-primary-600 rounded-full mx-auto"></div>
+            <p class="text-xs text-neutral-500 mt-3 font-medium">Loading pending registrations...</p>
           </div>
         } @else if (filteredUsers().length === 0) {
-          <div class="bg-white border border-neutral-200 rounded-lg p-12 text-center">
+          <div class="bg-neutral-50/50 border border-neutral-200/50 rounded-xl p-12 text-center">
             <lucide-icon [img]="clockIcon" [size]="32" class="mx-auto text-neutral-300"></lucide-icon>
-            <p class="text-sm font-medium text-neutral-600 mt-3">No pending registrations</p>
-            <p class="text-xs text-neutral-400 mt-1">All self-registrations have been reviewed</p>
+            <p class="text-xs font-semibold text-neutral-600 mt-3">No pending registrations</p>
+            <p class="text-[11px] text-neutral-400 mt-1">All self-registrations have been reviewed</p>
           </div>
         } @else {
-          @for (user of paginatedUsers(); track user.id) {
-            <div class="bg-white border border-neutral-200 rounded-lg overflow-hidden">
-              <!-- Row header — always visible -->
-              <div class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-neutral-50 transition-colors"
-                   (click)="toggleExpand(user.id)">
-                <!-- Avatar -->
-                <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                  <span class="text-xs font-bold text-amber-700">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+          <div class="bg-white border border-neutral-200/60 rounded-xl overflow-hidden divide-y divide-neutral-100 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            @for (user of paginatedUsers(); track user.id) {
+              <div class="transition-all duration-200 hover:bg-neutral-50/30">
+                <!-- Row header — always visible -->
+                <div class="flex items-center gap-3 px-4 py-3.5 cursor-pointer"
+                     (click)="toggleExpand(user.id)">
+                  <!-- Avatar -->
+                  <div class="w-8.5 h-8.5 rounded-lg bg-primary-50 border border-primary-200/30 flex items-center justify-center shrink-0 text-primary-700">
+                    <span class="text-[10px] font-bold uppercase tracking-wide">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+                  </div>
+                  <!-- Name + email -->
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-neutral-900 leading-tight">{{ user.firstName }} {{ user.lastName }}</p>
+                    <p class="text-xs text-neutral-400 mt-0.5 truncate">{{ user.email }}</p>
+                  </div>
+                  <!-- Badges -->
+                  <div class="flex items-center gap-3 shrink-0">
+                    @if (user.emailVerified) {
+                      <span class="badge bg-primary-50 text-primary-700 border border-primary-200/30">Email Verified</span>
+                    } @else {
+                      <span class="badge bg-neutral-50 text-neutral-400 border border-neutral-200/30">Unverified</span>
+                    }
+                    <span class="text-[11px] font-medium text-neutral-400">{{ user.createdAt | date:'mediumDate' }}</span>
+                  </div>
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1.5 shrink-0" (click)="$event.stopPropagation()">
+                    <button (click)="approveUser(user)" title="Approve"
+                      class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors shadow-[0_1px_2px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-primary-500/20">
+                      <lucide-icon [img]="checkIcon" [size]="12"></lucide-icon> Approve
+                    </button>
+                    <button (click)="openRejectModal(user)" title="Reject"
+                      class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-red-200/60 text-red-650 rounded hover:bg-red-50 hover:border-red-300 transition-colors focus:ring-2 focus:ring-red-500/10">
+                      <lucide-icon [img]="xIcon" [size]="12"></lucide-icon> Reject
+                    </button>
+                  </div>
+                  <!-- Expand chevron -->
+                  <lucide-icon [img]="chevronDownIcon" [size]="14" class="text-neutral-400 transition-transform"
+                    [class.rotate-180]="expandedUserId() === user.id"></lucide-icon>
                 </div>
-                <!-- Name + email -->
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-neutral-900">{{ user.firstName }} {{ user.lastName }}</p>
-                  <p class="text-xs text-neutral-500 truncate">{{ user.email }}</p>
-                </div>
-                <!-- Badges -->
-                <div class="flex items-center gap-2 shrink-0">
-                  @if (user.emailVerified) {
-                    <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Email Verified</span>
-                  } @else {
-                    <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500">Unverified</span>
-                  }
-                  <span class="text-xs text-neutral-400">{{ user.createdAt | date:'mediumDate' }}</span>
-                </div>
-                <!-- Actions -->
-                <div class="flex items-center gap-1 shrink-0" (click)="$event.stopPropagation()">
-                  <button (click)="approveUser(user)" title="Approve"
-                    class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    <lucide-icon [img]="checkIcon" [size]="12"></lucide-icon> Approve
-                  </button>
-                  <button (click)="openRejectModal(user)" title="Reject"
-                    class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
-                    <lucide-icon [img]="xIcon" [size]="12"></lucide-icon> Reject
-                  </button>
-                </div>
-                <!-- Expand chevron -->
-                <lucide-icon [img]="chevronDownIcon" [size]="14" class="text-neutral-400 transition-transform"
-                  [class.rotate-180]="expandedUserId() === user.id"></lucide-icon>
-              </div>
 
-              <!-- Expanded detail panel -->
-              @if (expandedUserId() === user.id) {
-                <div class="border-t border-neutral-100 bg-neutral-50 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div class="flex items-start gap-2">
-                    <lucide-icon [img]="phoneIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
-                    <div>
-                      <p class="text-xs text-neutral-400 uppercase tracking-wider font-semibold">Phone</p>
-                      <p class="text-sm text-neutral-700">{{ user.phone || '—' }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-start gap-2">
-                    <lucide-icon [img]="graduationIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
-                    <div>
-                      <p class="text-xs text-neutral-400 uppercase tracking-wider font-semibold">Course</p>
-                      <p class="text-sm text-neutral-700">{{ user.course || '—' }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-start gap-2">
-                    <lucide-icon [img]="graduationIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
-                    <div>
-                      <p class="text-xs text-neutral-400 uppercase tracking-wider font-semibold">Batch</p>
-                      <p class="text-sm text-neutral-700">{{ user.batch || '—' }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-start gap-2">
-                    <lucide-icon [img]="mapPinIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
-                    <div>
-                      <p class="text-xs text-neutral-400 uppercase tracking-wider font-semibold">Location</p>
-                      <p class="text-sm text-neutral-700">{{ user.location || '—' }}</p>
-                    </div>
-                  </div>
-                  @if (user.bio) {
-                    <div class="col-span-2 sm:col-span-4 flex items-start gap-2">
-                      <lucide-icon [img]="userIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                <!-- Expanded detail panel -->
+                @if (expandedUserId() === user.id) {
+                  <div class="border-t border-neutral-100 bg-neutral-50/50 px-4 py-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="flex items-start gap-2.5">
+                      <lucide-icon [img]="phoneIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
                       <div>
-                        <p class="text-xs text-neutral-400 uppercase tracking-wider font-semibold">Bio</p>
-                        <p class="text-sm text-neutral-700">{{ user.bio }}</p>
+                        <p class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-1">Phone</p>
+                        <p class="text-xs font-medium text-neutral-700 leading-tight">{{ user.phone || '—' }}</p>
                       </div>
                     </div>
-                  }
-                  <div class="col-span-2 sm:col-span-4">
-                    <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-                      This email is not in the alumni roster — verify their identity before approving.
-                    </p>
+                    <div class="flex items-start gap-2.5">
+                      <lucide-icon [img]="graduationIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                      <div>
+                        <p class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-1">Course</p>
+                        <p class="text-xs font-medium text-neutral-700 leading-tight">{{ user.course || '—' }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                      <lucide-icon [img]="graduationIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                      <div>
+                        <p class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-1">Batch</p>
+                        <p class="text-xs font-medium text-neutral-700 leading-tight">{{ user.batch || '—' }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                      <lucide-icon [img]="mapPinIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                      <div>
+                        <p class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-1">Location</p>
+                        <p class="text-xs font-medium text-neutral-700 leading-tight">{{ user.location || '—' }}</p>
+                      </div>
+                    </div>
+                    @if (user.bio) {
+                      <div class="col-span-2 sm:col-span-4 flex items-start gap-2.5">
+                        <lucide-icon [img]="userIcon" [size]="13" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                        <div>
+                          <p class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-1">Bio</p>
+                          <p class="text-xs font-medium text-neutral-700 leading-relaxed">{{ user.bio }}</p>
+                        </div>
+                      </div>
+                    }
+                    <div class="col-span-2 sm:col-span-4 mt-1">
+                      <p class="text-[11px] font-medium text-amber-800 bg-amber-50/45 border border-amber-200/35 rounded-md px-3 py-2 flex items-center gap-1.5">
+                        <lucide-icon [img]="alertTriangleIcon" [size]="12" class="text-amber-600 shrink-0"></lucide-icon>
+                        This email is not in the alumni roster — verify their identity before approving.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              }
-            </div>
-          }
-
-          <!-- Pagination -->
-          @if (totalPages() > 1) {
-            <div class="flex items-center justify-between px-1 py-2">
-              <span class="text-xs text-neutral-500">{{ filteredUsers().length }} pending requests</span>
-              <div class="flex items-center gap-1.5">
-                <button (click)="prevPage()" [disabled]="currentPage() === 1"
-                  class="p-1.5 border border-neutral-200 rounded hover:bg-neutral-50 disabled:opacity-40">
-                  <lucide-icon [img]="chevronLeftIcon" [size]="14"></lucide-icon>
-                </button>
-                <span class="text-xs text-neutral-500 px-1">{{ currentPage() }} / {{ totalPages() }}</span>
-                <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
-                  class="p-1.5 border border-neutral-200 rounded hover:bg-neutral-50 disabled:opacity-40">
-                  <lucide-icon [img]="chevronRightIcon" [size]="14"></lucide-icon>
-                </button>
+                }
               </div>
+            }
+          </div>
+        }
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <div class="flex items-center justify-between px-1 py-2">
+            <span class="text-xs text-neutral-500">{{ filteredUsers().length }} pending requests</span>
+            <div class="flex items-center gap-1.5">
+              <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                class="p-1.5 border border-neutral-200 rounded hover:bg-neutral-50 disabled:opacity-40">
+                <lucide-icon [img]="chevronLeftIcon" [size]="14"></lucide-icon>
+              </button>
+              <span class="text-xs text-neutral-500 px-1">{{ currentPage() }} / {{ totalPages() }}</span>
+              <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                class="p-1.5 border border-neutral-200 rounded hover:bg-neutral-50 disabled:opacity-40">
+                <lucide-icon [img]="chevronRightIcon" [size]="14"></lucide-icon>
+              </button>
             </div>
-          }
+          </div>
         }
       </div>
 
@@ -196,7 +199,7 @@ interface UserRecord {
           <div class="bg-white rounded-xl border border-neutral-200 shadow-xl max-w-md w-full overflow-hidden">
             <div class="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
               <h3 class="text-base font-bold text-neutral-900 flex items-center gap-2">
-                <lucide-icon [img]="alertTriangleIcon" [size]="16" class="text-red-600"></lucide-icon>
+                <lucide-icon [img]="alertTriangleIcon" [size]="16" class="text-red-650"></lucide-icon>
                 Reject Registration
               </h3>
               <button (click)="closeRejectModal()" class="text-neutral-400 hover:text-neutral-600">
@@ -204,22 +207,22 @@ interface UserRecord {
               </button>
             </div>
             <div class="p-5 space-y-4">
-              <p class="text-sm text-neutral-600">
+              <p class="text-sm text-neutral-600 leading-relaxed">
                 Are you sure you want to reject the registration request from <strong class="text-neutral-900">{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>?
               </p>
               <div class="space-y-1.5">
-                <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Reason for Rejection (Optional)</label>
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Reason for Rejection (Optional)</label>
                 <textarea [(ngModel)]="rejectReason" rows="3"
                   placeholder="Provide a brief explanation that will be emailed to the applicant..."
-                  class="w-full border border-neutral-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"></textarea>
+                  class="w-full border border-neutral-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-neutral-50/50 focus:bg-white transition-all"></textarea>
               </div>
             </div>
-            <div class="px-5 py-3.5 bg-neutral-50 border-t border-neutral-100 flex items-center justify-end gap-2">
-              <button (click)="closeRejectModal()" class="px-3.5 py-1.5 text-sm border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors">
+            <div class="px-5 py-3.5 bg-neutral-50/50 border-t border-neutral-100 flex items-center justify-end gap-2">
+              <button (click)="closeRejectModal()" class="btn-outline btn-sm px-4 h-9">
                 Cancel
               </button>
               <button (click)="confirmReject()"
-                class="px-3.5 py-1.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                class="px-4 py-2 text-sm font-semibold bg-red-650 text-white rounded hover:bg-red-700 transition-colors shadow-sm focus:ring-2 focus:ring-red-500/20">
                 Reject Account
               </button>
             </div>
@@ -240,7 +243,7 @@ export class AlumniApprovalsComponent implements OnInit {
   selectedUser = signal<UserRecord | null>(null);
 
   // Search & Pagination
-  searchQuery = '';
+  searchQuery = signal('');
   rejectReason = '';
   currentPage = signal(1);
   pageSize = 10;
@@ -270,12 +273,12 @@ export class AlumniApprovalsComponent implements OnInit {
   // Filtered pending users
   filteredUsers = computed(() => {
     let list = this.allPendingUsers();
-    if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase();
+    const query = this.searchQuery().trim().toLowerCase();
+    if (query) {
       list = list.filter(u =>
-        u.firstName.toLowerCase().includes(q) ||
-        u.lastName.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q)
+        u.firstName.toLowerCase().includes(query) ||
+        u.lastName.toLowerCase().includes(query) ||
+        u.email.toLowerCase().includes(query)
       );
     }
     return list;
@@ -314,7 +317,8 @@ export class AlumniApprovalsComponent implements OnInit {
     });
   }
 
-  onSearch() {
+  onSearch(query: string) {
+    this.searchQuery.set(query);
     this.currentPage.set(1);
   }
 

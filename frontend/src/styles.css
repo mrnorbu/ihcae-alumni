@@ -70,17 +70,17 @@ html, body {
     @apply block text-sm font-medium text-neutral-700 mb-1.5;
   }
   
-  /* Modern Compact Cards */
+  /* Modern Compact Cards (Flat & Minimalist style) */
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-neutral-200 p-4 hover:shadow-md transition-shadow duration-200;
+    @apply bg-transparent py-4 border-b border-neutral-200/60 hover:bg-neutral-50/50 transition-colors duration-200;
   }
 
   .card-compact {
-    @apply bg-white rounded-lg shadow-sm border border-neutral-200 p-3;
+    @apply bg-transparent py-3 border-b border-neutral-200/60;
   }
 
   .card-lg {
-    @apply bg-white rounded-lg shadow-sm border border-neutral-200 p-5;
+    @apply bg-transparent py-5 border-b border-neutral-200/60;
   }
   
   /* Compact Badges */
@@ -146,9 +146,9 @@ html, body {
     @apply bg-neutral-50;
   }
 
-  /* Stats Card */
+  /* Stats Card (Flat & Minimalist style) */
   .stat-card {
-    @apply bg-white rounded-lg border border-neutral-200 p-4 shadow-sm hover:shadow-md transition-shadow duration-200;
+    @apply bg-transparent py-4 border-b border-neutral-200/60 transition-colors duration-200;
   }
 
   .stat-card-horizontal {
@@ -204,7 +204,7 @@ html, body {
   }
 
   .hero-gradient {
-    @apply bg-gradient-brand;
+    @apply bg-primary-950;
   }
   
   .brand-text {
@@ -212,7 +212,7 @@ html, body {
   }
 
   .section-compact {
-    @apply py-12 px-4 sm:px-6 lg:px-8;
+    @apply py-8 px-4 sm:px-6 lg:px-8;
   }
 
   .container-compact {
@@ -221,19 +221,19 @@ html, body {
 
   /* ===== ENHANCED CARD COMPONENTS ===== */
   
-  /* Elevated cards with better shadows - for prominent content */
+  /* Elevated cards (Flat & Minimalist style) */
   .card-elevated {
-    @apply bg-white rounded-lg shadow-sm border border-neutral-100 p-4 hover:shadow-md transition-shadow duration-200;
+    @apply bg-transparent py-4 border-b border-neutral-200/60 hover:bg-neutral-50/50 transition-colors duration-200;
   }
 
-  /* Post card specific styling - for forum posts and topics */
+  /* Post card specific styling (Flat & Minimalist style) */
   .post-card {
-    @apply bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200;
+    @apply bg-transparent py-4 border-b border-neutral-200/60 hover:bg-neutral-50/50 transition-all duration-200;
   }
 
-  /* Sidebar card - for right sidebar widgets */
+  /* Sidebar card (Flat & Minimalist style) */
   .sidebar-card {
-    @apply bg-white rounded-lg border border-neutral-200 p-3 shadow-sm;
+    @apply bg-transparent py-3 border-b border-neutral-200/60;
   }
 
   /* ===== ENHANCED TAG SYSTEM ===== */

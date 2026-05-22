@@ -29,8 +29,8 @@ import { environment } from '../../../../environments/environment';
       <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <div class="bg-white border border-neutral-200 rounded-xl p-4">
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-              <lucide-icon [img]="usersIcon" [size]="18" class="text-blue-600"></lucide-icon>
+            <div class="w-9 h-9 rounded-lg bg-secondary-50 flex items-center justify-center">
+              <lucide-icon [img]="usersIcon" [size]="18" class="text-secondary-600"></lucide-icon>
             </div>
             <div>
               <p class="text-xl font-bold text-neutral-900">{{ totalCount() }}</p>
@@ -40,8 +40,8 @@ import { environment } from '../../../../environments/environment';
         </div>
         <div class="bg-white border border-neutral-200 rounded-xl p-4">
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center">
-              <lucide-icon [img]="graduationCapIcon" [size]="18" class="text-green-600"></lucide-icon>
+            <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
+              <lucide-icon [img]="graduationCapIcon" [size]="18" class="text-primary-600"></lucide-icon>
             </div>
             <div>
               <p class="text-xl font-bold text-neutral-900">{{ courses().length }}</p>
@@ -51,8 +51,8 @@ import { environment } from '../../../../environments/environment';
         </div>
         <div class="bg-white border border-neutral-200 rounded-xl p-4">
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
-              <lucide-icon [img]="mapPinIcon" [size]="18" class="text-purple-600"></lucide-icon>
+            <div class="w-9 h-9 rounded-lg bg-secondary-50 flex items-center justify-center">
+              <lucide-icon [img]="mapPinIcon" [size]="18" class="text-secondary-600"></lucide-icon>
             </div>
             <div>
               <p class="text-xl font-bold text-neutral-900">{{ getUniqueLocations() }}</p>
@@ -69,11 +69,11 @@ import { environment } from '../../../../environments/environment';
             <lucide-icon [img]="searchIcon" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
             <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
               placeholder="Search by name..."
-              class="w-full pl-9 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
+              class="w-full pl-11 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
           </div>
           <div class="flex items-center gap-2">
             <select [(ngModel)]="selectedCourse" (change)="loadAlumni()"
-              class="px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+              class="px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer">
               <option value="">All Courses</option>
               @for (course of courses(); track course) {
                 <option [value]="course">{{ course }}</option>
@@ -300,32 +300,32 @@ import { environment } from '../../../../environments/environment';
                   <div>
                     <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Phone</label>
                     <input type="text" [(ngModel)]="editPhone" placeholder="Phone number"
-                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
+                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Course</label>
                     <input type="text" [(ngModel)]="editCourse" placeholder="Course name"
-                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
+                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Graduation Year / Batch</label>
                     <input type="text" [(ngModel)]="editGraduationYear" placeholder="Graduation Year (e.g. 2024)"
-                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
+                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Job Title</label>
                     <input type="text" [(ngModel)]="editJobTitle" placeholder="Current Position"
-                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
+                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Location</label>
                     <input type="text" [(ngModel)]="editLocation" placeholder="City, Country"
-                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
+                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Bio</label>
                     <textarea [(ngModel)]="editBio" placeholder="Brief biography..." rows="3"
-                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors resize-none"></textarea>
+                      class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none"></textarea>
                   </div>
                 </div>
 
@@ -333,7 +333,7 @@ import { environment } from '../../../../environments/environment';
                   <button (click)="cancelEditing()" [disabled]="isSaving()" class="px-4 py-2 text-sm font-medium border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-50 transition-colors">
                     Cancel
                   </button>
-                  <button (click)="saveProfile()" [disabled]="isSaving()" class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                  <button (click)="saveProfile()" [disabled]="isSaving()" class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors">
                     {{ isSaving() ? 'Saving...' : 'Save Profile' }}
                   </button>
                 </div>

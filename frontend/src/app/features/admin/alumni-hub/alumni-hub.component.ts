@@ -33,14 +33,14 @@ import { AlumniManagementComponent } from '../alumni-management/alumni-managemen
       <div class="flex border-b border-neutral-200">
         <button (click)="setActiveTab('directory')"
           class="flex items-center gap-1.5 px-4 py-2 border-b-2 font-semibold text-xs transition-all duration-200"
-          [class]="activeTab() === 'directory' ? 'border-neutral-900 text-neutral-900' : 'border-transparent text-neutral-500 hover:text-neutral-900'">
+          [class]="activeTab() === 'directory' ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-primary-900'">
           <lucide-icon [img]="usersIcon" [size]="14" [strokeWidth]="activeTab() === 'directory' ? 2.5 : 2"></lucide-icon>
           Alumni Directory
         </button>
 
         <button (click)="setActiveTab('approvals')"
           class="flex items-center gap-1.5 px-4 py-2 border-b-2 font-semibold text-xs transition-all duration-200"
-          [class]="activeTab() === 'approvals' ? 'border-neutral-900 text-neutral-900' : 'border-transparent text-neutral-500 hover:text-neutral-900'">
+          [class]="activeTab() === 'approvals' ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-primary-900'">
           <lucide-icon [img]="clockIcon" [size]="14" [strokeWidth]="activeTab() === 'approvals' ? 2.5 : 2"></lucide-icon>
           Pending Approvals
           @if (pendingCount() > 0) {
@@ -52,7 +52,7 @@ import { AlumniManagementComponent } from '../alumni-management/alumni-managemen
 
         <button (click)="setActiveTab('roster')"
           class="flex items-center gap-1.5 px-4 py-2 border-b-2 font-semibold text-xs transition-all duration-200"
-          [class]="activeTab() === 'roster' ? 'border-neutral-900 text-neutral-900' : 'border-transparent text-neutral-500 hover:text-neutral-900'">
+          [class]="activeTab() === 'roster' ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-primary-900'">
           <lucide-icon [img]="databaseIcon" [size]="14" [strokeWidth]="activeTab() === 'roster' ? 2.5 : 2"></lucide-icon>
           Legacy Roster
         </button>

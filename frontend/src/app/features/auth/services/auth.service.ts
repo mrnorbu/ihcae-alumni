@@ -47,7 +47,6 @@ export class AuthService {
           if (response.success && response.token && response.user) {
             // Update authentication state
             this.authStore.setAuthState(response.user, response.token);
-            this.notificationService.showSuccessMessage('Login');
           }
           this.authStore.setLoading(false);
         },
@@ -70,9 +69,6 @@ export class AuthService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, userData).pipe(
       tap({
         next: (response) => {
-          if (response.success) {
-            this.notificationService.showSuccess('Registration Successful', response.message);
-          }
           this.authStore.setLoading(false);
         },
         error: (error) => {

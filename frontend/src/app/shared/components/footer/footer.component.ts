@@ -9,19 +9,19 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
   imports: [RouterModule, LucideAngularModule],
   template: `
     <!-- Footer - Full Width -->
-    <footer class="bg-neutral-900 text-white py-12 w-full">
+    <footer class="bg-neutral-900 text-white py-8 md:py-10 w-full">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <!-- Brand Column -->
           <div class="col-span-1 md:col-span-2">
-            <div class="flex items-center gap-3 mb-4">
+            <div class="flex items-center gap-3 mb-3">
               <img class="h-12 w-auto" src="images/logo.png" alt="IHCAE Sikkim Logo">
               <div>
                 <h3 class="text-lg font-bold">IHCAE Alumni Network</h3>
                 <p class="text-xs text-neutral-400">Sikkim, India</p>
               </div>
             </div>
-            <p class="text-sm text-neutral-400 leading-relaxed mb-4 max-w-md">
+            <p class="text-sm text-neutral-400 leading-relaxed mb-3 max-w-md">
               Connecting adventure enthusiasts, eco-tourism professionals, and mountain lovers across the Eastern Himalayas. 
               Building a sustainable future through education and conservation.
             </p>
@@ -70,7 +70,7 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
         </div>
 
         <!-- Bottom Bar -->
-        <div class="pt-6 border-t border-neutral-800">
+        <div class="pt-5 border-t border-neutral-800">
           <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p class="text-xs text-neutral-500">
               © 2024 IHCAE Alumni Network. All rights reserved.

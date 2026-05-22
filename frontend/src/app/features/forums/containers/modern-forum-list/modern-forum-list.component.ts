@@ -116,7 +116,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
                   <lucide-icon [img]="searchIcon" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
                   <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
                     placeholder="Search discussions..."
-                    class="w-full pl-9 pr-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    class="w-full pl-11 pr-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <button (click)="onSearch()" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0">
                   Search

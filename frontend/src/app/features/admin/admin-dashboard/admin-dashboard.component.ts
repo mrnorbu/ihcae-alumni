@@ -1,12 +1,15 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/services/auth.service';
 import { UserAuthStore } from '../../../core/state/user-auth.store';
 import { NotificationService } from '../../../core/services/notification.service';
-import { User, UserStatus } from '../../../shared/models';
+import { User } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
+import { NewsService } from '../../news-events/services/news.service';
+import { EventsService } from '../../news-events/services/events.service';
+import { ForumService } from '../../forums/services/forum.service';
 import {
   LucideAngularModule,
   Users,
@@ -28,108 +31,108 @@ import {
   standalone: true,
   imports: [FormsModule, LucideAngularModule, RouterModule],
   template: `
-    <div class="p-4 sm:p-6 space-y-5">
+    <div class="p-4 sm:p-5 space-y-5 bg-white min-h-screen">
 
       <!-- Page header -->
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-xl font-bold text-neutral-900">Dashboard</h2>
-          <p class="text-sm text-neutral-500">Overview of your alumni platform</p>
+          <h2 class="text-sm font-bold text-neutral-950 uppercase tracking-wider">Dashboard</h2>
+          <p class="text-xs text-neutral-400 mt-0.5">Overview of the IHCAE alumni platform</p>
         </div>
         <button (click)="refreshData()" [disabled]="isLoading()"
-          class="p-2 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors disabled:opacity-50">
-          <lucide-icon [img]="refreshIcon" [size]="18" [class.animate-spin]="isLoading()"></lucide-icon>
+          class="p-2 rounded text-neutral-400 hover:text-neutral-950 hover:bg-neutral-50 transition-colors disabled:opacity-50 border border-neutral-200/60">
+          <lucide-icon [img]="refreshIcon" [size]="14" [class.animate-spin]="isLoading()"></lucide-icon>
         </button>
       </div>
 
-      <!-- Summary cards -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-white rounded-lg border border-neutral-200 p-4">
-          <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="usersIcon" [size]="18"></lucide-icon>
-            </span>
-            <span class="text-sm font-medium text-neutral-500">Total Users</span>
+      <!-- Summary stats with layered off-white background and premium white stat blocks -->
+      <div class="bg-neutral-50/45 border border-neutral-100 rounded-lg p-2.5 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+          <span class="w-9 h-9 rounded bg-secondary-50 text-secondary-700 flex items-center justify-center shrink-0 border border-secondary-200/30">
+            <lucide-icon [img]="usersIcon" [size]="15"></lucide-icon>
+          </span>
+          <div>
+            <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().totalUsers }}</span>
+            <span class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider block">Total Users</span>
           </div>
-          <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().totalUsers }}</span>
         </div>
-        <div class="bg-white rounded-lg border border-neutral-200 p-4">
-          <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-9 h-9 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="clockIcon" [size]="18"></lucide-icon>
-            </span>
-            <span class="text-sm font-medium text-neutral-500">Pending</span>
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+          <span class="w-9 h-9 rounded bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200/30">
+            <lucide-icon [img]="clockIcon" [size]="15"></lucide-icon>
+          </span>
+          <div>
+            <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().pendingUsers }}</span>
+            <span class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider block">Pending</span>
           </div>
-          <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().pendingUsers }}</span>
         </div>
-        <div class="bg-white rounded-lg border border-neutral-200 p-4">
-          <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="checkIcon" [size]="18"></lucide-icon>
-            </span>
-            <span class="text-sm font-medium text-neutral-500">Approved</span>
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+          <span class="w-9 h-9 rounded bg-primary-50 text-primary-700 flex items-center justify-center shrink-0 border border-primary-200/30">
+            <lucide-icon [img]="checkIcon" [size]="15"></lucide-icon>
+          </span>
+          <div>
+            <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().approvedUsers }}</span>
+            <span class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider block">Approved</span>
           </div>
-          <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().approvedUsers }}</span>
         </div>
-        <div class="bg-white rounded-lg border border-neutral-200 p-4">
-          <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-9 h-9 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="trendingIcon" [size]="18"></lucide-icon>
-            </span>
-            <span class="text-sm font-medium text-neutral-500">Active Today</span>
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+          <span class="w-9 h-9 rounded bg-secondary-50 text-secondary-700 flex items-center justify-center shrink-0 border border-secondary-200/30">
+            <lucide-icon [img]="trendingIcon" [size]="15"></lucide-icon>
+          </span>
+          <div>
+            <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().activeToday }}</span>
+            <span class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider block">Active Today</span>
           </div>
-          <span class="block text-2xl font-bold text-neutral-900 leading-none">{{ stats().activeToday }}</span>
         </div>
       </div>
 
-      <!-- Pending approvals queue -->
-      <div class="bg-white rounded-lg border border-neutral-200 p-5">
-        <div class="flex items-center justify-between mb-4">
+      <!-- Pending approvals queue (Layered container panel with crisp white rows inside) -->
+      <div class="pb-2">
+        <div class="flex items-center justify-between pb-2 border-b border-neutral-100 mb-3">
           <div>
-            <h3 class="text-base font-bold text-neutral-900">Pending Approvals</h3>
-            <p class="text-sm text-neutral-400 mt-0.5">Users waiting for account approval</p>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-950">Pending Approvals</h3>
+            <p class="text-xs text-neutral-400">Alumni accounts awaiting validation</p>
           </div>
           @if (getPendingUsers().length > 5) {
-            <a routerLink="/admin/alumni-hub" class="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">
+            <a routerLink="/admin/alumni-hub" class="inline-flex items-center gap-0.5 text-xs font-bold text-primary-700 hover:text-primary-950 transition-colors">
               View all ({{ getPendingUsers().length }})
-              <lucide-icon [img]="arrowRightIcon" [size]="14"></lucide-icon>
+              <lucide-icon [img]="arrowRightIcon" [size]="12"></lucide-icon>
             </a>
           }
         </div>
 
         @if (isLoadingUsers()) {
-          <div class="py-10 text-center">
-            <lucide-icon [img]="refreshIcon" [size]="20" class="animate-spin text-neutral-300 mx-auto mb-2"></lucide-icon>
-            <p class="text-sm text-neutral-400">Loading...</p>
+          <div class="py-6 text-center bg-neutral-50/30 rounded border border-neutral-100">
+            <lucide-icon [img]="refreshIcon" [size]="16" class="animate-spin text-neutral-300 mx-auto mb-1"></lucide-icon>
+            <p class="text-xs text-neutral-400">Loading directory...</p>
           </div>
         }
 
         @if (!isLoadingUsers()) {
           @if (getPendingUsers().length > 0) {
-            <div class="space-y-2.5">
+            <div class="bg-neutral-50/50 border border-neutral-100 rounded-lg p-2.5 space-y-1.5">
               @for (user of getPendingUsers().slice(0, 5); track user.id) {
-                <div class="flex items-center justify-between p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 transition-colors">
+                <div class="flex items-center justify-between p-3 bg-white border border-neutral-200/40 rounded hover:border-neutral-400/60 hover:shadow-[0_1px_3px_rgba(0,0,0,0.01)] transition-all">
                   <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center shrink-0">
-                      <span class="text-xs font-semibold text-neutral-600">
+                    <div class="w-8 h-8 rounded bg-neutral-50 flex items-center justify-center shrink-0 border border-neutral-200/40">
+                      <span class="text-xs font-bold text-neutral-600">
                         {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
                       </span>
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-neutral-900">{{ user.firstName }} {{ user.lastName }}</p>
+                      <p class="text-sm font-semibold text-neutral-900 leading-none mb-1">{{ user.firstName }} {{ user.lastName }}</p>
                       <p class="text-xs text-neutral-400">{{ user.email }} · {{ formatDate(user.createdAt) }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-1.5">
                     <button (click)="approveUser(user)" [disabled]="isProcessingUser(user.id)"
-                      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-700 disabled:opacity-50 transition-colors">
+                      class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-neutral-950 text-white rounded hover:bg-neutral-800 disabled:opacity-50 transition-colors">
                       @if (isProcessingUser(user.id)) {
-                        <lucide-icon [img]="refreshIcon" [size]="14" class="animate-spin"></lucide-icon>
+                        <lucide-icon [img]="refreshIcon" [size]="10" class="animate-spin"></lucide-icon>
                       }
                       Approve
                     </button>
                     <button (click)="rejectUser(user)" [disabled]="isProcessingUser(user.id)"
-                      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium border border-neutral-200 text-neutral-600 hover:border-red-300 hover:text-red-600 disabled:opacity-50 transition-colors">
+                      class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-600 hover:border-red-650 hover:text-red-700 disabled:opacity-50 transition-colors rounded">
                       Reject
                     </button>
                   </div>
@@ -137,62 +140,119 @@ import {
               }
             </div>
           } @else {
-            <div class="py-10 text-center">
-              <lucide-icon [img]="checkIcon" [size]="32" class="text-green-300 mx-auto mb-2"></lucide-icon>
-              <p class="text-sm font-medium text-neutral-500">No pending approvals</p>
-              <p class="text-xs text-neutral-400 mt-0.5">All caught up!</p>
+            <div class="py-8 text-center bg-neutral-50/30 rounded border border-dashed border-neutral-200/60">
+              <lucide-icon [img]="checkIcon" [size]="24" class="text-primary-700 bg-primary-50 border border-primary-200/40 p-1 rounded-full mx-auto mb-2"></lucide-icon>
+              <p class="text-sm font-bold text-neutral-800">No pending approvals</p>
+              <p class="text-xs text-neutral-400 mt-0.5">All accounts are fully verified!</p>
             </div>
           }
         }
       </div>
 
-      <!-- Quick links -->
+      <!-- Quick Actions (With real-time pending workloads and state-aware border separation) -->
       <div>
-        <h3 class="text-base font-bold text-neutral-900 mb-3">Quick Actions</h3>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <a routerLink="/admin/content" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
-            <lucide-icon [img]="newspaperIcon" [size]="20" class="text-blue-500 mb-2"></lucide-icon>
-            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">News & Events</p>
-            <p class="text-xs text-neutral-400 mt-0.5">Create articles and events</p>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-950 mb-3 pb-2 border-b border-neutral-100">Quick Actions</h3>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- News & Events Card -->
+          <a routerLink="/admin/content" class="relative group flex flex-col p-4 border rounded-lg transition-all"
+            [class.border-neutral-200/60]="pendingNewsCount() + pendingEventsCount() === 0"
+            [class.bg-neutral-50/40]="pendingNewsCount() + pendingEventsCount() === 0"
+            [class.hover:bg-neutral-100/50]="pendingNewsCount() + pendingEventsCount() === 0"
+            [class.border-amber-200]="pendingNewsCount() + pendingEventsCount() > 0"
+            [class.bg-amber-50/10]="pendingNewsCount() + pendingEventsCount() > 0"
+            [class.hover:bg-amber-50/20]="pendingNewsCount() + pendingEventsCount() > 0">
+            @if (pendingNewsCount() + pendingEventsCount() > 0) {
+              <span class="absolute top-3 right-3 px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/50 rounded flex items-center gap-1 shrink-0">
+                <span class="w-1 h-1 rounded-full bg-amber-500 animate-pulse"></span>
+                {{ pendingNewsCount() + pendingEventsCount() }} pending
+              </span>
+            }
+            <lucide-icon [img]="newspaperIcon" [size]="16" class="text-secondary-700 mb-2"></lucide-icon>
+            <p class="text-sm font-bold text-neutral-950 group-hover:text-primary-700 transition-colors">News & Events</p>
+            <p class="text-xs text-neutral-400 mt-1 leading-snug">Create articles and events</p>
           </a>
-          <a routerLink="/admin/content-review" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
-            <lucide-icon [img]="userCheckIcon" [size]="20" class="text-green-500 mb-2"></lucide-icon>
-            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">Story Review</p>
-            <p class="text-xs text-neutral-400 mt-0.5">Review alumni success stories</p>
+
+          <!-- Story Review Card -->
+          <a routerLink="/admin/content-review" class="relative group flex flex-col p-4 border rounded-lg transition-all"
+            [class.border-neutral-200/60]="pendingStoriesCount() === 0"
+            [class.bg-neutral-50/40]="pendingStoriesCount() === 0"
+            [class.hover:bg-neutral-100/50]="pendingStoriesCount() === 0"
+            [class.border-amber-200]="pendingStoriesCount() > 0"
+            [class.bg-amber-50/10]="pendingStoriesCount() > 0"
+            [class.hover:bg-amber-50/20]="pendingStoriesCount() > 0">
+            @if (pendingStoriesCount() > 0) {
+              <span class="absolute top-3 right-3 px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/50 rounded flex items-center gap-1 shrink-0">
+                <span class="w-1 h-1 rounded-full bg-amber-500 animate-pulse"></span>
+                {{ pendingStoriesCount() }} pending
+              </span>
+            }
+            <lucide-icon [img]="userCheckIcon" [size]="16" class="text-primary-700 mb-2"></lucide-icon>
+            <p class="text-sm font-bold text-neutral-950 group-hover:text-primary-700 transition-colors">Story Review</p>
+            <p class="text-xs text-neutral-400 mt-1 leading-snug">Review alumni success stories</p>
           </a>
-          <a routerLink="/admin/forums" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
-            <lucide-icon [img]="messageSquareIcon" [size]="20" class="text-purple-500 mb-2"></lucide-icon>
-            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">Forum Moderation</p>
-            <p class="text-xs text-neutral-400 mt-0.5">Manage topics and posts</p>
+
+          <!-- Forum Moderation Card -->
+          <a routerLink="/admin/forums" class="relative group flex flex-col p-4 border rounded-lg transition-all"
+            [class.border-neutral-200/60]="pendingForumFlagsCount() === 0"
+            [class.bg-neutral-50/40]="pendingForumFlagsCount() === 0"
+            [class.hover:bg-neutral-100/50]="pendingForumFlagsCount() === 0"
+            [class.border-red-200]="pendingForumFlagsCount() > 0"
+            [class.bg-red-50/10]="pendingForumFlagsCount() > 0"
+            [class.hover:bg-red-50/20]="pendingForumFlagsCount() > 0">
+            @if (pendingForumFlagsCount() > 0) {
+              <span class="absolute top-3 right-3 px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200/50 rounded flex items-center gap-1 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                {{ pendingForumFlagsCount() }} flag{{ pendingForumFlagsCount() > 1 ? 's' : '' }}
+              </span>
+            }
+            <lucide-icon [img]="messageSquareIcon" [size]="16" class="text-secondary-700 mb-2"></lucide-icon>
+            <p class="text-sm font-bold text-neutral-950 group-hover:text-primary-700 transition-colors">Forum Moderation</p>
+            <p class="text-xs text-neutral-400 mt-1 leading-snug">Manage flagged topics and posts</p>
           </a>
-          <a routerLink="/admin/alumni-hub" class="bg-white rounded-lg border border-neutral-200 p-4 hover:border-neutral-300 transition-colors group">
-            <lucide-icon [img]="uploadIcon" [size]="20" class="text-orange-500 mb-2"></lucide-icon>
-            <p class="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700">Alumni Hub</p>
-            <p class="text-xs text-neutral-400 mt-0.5">Roster imports, verifications, and directory</p>
+
+          <!-- Alumni Hub Card -->
+          <a routerLink="/admin/alumni-hub" class="relative group flex flex-col p-4 border rounded-lg transition-all"
+            [class.border-neutral-200/60]="stats().pendingUsers === 0"
+            [class.bg-neutral-50/40]="stats().pendingUsers === 0"
+            [class.hover:bg-neutral-100/50]="stats().pendingUsers === 0"
+            [class.border-amber-200]="stats().pendingUsers > 0"
+            [class.bg-amber-50/10]="stats().pendingUsers > 0"
+            [class.hover:bg-amber-50/20]="stats().pendingUsers > 0">
+            @if (stats().pendingUsers > 0) {
+              <span class="absolute top-3 right-3 px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/50 rounded flex items-center gap-1 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                {{ stats().pendingUsers }} pending
+              </span>
+            }
+            <lucide-icon [img]="uploadIcon" [size]="16" class="text-primary-700 mb-2"></lucide-icon>
+            <p class="text-sm font-bold text-neutral-950 group-hover:text-primary-700 transition-colors">Alumni Hub</p>
+            <p class="text-xs text-neutral-400 mt-1 leading-snug">Imports and roster registry</p>
           </a>
+
         </div>
       </div>
     </div>
 
     <!-- Approval modal -->
     @if (showApprovalModal()) {
-      <div class="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" (click)="closeApprovalModal()">
-        <div class="bg-white rounded-xl border border-neutral-200 max-w-sm w-full p-5" (click)="$event.stopPropagation()">
-          <div class="flex items-start gap-3 mb-4">
-            <div class="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="checkIcon" [size]="18" class="text-green-600"></lucide-icon>
+      <div class="fixed inset-0 z-[60] bg-neutral-900/40 backdrop-blur-[2px] flex items-center justify-center p-4" (click)="closeApprovalModal()">
+        <div class="bg-white rounded border border-neutral-200 max-w-sm w-full p-6 shadow-xl animate-in fade-in duration-150" (click)="$event.stopPropagation()">
+          <div class="flex items-start gap-3.5 mb-5">
+            <div class="w-9 h-9 rounded bg-primary-50 border border-primary-200/40 flex items-center justify-center shrink-0 text-primary-700">
+              <lucide-icon [img]="checkIcon" [size]="18"></lucide-icon>
             </div>
             <div>
-              <h3 class="text-base font-bold text-neutral-900">Approve User</h3>
-              <p class="text-sm text-neutral-600 mt-0.5">
-                Approve <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>?
+              <h3 class="text-base font-bold text-neutral-950">Approve Account</h3>
+              <p class="text-xs text-neutral-500 mt-1 leading-snug">
+                Approve <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong> for platform access?
               </p>
-              <p class="text-xs text-neutral-400 mt-0.5">{{ selectedUser()?.email }}</p>
+              <p class="text-[10px] font-bold text-neutral-400 mt-1">{{ selectedUser()?.email }}</p>
             </div>
           </div>
-          <div class="flex justify-end gap-2">
-            <button (click)="closeApprovalModal()" class="px-4 py-2 rounded-md text-sm border border-neutral-200 text-neutral-600 hover:border-neutral-300 transition-colors">Cancel</button>
-            <button (click)="confirmApproval()" class="px-4 py-2 rounded-md text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors">Approve</button>
+          <div class="flex justify-end gap-2 border-t border-neutral-100 pt-4">
+            <button (click)="closeApprovalModal()" class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-600 hover:border-neutral-950 hover:text-neutral-900 transition-colors">Cancel</button>
+            <button (click)="confirmApproval()" class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider bg-neutral-950 text-white hover:bg-neutral-800 transition-colors">Approve</button>
           </div>
         </div>
       </div>
@@ -200,29 +260,29 @@ import {
 
     <!-- Rejection modal -->
     @if (showRejectionModal()) {
-      <div class="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" (click)="closeRejectionModal()">
-        <div class="bg-white rounded-xl border border-neutral-200 max-w-sm w-full p-5" (click)="$event.stopPropagation()">
-          <div class="flex items-start gap-3 mb-4">
-            <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-              <lucide-icon [img]="xIcon" [size]="18" class="text-red-600"></lucide-icon>
+      <div class="fixed inset-0 z-[60] bg-neutral-900/40 backdrop-blur-[2px] flex items-center justify-center p-4" (click)="closeRejectionModal()">
+        <div class="bg-white rounded border border-neutral-200 max-w-sm w-full p-6 shadow-xl animate-in fade-in duration-150" (click)="$event.stopPropagation()">
+          <div class="flex items-start gap-3.5 mb-4">
+            <div class="w-9 h-9 rounded bg-red-50 border border-red-200/40 flex items-center justify-center shrink-0 text-red-600">
+              <lucide-icon [img]="xIcon" [size]="18"></lucide-icon>
             </div>
             <div>
-              <h3 class="text-base font-bold text-neutral-900">Reject User</h3>
-              <p class="text-sm text-neutral-600 mt-0.5">
-                Reject <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>?
+              <h3 class="text-base font-bold text-neutral-950">Reject Account</h3>
+              <p class="text-xs text-neutral-500 mt-1 leading-snug">
+                Reject <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>'s registration?
               </p>
-              <p class="text-xs text-neutral-400 mt-0.5">{{ selectedUser()?.email }}</p>
+              <p class="text-[10px] font-bold text-neutral-400 mt-1">{{ selectedUser()?.email }}</p>
             </div>
           </div>
-          <div class="mb-3">
-            <label class="block text-xs font-medium text-neutral-600 mb-1">Reason (optional)</label>
+          <div class="mb-5">
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">Reason for Rejection</label>
             <textarea [(ngModel)]="rejectionReason" rows="3"
-              class="w-full text-sm border border-neutral-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-300 resize-none"
-              placeholder="Provide a reason for rejection..."></textarea>
+              class="w-full text-sm border border-neutral-200 rounded px-3 py-2 focus:border-red-500 outline-none transition-colors resize-none"
+              placeholder="e.g. Profile details do not match official registry roster..."></textarea>
           </div>
-          <div class="flex justify-end gap-2">
-            <button (click)="closeRejectionModal()" class="px-4 py-2 rounded-md text-sm border border-neutral-200 text-neutral-600 hover:border-neutral-300 transition-colors">Cancel</button>
-            <button (click)="confirmRejection()" class="px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors">Reject</button>
+          <div class="flex justify-end gap-2 border-t border-neutral-100 pt-4">
+            <button (click)="closeRejectionModal()" class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-600 hover:border-neutral-950 hover:text-neutral-900 transition-colors">Cancel</button>
+            <button (click)="confirmRejection()" class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider bg-red-650 hover:bg-red-750 text-white rounded transition-colors">Reject Account</button>
           </div>
         </div>
       </div>
@@ -235,6 +295,12 @@ export class AdminDashboardComponent implements OnInit {
   private authStore = inject(UserAuthStore);
   private notificationService = inject(NotificationService);
   private http = inject(HttpClient);
+  private router = inject(Router);
+  
+  // Injected services to count pending workload
+  private newsService = inject(NewsService);
+  private eventsService = inject(EventsService);
+  private forumService = inject(ForumService);
 
   readonly usersIcon = Users;
   readonly clockIcon = Clock;
@@ -266,6 +332,12 @@ export class AdminDashboardComponent implements OnInit {
   rejectionReason = '';
   isLoadingUsers = signal(false);
 
+  // signals for pending workloads per module card
+  pendingNewsCount = signal(0);
+  pendingEventsCount = signal(0);
+  pendingStoriesCount = signal(0);
+  pendingForumFlagsCount = signal(0);
+
   ngOnInit() {
     // Get current user from auth store
     this.authStore.state$.subscribe((authState: any) => {
@@ -288,6 +360,7 @@ export class AdminDashboardComponent implements OnInit {
     this.isLoading.set(true);
     this.loadAdminStats();
     this.loadAllUsers();
+    this.loadPendingCounts();
   }
 
   private loadAdminStats() {
@@ -322,6 +395,47 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  private loadPendingCounts() {
+    // 1. Fetch pending success stories and news articles
+    this.newsService.getPendingArticles(1, 100).subscribe({
+      next: (result) => {
+        const stories = result.items.filter((a: any) =>
+          a.category?.name?.toLowerCase().includes('success') ||
+          a.category?.slug?.toLowerCase().includes('success')
+        );
+        const news = result.items.filter((a: any) =>
+          !a.category?.name?.toLowerCase().includes('success') &&
+          !a.category?.slug?.toLowerCase().includes('success')
+        );
+        this.pendingStoriesCount.set(stories.length);
+        this.pendingNewsCount.set(news.length);
+      },
+      error: (error) => {
+        console.error('Error loading pending articles for stats:', error);
+      }
+    });
+
+    // 2. Fetch pending events
+    this.eventsService.getPendingEvents(1, 100).subscribe({
+      next: (result) => {
+        this.pendingEventsCount.set(result.items.length);
+      },
+      error: (error) => {
+        console.error('Error loading pending events for stats:', error);
+      }
+    });
+
+    // 3. Fetch pending forum moderation flags
+    this.forumService.getFlags('Pending', 1, 100).subscribe({
+      next: (result) => {
+        this.pendingForumFlagsCount.set(result.items.length);
+      },
+      error: (error) => {
+        console.error('Error loading pending forum flags for stats:', error);
+      }
+    });
+  }
+
   getPendingUsers() {
     return this.allUsers().filter(user => user.status === 'Pending');
   }
@@ -345,6 +459,7 @@ export class AdminDashboardComponent implements OnInit {
         this.notificationService.showSuccess('User Approved', 'User has been approved successfully');
         this.loadAdminStats();
         this.loadAllUsers();
+        this.loadPendingCounts();
       } else {
         this.notificationService.showError('Approval Failed', (response as any)?.message || 'Failed to approve user');
       }
@@ -378,6 +493,7 @@ export class AdminDashboardComponent implements OnInit {
         this.notificationService.showSuccess('User Rejected', 'User has been rejected successfully');
         this.loadAdminStats();
         this.loadAllUsers();
+        this.loadPendingCounts();
       } else {
         this.notificationService.showError('Rejection Failed', (response as any)?.message || 'Failed to reject user');
       }
@@ -422,11 +538,11 @@ export class AdminDashboardComponent implements OnInit {
   logout() {
     this.authService.logout().subscribe({
       next: () => {
-        this.notificationService.showSuccess('Logged out successfully', 'You have been logged out');
+        this.router.navigate(['/login']);
       },
       error: (error: any) => {
         console.error('Logout error:', error);
-        this.notificationService.showError('Logout failed', 'An error occurred during logout');
+        this.router.navigate(['/login']);
       }
     });
   }

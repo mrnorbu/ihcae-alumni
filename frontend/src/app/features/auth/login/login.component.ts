@@ -12,96 +12,94 @@ import { HeaderComponent } from '../../../shared/components';
   standalone: true,
   imports: [ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent],
   template: `
-    <div class="h-screen bg-neutral-50 flex flex-col overflow-hidden">
+    <div class="h-screen bg-white flex flex-col overflow-hidden">
       <app-header></app-header>
 
       <div class="flex-1 flex pt-16 overflow-hidden">
-        <!-- Left Side - Flat Brand Panel -->
-        <div class="hidden lg:flex lg:w-2/5 bg-slate-900 relative">
-          <div class="flex flex-col justify-between p-10 text-white w-full h-full">
+        <!-- Left Side - Flat Premium Brand Panel -->
+        <div class="hidden lg:flex lg:w-2/5 bg-primary-950 relative overflow-hidden">
+          <!-- Subtle decorative radial background overlay for depth -->
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(26,107,184,0.15)_0%,transparent_70%)]"></div>
+          
+          <div class="relative z-10 flex flex-col justify-between p-12 text-white w-full h-full">
             <div>
-              <div class="flex items-center gap-3 mb-10">
-                <div class="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center">
-                  <img src="images/logo.png" alt="IHCAE" class="w-6 h-6 object-contain brightness-200">
-                </div>
-                <div>
-                  <h1 class="text-lg font-bold">IHCAE Alumni</h1>
-                  <p class="text-xs text-slate-400">Sikkim, India</p>
-                </div>
-              </div>
-              <h2 class="text-2xl font-bold mb-3 leading-tight">
-                Welcome Back to<br/>Your Adventure Community
+              <!-- Tagline -->
+              <h2 class="text-3xl font-bold mb-4 leading-tight">
+                Welcome Back to Your<br/>Adventure Community
               </h2>
-              <p class="text-sm text-slate-300 leading-relaxed max-w-sm">
+              <p class="text-sm text-primary-200/90 leading-relaxed max-w-sm font-normal">
                 Connect with fellow mountaineers, eco-tourism professionals, and conservation champions from across the Himalayas.
               </p>
             </div>
 
-            <div class="space-y-3">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="mountainIcon" [size]="16" class="text-green-400"></lucide-icon>
+            <!-- Sleek Minimalist Feature Grid (Cardless) -->
+            <div class="space-y-4">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="mountainIcon" [size]="18" class="text-primary-300"></lucide-icon>
                 </div>
                 <div>
-                  <p class="text-sm font-medium">Himalayan Expeditions</p>
-                  <p class="text-xs text-slate-400">Connect with expert guides</p>
+                  <p class="text-sm font-semibold">Himalayan Expeditions</p>
+                  <p class="text-xs text-primary-300/80">Connect with expert alpine guides</p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="usersIcon" [size]="16" class="text-blue-400"></lucide-icon>
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="usersIcon" [size]="18" class="text-secondary-300"></lucide-icon>
                 </div>
                 <div>
-                  <p class="text-sm font-medium">Alumni Network</p>
-                  <p class="text-xs text-slate-400">500+ members worldwide</p>
+                  <p class="text-sm font-semibold">Alumni Network</p>
+                  <p class="text-xs text-primary-300/80">500+ verified members worldwide</p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="heartIcon" [size]="16" class="text-red-400"></lucide-icon>
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="heartIcon" [size]="18" class="text-red-300"></lucide-icon>
                 </div>
                 <div>
-                  <p class="text-sm font-medium">Conservation Impact</p>
-                  <p class="text-xs text-slate-400">Protecting our mountains</p>
+                  <p class="text-sm font-semibold">Conservation Impact</p>
+                  <p class="text-xs text-primary-300/80">Protecting and restoring fragile peaks</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Right Side - Login Form -->
-        <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto bg-neutral-50">
+        <!-- Right Side - Flat Login Form -->
+        <div class="flex-1 flex items-center justify-center px-6 sm:px-8 lg:px-12 py-8 overflow-y-auto bg-white">
           <div class="w-full max-w-sm">
             <!-- Mobile Logo -->
-            <div class="lg:hidden text-center mb-8">
-              <div class="w-12 h-12 rounded-lg bg-green-600 flex items-center justify-center mx-auto mb-3">
-                <img src="images/logo.png" alt="IHCAE" class="w-7 h-7 object-contain brightness-200">
+            <div class="lg:hidden text-center mb-10">
+              <div class="w-14 h-14 rounded-2xl bg-primary-950 border border-primary-900 flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <img src="images/logo.png" alt="IHCAE" class="w-8 h-8 object-contain brightness-200">
               </div>
-              <h1 class="text-xl font-bold text-neutral-900">IHCAE Alumni</h1>
+              <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">IHCAE Alumni</h1>
+              <p class="text-xs text-neutral-500 font-medium">Sikkim, India</p>
             </div>
 
-            <!-- Form -->
-            <div class="bg-white border border-neutral-200 rounded-xl p-6 sm:p-8">
-              <div class="mb-5">
-                <h2 class="text-xl font-bold text-neutral-900 mb-1">Sign In</h2>
-                <p class="text-xs text-neutral-500">Welcome back! Enter your credentials.</p>
+            <!-- Form Container (Completely Flat & Minimalist) -->
+            <div class="py-2">
+              <div class="mb-8">
+                <h2 class="text-3xl font-bold text-neutral-900 mb-2">Sign In</h2>
+                <p class="text-sm text-neutral-500 font-normal">Welcome back! Please enter your credentials.</p>
               </div>
 
-              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
                 <div>
-                  <label for="email" class="block text-xs font-medium text-neutral-700 mb-1.5">
-                    <span class="inline-flex items-center gap-1">
+                  <label for="email" class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-2">
+                    <span class="inline-flex items-center gap-1.5">
                       <lucide-icon [img]="mailIcon" [size]="12" class="text-neutral-400"></lucide-icon>
                       Email Address
                     </span>
                   </label>
                   <input id="email" type="email" formControlName="email"
-                    class="w-full px-3 py-2.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:bg-white transition-colors"
+                    class="w-full px-4 py-3 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
                     [class.border-red-300]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-                    [class.ring-red-200]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                    [class.ring-red-100]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
                     placeholder="Enter your email" />
                   @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-                    <p class="mt-1 text-xs text-red-500">
+                    <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1">
+                      <span>•</span>
                       @if (loginForm.get('email')?.errors?.['required']) { Email is required }
                       @if (loginForm.get('email')?.errors?.['email']) { Please enter a valid email }
                     </p>
@@ -109,29 +107,31 @@ import { HeaderComponent } from '../../../shared/components';
                 </div>
 
                 <div>
-                  <label for="password" class="block text-xs font-medium text-neutral-700 mb-1.5">
-                    <span class="inline-flex items-center gap-1">
-                      <lucide-icon [img]="lockIcon" [size]="12" class="text-neutral-400"></lucide-icon>
-                      Password
-                    </span>
-                  </label>
+                  <div class="flex items-center justify-between mb-2">
+                    <label for="password" class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                      <span class="inline-flex items-center gap-1.5">
+                        <lucide-icon [img]="lockIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                        Password
+                      </span>
+                    </label>
+                    <a routerLink="/forgot-password" class="text-xs font-bold text-primary-600 hover:text-primary-700 hover:underline transition-colors">
+                      Forgot password?
+                    </a>
+                  </div>
                   <input id="password" type="password" formControlName="password"
-                    class="w-full px-3 py-2.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:bg-white transition-colors"
+                    class="w-full px-4 py-3 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
                     [class.border-red-300]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                    [class.ring-red-100]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
                     placeholder="Enter your password" />
                   @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-                    <p class="mt-1 text-xs text-red-500">Password is required</p>
+                    <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1">
+                      <span>•</span> Password is required
+                    </p>
                   }
                 </div>
 
-                <div class="flex items-center justify-end">
-                  <a routerLink="/forgot-password" class="text-xs font-medium text-neutral-600 hover:text-neutral-900 transition-colors">
-                    Forgot password?
-                  </a>
-                </div>
-
                 <button type="submit" [disabled]="loginForm.invalid || isLoading"
-                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-40 transition-colors">
+                  class="w-full flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-40 shadow-sm hover:shadow-md transition-all duration-200 mt-6 cursor-pointer">
                   @if (isLoading) {
                     <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
                   }
@@ -143,27 +143,28 @@ import { HeaderComponent } from '../../../shared/components';
               </form>
             </div>
 
-            <div class="mt-5 text-center">
-              <p class="text-xs text-neutral-500">
+            <!-- Footer links -->
+            <div class="mt-8 text-center border-t border-neutral-100 pt-6">
+              <p class="text-sm text-neutral-500">
                 Don't have an account?
-                <a routerLink="/register" class="font-semibold text-neutral-900 hover:underline">Create account</a>
+                <a routerLink="/register" class="font-bold text-primary-600 hover:text-primary-700 hover:underline">Create account</a>
               </p>
             </div>
 
-            <div class="mt-3 text-center">
-              <a routerLink="/" class="text-xs text-neutral-400 hover:text-neutral-600 transition-colors">
+            <div class="mt-4 text-center">
+              <a routerLink="/" class="text-xs font-semibold text-neutral-400 hover:text-neutral-600 transition-colors">
                 Back to home
               </a>
             </div>
 
-            <p class="mt-6 text-center text-[10px] text-neutral-400">
+            <p class="mt-10 text-center text-[11px] text-neutral-400 font-medium tracking-wide">
               © 2026 IHCAE Sikkim. All rights reserved.
             </p>
           </div>
         </div>
       </div>
     </div>
-    `,
+  `,
   styles: []
 })
 export class LoginComponent {

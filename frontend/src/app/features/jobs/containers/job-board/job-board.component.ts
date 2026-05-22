@@ -20,36 +20,36 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
   standalone: true,
   imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
   template: `
-    <div class="min-h-screen bg-neutral-50">
+    <div class="min-h-screen bg-white page-fade-in">
       <app-header></app-header>
     
       <!-- Main Content -->
-      <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pt-24">
         <!-- Page Header -->
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-neutral-900 mb-2">Career Opportunities</h1>
-          <p class="text-neutral-600">Discover exciting job opportunities from IHCAE alumni and partners</p>
+        <div class="mb-6 pb-4 border-b border-neutral-200/60">
+          <h1 class="text-2xl font-bold text-neutral-900 mb-1 tracking-tight">Career Opportunities</h1>
+          <p class="text-sm text-neutral-500">Discover exciting job opportunities from IHCAE alumni and partners</p>
         </div>
     
-        <!-- Search and Filters Card -->
-        <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <!-- Search and Filters -->
+        <div class="border-b border-neutral-200/60 pb-5 mb-6">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Search Input -->
             <div class="md:col-span-2">
-              <label class="input-label flex items-center gap-2">
-                <lucide-icon [img]="searchIcon" [size]="16"></lucide-icon>
+              <label class="block text-xs font-semibold text-neutral-600 mb-1">
                 Search Jobs
               </label>
               <div class="relative">
                 <input
-                  [(ngModel)]="filters().search"
+                  [ngModel]="filters().search"
+                  (ngModelChange)="updateSearch($event)"
                   type="text"
-                  class="input-field pl-10"
+                  class="input-field pl-12"
                   placeholder="Search by title, company, or keywords..."
                   />
                 <lucide-icon
                   [img]="searchIcon"
-                  [size]="18"
+                  [size]="16"
                   class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
                 ></lucide-icon>
               </div>
@@ -57,11 +57,10 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
     
             <!-- Location Filter -->
             <div>
-              <label class="input-label flex items-center gap-2">
-                <lucide-icon [img]="mapPinIcon" [size]="14"></lucide-icon>
+              <label class="block text-xs font-semibold text-neutral-600 mb-1">
                 Location
               </label>
-              <select [(ngModel)]="filters().location" class="input-field">
+              <select [ngModel]="filters().location" (ngModelChange)="updateLocation($event)" class="input-field">
                 <option value="">All Locations</option>
                 <option value="remote">Remote</option>
                 <option value="delhi">Delhi</option>
@@ -74,11 +73,10 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
     
             <!-- Job Type Filter -->
             <div>
-              <label class="input-label flex items-center gap-2">
-                <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
+              <label class="block text-xs font-semibold text-neutral-600 mb-1">
                 Job Type
               </label>
-              <select [(ngModel)]="filters().jobType" class="input-field">
+              <select [ngModel]="filters().jobType" (ngModelChange)="updateJobType($event)" class="input-field">
                 <option value="">All Types</option>
                 <option value="full-time">Full Time</option>
                 <option value="part-time">Part Time</option>
@@ -93,7 +91,7 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
           @if (hasActiveFilters()) {
             <div class="mt-4 pt-4 border-t border-neutral-200">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-sm text-neutral-600">Active filters:</span>
+                <span class="text-xs text-neutral-500">Active filters:</span>
                 @if (filters().search) {
                   <span class="badge badge-primary">Search: "{{ filters().search }}"</span>
                 }
@@ -112,66 +110,63 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
         </div>
     
         <!-- Job Listings -->
-        <div class="space-y-4 mb-8">
+        <div class="mb-8">
           @for (job of getFilteredJobs(); track job) {
-            <div class="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-              <div class="flex items-start justify-between">
-                <div class="flex-1">
+            <div class="py-4 border-b border-neutral-200/60 hover:bg-neutral-50/30 px-2 rounded-lg transition-colors group">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div class="flex-1 min-w-0" [routerLink]="['/jobs', job.id]" class="cursor-pointer">
                   <!-- Job Title and Company -->
-                  <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-lg font-semibold text-neutral-900">{{ job.title }}</h3>
-                    <span class="badge badge-success">{{ job.type }}</span>
+                  <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <h3 class="text-lg font-bold text-neutral-900 group-hover:text-primary-700 transition-colors leading-snug">{{ job.title }}</h3>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">{{ job.type }}</span>
                   </div>
-                  <div class="flex items-center gap-4 text-sm text-neutral-600 mb-3">
-                    <div class="flex items-center gap-1">
-                      <lucide-icon [img]="buildingIcon" [size]="14"></lucide-icon>
-                      {{ job.company }}
+                  <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 mb-2.5">
+                    <div class="flex items-center gap-1.5">
+                      <lucide-icon [img]="buildingIcon" [size]="13" class="text-neutral-400"></lucide-icon>
+                      <span>{{ job.company }}</span>
                     </div>
-                    <div class="flex items-center gap-1">
-                      <lucide-icon [img]="mapPinIcon" [size]="14"></lucide-icon>
-                      {{ job.location }}
+                    <div class="flex items-center gap-1.5">
+                      <lucide-icon [img]="mapPinIcon" [size]="13" class="text-neutral-400"></lucide-icon>
+                      <span>{{ job.location }}</span>
                     </div>
-                    <div class="flex items-center gap-1">
-                      <lucide-icon [img]="dollarSignIcon" [size]="14"></lucide-icon>
-                      {{ job.salary }}
+                    <div class="flex items-center gap-1.5">
+                      <lucide-icon [img]="dollarSignIcon" [size]="13" class="text-neutral-400"></lucide-icon>
+                      <span>{{ job.salary }}</span>
                     </div>
-                    <div class="flex items-center gap-1">
-                      <lucide-icon [img]="clockIcon" [size]="14"></lucide-icon>
-                      {{ job.postedDate }}
+                    <div class="flex items-center gap-1.5">
+                      <lucide-icon [img]="clockIcon" [size]="13" class="text-neutral-400"></lucide-icon>
+                      <span>{{ job.postedDate }}</span>
                     </div>
                   </div>
                   <!-- Job Description -->
-                  <p class="text-neutral-700 mb-4 line-clamp-2">{{ job.description }}</p>
+                  <p class="text-sm text-neutral-600 mb-3 leading-relaxed line-clamp-2">{{ job.description }}</p>
                   <!-- Skills/Tags -->
-                  <div class="flex items-center gap-2 flex-wrap">
+                  <div class="flex items-center gap-1.5 flex-wrap">
                     @for (skill of job.skills; track skill) {
-                      <span class="badge badge-outline text-xs">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded bg-neutral-100 text-xs text-neutral-600">
                         {{ skill }}
                       </span>
                     }
                   </div>
                 </div>
                 <!-- Action Buttons -->
-                <div class="flex flex-col gap-2 ml-4">
+                <div class="flex items-center gap-2 md:self-center flex-shrink-0">
                   <!-- For authenticated users -->
                   @if (authState.isAuthenticated) {
-                    <button class="btn-primary btn-sm">
-                      Apply Now
-                    </button>
-                    <button class="btn-outline btn-sm">
-                      View Details
+                    <button class="btn-primary btn-sm whitespace-nowrap">
+                      Apply
                     </button>
                   }
                   <!-- For public users -->
                   @if (!authState.isAuthenticated) {
-                    <button routerLink="/login" class="btn-primary btn-sm">
-                      <lucide-icon [img]="loginIcon" [size]="14"></lucide-icon>
+                    <button routerLink="/login" class="btn-primary btn-sm whitespace-nowrap inline-flex items-center gap-1">
+                      <lucide-icon [img]="loginIcon" [size]="12"></lucide-icon>
                       Sign In to Apply
                     </button>
-                    <button class="btn-outline btn-sm">
-                      View Details
-                    </button>
                   }
+                  <button class="btn-outline btn-sm whitespace-nowrap" [routerLink]="['/jobs', job.id]">
+                    Details
+                  </button>
                 </div>
               </div>
             </div>
@@ -180,34 +175,34 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
     
         <!-- Empty State -->
         @if (getFilteredJobs().length === 0) {
-          <div class="bg-white rounded-lg shadow p-8 sm:p-12 text-center">
-            <lucide-icon [img]="briefcaseIcon" [size]="48" class="text-neutral-300 mx-auto mb-4"></lucide-icon>
-            <h3 class="text-lg font-semibold text-neutral-900 mb-2">No jobs found</h3>
-            <p class="text-neutral-600 mb-6 max-w-md mx-auto">
+          <div class="py-12 text-center">
+            <lucide-icon [img]="briefcaseIcon" [size]="36" class="text-neutral-300 mx-auto mb-3"></lucide-icon>
+            <h3 class="text-base font-bold text-neutral-900 mb-1">No jobs found</h3>
+            <p class="text-xs text-neutral-500 mb-4 max-w-xs mx-auto">
               Try adjusting your search criteria or check back later for new opportunities.
             </p>
-            <button (click)="clearFilters()" class="btn-primary">Clear All Filters</button>
+            <button (click)="clearFilters()" class="btn-outline btn-sm">Clear All Filters</button>
           </div>
         }
     
         <!-- Post Job CTA -->
-        <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg shadow p-6 text-white">
-          <div class="flex items-center justify-between">
+        <div class="bg-primary-950 p-6 rounded-lg text-white">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 class="text-lg font-semibold mb-2">Have a job opportunity?</h3>
-              <p class="text-primary-100">Share career opportunities with the IHCAE alumni community</p>
+              <h3 class="text-base font-bold mb-0.5">Have a job opportunity?</h3>
+              <p class="text-xs text-primary-200">Share career opportunities with the IHCAE alumni community</p>
             </div>
             <!-- Show different CTAs based on auth status -->
             @if (authState.isAuthenticated) {
-              <button class="btn-white">
-                <lucide-icon [img]="plusIcon" [size]="18"></lucide-icon>
+              <button class="btn-primary bg-white hover:bg-neutral-100 text-primary-950 font-medium btn-sm whitespace-nowrap inline-flex items-center gap-1.5">
+                <lucide-icon [img]="plusIcon" [size]="14"></lucide-icon>
                 Post a Job
               </button>
             }
             @if (!authState.isAuthenticated) {
-              <button routerLink="/login" class="btn-white">
-                <lucide-icon [img]="loginIcon" [size]="18"></lucide-icon>
-                Sign In to Post Jobs
+              <button routerLink="/login" class="btn-primary bg-white hover:bg-neutral-100 text-primary-950 font-medium btn-sm whitespace-nowrap inline-flex items-center gap-1.5">
+                <lucide-icon [img]="loginIcon" [size]="14"></lucide-icon>
+                Sign In to Post
               </button>
             }
           </div>
@@ -216,7 +211,7 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
     
       <app-footer></app-footer>
     </div>
-    `,
+  `,
   styles: []
 })
 export class JobBoardComponent implements OnInit {
@@ -248,6 +243,18 @@ export class JobBoardComponent implements OnInit {
     location: '',
     jobType: ''
   });
+
+  updateSearch(term: string) {
+    this.filters.update(f => ({ ...f, search: term }));
+  }
+
+  updateLocation(loc: string) {
+    this.filters.update(f => ({ ...f, location: loc }));
+  }
+
+  updateJobType(type: string) {
+    this.filters.update(f => ({ ...f, jobType: type }));
+  }
 
   // Dummy job data
   jobs = signal([
