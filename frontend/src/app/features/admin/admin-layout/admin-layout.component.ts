@@ -32,10 +32,8 @@ import {
   template: `
     <div class="flex min-h-screen bg-neutral-50">
 
-      <!-- Sidebar -->
-      <aside class="fixed inset-y-0 left-0 z-50 w-56 bg-white border-r border-neutral-200 flex flex-col transition-transform duration-200"
-        [class.translate-x-0]="sidebarOpen()"
-        [class.-translate-x-full]="!sidebarOpen()">
+      <!-- Desktop Sidebar -->
+      <aside class="hidden lg:flex fixed inset-y-0 left-0 z-50 w-56 bg-white border-r border-neutral-200 flex-col">
 
         <!-- Brand -->
         <div class="flex items-center gap-2.5 px-4 h-14 border-b border-neutral-200 shrink-0">
@@ -68,12 +66,7 @@ import {
                 <a routerLink="/admin/users" [queryParams]="{tab: 'all'}" routerLinkActive="bg-primary-50 text-primary-700 font-semibold"
                   class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
                   <lucide-icon [img]="usersIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
-                  User Management
-                </a>
-                <a routerLink="/admin/users" [queryParams]="{tab: 'directory'}" routerLinkActive="bg-primary-50 text-primary-700 font-semibold"
-                  class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
-                  <lucide-icon [img]="databaseIcon" [size]="16" [strokeWidth]="2"></lucide-icon>
-                  Alumni Directory
+                  Alumni & User Management
                 </a>
               </div>
             </div>
@@ -135,20 +128,33 @@ import {
         </div>
       </aside>
 
-      <!-- Mobile overlay -->
-      @if (sidebarOpen()) {
-        <div class="fixed inset-0 z-40 bg-black/30 lg:hidden" (click)="toggleSidebar()"></div>
-      }
+      <!-- Main Layout Container -->
+      <div class="flex-1 lg:ml-56 flex flex-col min-h-screen pb-16 lg:pb-0">
 
-      <!-- Main -->
-      <div class="flex-1 lg:ml-56 flex flex-col min-h-screen">
-
-        <!-- Top bar (only visible on mobile viewports to provide the sidebar toggle button) -->
-        <header class="sticky top-0 z-10 bg-white border-b border-neutral-200 lg:hidden">
-          <div class="flex items-center h-14 px-4 sm:px-6">
-            <button (click)="toggleSidebar()"
-              class="p-1.5 rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 lg:hidden transition-colors mr-3">
-              <lucide-icon [img]="sidebarOpen() ? xIcon : menuIcon" [size]="18"></lucide-icon>
+        <!-- Mobile Header Bar (hidden on desktop) -->
+        <header class="sticky top-0 z-40 bg-white border-b border-neutral-200 lg:hidden px-4 h-14 shrink-0 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <img src="images/logo.png" alt="IHCAE" class="w-8 h-8 object-contain shrink-0">
+            <div class="leading-tight">
+              <strong class="block text-sm font-bold tracking-wide text-neutral-900">IHCAE Console</strong>
+              <small class="text-[10px] text-neutral-400 block -mt-0.5">{{ isAdmin() ? 'Alumni Admin' : 'Content Creator' }}</small>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-1.5">
+              <div class="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center shrink-0 border border-neutral-200">
+                <span class="text-[10px] font-semibold text-neutral-600">
+                  {{ user()?.firstName?.charAt(0) }}{{ user()?.lastName?.charAt(0) }}
+                </span>
+              </div>
+              <span class="text-xs font-medium text-neutral-700 max-w-[80px] truncate hidden sm:inline-block">
+                {{ user()?.firstName }}
+              </span>
+            </div>
+            <button (click)="logout()" title="Logout"
+              class="p-1.5 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0">
+              <lucide-icon [img]="logoutIcon" [size]="16"></lucide-icon>
             </button>
           </div>
         </header>
@@ -158,6 +164,57 @@ import {
           <router-outlet></router-outlet>
         </main>
       </div>
+
+      <!-- Mobile Bottom Navigation Bar (hidden on desktop) -->
+      <nav class="fixed bottom-0 left-0 right-0 z-50 h-16 bg-white border-t border-neutral-200 flex items-center justify-around lg:hidden px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        
+        <!-- Dashboard Link -->
+        @if (isAdmin()) {
+          <a routerLink="/admin" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="text-primary-600 font-semibold"
+            class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+            <lucide-icon [img]="dashboardIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+            <span class="text-[10px] tracking-tight">Dashboard</span>
+          </a>
+        }
+
+        <!-- Alumni/User Management Link -->
+        @if (isAdmin()) {
+          <a routerLink="/admin/users" [queryParams]="{tab: 'all'}" routerLinkActive="text-primary-600 font-semibold"
+            class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+            <lucide-icon [img]="usersIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+            <span class="text-[10px] tracking-tight text-center truncate w-full max-w-[70px]">Users</span>
+          </a>
+        }
+
+        <!-- News & Events Link -->
+        <a routerLink="/admin/content" routerLinkActive="text-primary-600 font-semibold"
+          class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          <lucide-icon [img]="newspaperIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+          <span class="text-[10px] tracking-tight">News</span>
+        </a>
+
+        <!-- Content Review Link -->
+        <a routerLink="/admin/content-review" routerLinkActive="text-primary-600 font-semibold"
+          class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          <lucide-icon [img]="bookOpenIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+          <span class="text-[10px] tracking-tight">Review</span>
+        </a>
+
+        <!-- Forum Moderation Link -->
+        @if (isAdmin()) {
+          <a routerLink="/admin/forums" routerLinkActive="text-primary-600 font-semibold"
+            class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors relative">
+            <lucide-icon [img]="messageSquareIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+            <span class="text-[10px] tracking-tight">Forums</span>
+            @if (pendingFlagsCount() > 0) {
+              <span class="absolute top-1 right-[20%] flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white ring-2 ring-white">
+                {{ pendingFlagsCount() }}
+              </span>
+            }
+          </a>
+        }
+      </nav>
+
     </div>
   `,
   styles: []

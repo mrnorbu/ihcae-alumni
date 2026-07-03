@@ -62,30 +62,12 @@ interface ResetPasswordResponse {
                   <p class="text-xs text-primary-300/80">Length requirement</p>
                 </div>
               </div>
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
-                  <lucide-icon [img]="checkIcon" [size]="18" class="text-secondary-300"></lucide-icon>
-                </div>
-                <div>
-                  <p class="text-sm font-semibold">Mix of letters & numbers</p>
-                  <p class="text-xs text-primary-300/80">Complexity requirement</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
-                  <lucide-icon [img]="keyIcon" [size]="18" class="text-red-300"></lucide-icon>
-                </div>
-                <div>
-                  <p class="text-sm font-semibold">Not easily guessable</p>
-                  <p class="text-xs text-primary-300/80">Security requirement</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
         <!-- Right Side - Flat Form -->
-        <div class="flex-1 flex items-center justify-center px-6 sm:px-8 lg:px-12 py-8 overflow-y-auto bg-white">
+        <div class="flex-1 flex items-start justify-center px-6 sm:px-8 lg:px-12 py-12 lg:py-8 overflow-y-auto bg-white lg:items-center">
           <div class="w-full max-w-sm">
             <!-- Mobile Logo -->
             <div class="lg:hidden text-center mb-10">
@@ -228,7 +210,6 @@ interface ResetPasswordResponse {
                       <p class="mt-1.5 text-xs text-red-500 font-medium flex flex-col gap-1">
                         @if (resetPasswordForm.get('password')?.errors?.['required']) { <span>• Password is required</span> }
                         @if (resetPasswordForm.get('password')?.errors?.['minlength']) { <span>• Password must be at least 8 characters</span> }
-                        @if (resetPasswordForm.get('password')?.errors?.['pattern']) { <span>• Must contain uppercase, lowercase, number, and special character</span> }
                       </p>
                     }
                   </div>
@@ -319,8 +300,7 @@ export class ResetPasswordComponent implements OnInit {
     this.resetPasswordForm = this.fb.group({
       password: ['', [
         Validators.required, 
-        Validators.minLength(8),
-        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/)
+        Validators.minLength(8)
       ]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });

@@ -20,18 +20,18 @@ public class EmailVerificationService : IEmailVerificationService
     private readonly AppDbContext _context;
     private readonly IEmailService _emailService;
     private readonly ILogger<EmailVerificationService> _logger;
-    private readonly IConfiguration _configuration;
+    private readonly IUrlHelperService _urlHelperService;
 
     public EmailVerificationService(
         AppDbContext context,
         IEmailService emailService,
         ILogger<EmailVerificationService> logger,
-        IConfiguration configuration)
+        IUrlHelperService urlHelperService)
     {
         _context = context;
         _emailService = emailService;
         _logger = logger;
-        _configuration = configuration;
+        _urlHelperService = urlHelperService;
     }
 
     /// <summary>
@@ -196,7 +196,7 @@ public class EmailVerificationService : IEmailVerificationService
     /// <returns>The complete verification URL</returns>
     private string GenerateVerificationUrl(string token)
     {
-        var baseUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+        var baseUrl = _urlHelperService.GetFrontendUrl();
         return $"{baseUrl}/verify-email?token={Uri.EscapeDataString(token)}";
     }
 }

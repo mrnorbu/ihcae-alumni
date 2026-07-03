@@ -25,7 +25,10 @@ public class RegistrationTests : IntegrationTestBase
             FirstName = "Test",
             LastName = "User",
             Email = "testuser@example.com",
-            Password = "Password123!"
+            Password = "Password123!",
+            Phone = "1234567890",
+            Course = "Advanced Mountaineering",
+            Batch = "2024"
         };
 
         // Act
@@ -78,7 +81,10 @@ public class RegistrationTests : IntegrationTestBase
             FirstName = "Another",
             LastName = "User",
             Email = "duplicate@example.com",
-            Password = "Password123!"
+            Password = "Password123!",
+            Phone = "1234567890",
+            Course = "Advanced Mountaineering",
+            Batch = "2024"
         };
 
         // Act

@@ -20,22 +20,19 @@ public class ForumService : IForumService
     private readonly ITagService _tagService;
     private readonly IUrlHelperService _urlHelperService;
     private readonly IEmailService _emailService;
-    private readonly IConfiguration _configuration;
 
     public ForumService(
         AppDbContext context, 
         ILogger<ForumService> logger, 
         ITagService tagService, 
         IUrlHelperService urlHelperService,
-        IEmailService emailService,
-        IConfiguration configuration)
+        IEmailService emailService)
     {
         _context = context;
         _logger = logger;
         _tagService = tagService;
         _urlHelperService = urlHelperService;
         _emailService = emailService;
-        _configuration = configuration;
     }
 
     /// <summary>
@@ -374,7 +371,7 @@ public class ForumService : IForumService
         // Send notifications for new reply
         if (createdPost != null)
         {
-            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+            var frontendUrl = _urlHelperService.GetFrontendUrl();
             var postLink = $"{frontendUrl}/forums/topic/{topicId}";
             var authorName = $"{createdPost.Author.FirstName} {createdPost.Author.LastName}";
 

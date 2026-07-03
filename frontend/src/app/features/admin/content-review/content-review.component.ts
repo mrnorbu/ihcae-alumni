@@ -200,7 +200,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components'
                   <div class="flex gap-2 justify-end mt-3">
                     <button (click)="modalRejectActive.set(false)" class="btn-outline btn-sm">Cancel</button>
                     <button (click)="confirmModalReject()" [disabled]="!rejectReason.trim() || isProcessing()"
-                      class="btn-primary btn-sm bg-red-650 hover:bg-red-750 text-white border-transparent">
+                      class="btn-primary btn-sm bg-red-600 hover:bg-red-700 text-white border-transparent">
                       Confirm Rejection
                     </button>
                   </div>

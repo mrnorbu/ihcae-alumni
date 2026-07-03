@@ -161,8 +161,8 @@ using (var scope = app.Services.CreateScope())
         }
         else
         {
-            context.Database.EnsureCreated();
-            Log.Information("Database connection verified successfully");
+            context.Database.Migrate();
+            Log.Information("Database migrated and connection verified successfully");
         }
     }
     catch (Exception ex)

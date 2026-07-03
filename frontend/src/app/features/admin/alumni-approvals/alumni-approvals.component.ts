@@ -222,7 +222,7 @@ interface UserRecord {
                 Cancel
               </button>
               <button (click)="confirmReject()"
-                class="px-4 py-2 text-sm font-semibold bg-red-650 text-white rounded hover:bg-red-700 transition-colors shadow-sm focus:ring-2 focus:ring-red-500/20">
+                class="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm focus:ring-2 focus:ring-red-500/20">
                 Reject Account
               </button>
             </div>

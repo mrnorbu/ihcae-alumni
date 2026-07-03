@@ -23,7 +23,11 @@ import {
   Newspaper,
   MessageSquare,
   UserCheck,
-  Upload
+  Upload,
+  ChevronDown,
+  Phone,
+  GraduationCap,
+  MapPin
 } from 'lucide-angular';
 
 @Component({
@@ -111,31 +115,83 @@ import {
           @if (getPendingUsers().length > 0) {
             <div class="bg-neutral-50/50 border border-neutral-100 rounded-lg p-2.5 space-y-1.5">
               @for (user of getPendingUsers().slice(0, 5); track user.id) {
-                <div class="flex items-center justify-between p-3 bg-white border border-neutral-200/40 rounded hover:border-neutral-400/60 hover:shadow-[0_1px_3px_rgba(0,0,0,0.01)] transition-all">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded bg-neutral-50 flex items-center justify-center shrink-0 border border-neutral-200/40">
-                      <span class="text-xs font-bold text-neutral-600">
-                        {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
-                      </span>
+                <div class="border border-neutral-200/40 rounded-lg bg-white overflow-hidden transition-all duration-200 hover:border-neutral-400/60 hover:shadow-[0_1px_3px_rgba(0,0,0,0.01)]">
+                  <!-- Row header — click to expand details -->
+                  <div class="flex items-center justify-between p-3 cursor-pointer" (click)="toggleExpand(user.id)">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded bg-neutral-50 flex items-center justify-center shrink-0 border border-neutral-200/40">
+                        <span class="text-xs font-bold text-neutral-600">
+                          {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                        </span>
+                      </div>
+                      <div>
+                        <p class="text-sm font-semibold text-neutral-900 leading-none mb-1">{{ user.firstName }} {{ user.lastName }}</p>
+                        <p class="text-xs text-neutral-400">{{ user.email }} · {{ formatDate(user.createdAt) }}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-sm font-semibold text-neutral-900 leading-none mb-1">{{ user.firstName }} {{ user.lastName }}</p>
-                      <p class="text-xs text-neutral-400">{{ user.email }} · {{ formatDate(user.createdAt) }}</p>
+                    <div class="flex items-center gap-2">
+                      <!-- Actions -->
+                      <div class="flex items-center gap-1.5" (click)="$event.stopPropagation()">
+                        <button (click)="approveUser(user)" [disabled]="isProcessingUser(user.id)"
+                          class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-neutral-950 text-white rounded hover:bg-neutral-800 disabled:opacity-50 transition-colors">
+                          @if (isProcessingUser(user.id)) {
+                            <lucide-icon [img]="refreshIcon" [size]="10" class="animate-spin"></lucide-icon>
+                          }
+                          Approve
+                        </button>
+                        <button (click)="rejectUser(user)" [disabled]="isProcessingUser(user.id)"
+                          class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-600 hover:border-red-600 hover:text-red-700 disabled:opacity-50 transition-colors rounded">
+                          Reject
+                        </button>
+                      </div>
+                      <!-- Expand chevron -->
+                      <lucide-icon [img]="chevronDownIcon" [size]="14" class="text-neutral-400 transition-transform ml-1"
+                        [class.rotate-180]="expandedUserId() === user.id"></lucide-icon>
                     </div>
                   </div>
-                  <div class="flex items-center gap-1.5">
-                    <button (click)="approveUser(user)" [disabled]="isProcessingUser(user.id)"
-                      class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-neutral-950 text-white rounded hover:bg-neutral-800 disabled:opacity-50 transition-colors">
-                      @if (isProcessingUser(user.id)) {
-                        <lucide-icon [img]="refreshIcon" [size]="10" class="animate-spin"></lucide-icon>
+
+                  <!-- Expanded Details -->
+                  @if (expandedUserId() === user.id) {
+                    <div class="border-t border-neutral-100 bg-neutral-50/50 px-4 py-3.5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div class="flex items-start gap-2">
+                        <lucide-icon [img]="phoneIcon" [size]="12" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                        <div>
+                          <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-0.5">Phone</p>
+                          <p class="text-xs font-medium text-neutral-700">{{ user.phone || '—' }}</p>
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-2">
+                        <lucide-icon [img]="graduationIcon" [size]="12" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                        <div>
+                          <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-0.5">Course</p>
+                          <p class="text-xs font-medium text-neutral-700 leading-tight">{{ user.course || '—' }}</p>
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-2">
+                        <lucide-icon [img]="graduationIcon" [size]="12" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                        <div>
+                          <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-0.5">Batch</p>
+                          <p class="text-xs font-medium text-neutral-700 leading-tight">{{ user.batch || '—' }}</p>
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-2">
+                        <lucide-icon [img]="mapPinIcon" [size]="12" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                        <div>
+                          <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-0.5">Location</p>
+                          <p class="text-xs font-medium text-neutral-700 leading-tight">{{ user.location || '—' }}</p>
+                        </div>
+                      </div>
+                      @if (user.bio) {
+                        <div class="col-span-2 sm:col-span-4 flex items-start gap-2">
+                          <lucide-icon [img]="usersIcon" [size]="12" class="text-neutral-400 mt-0.5 shrink-0"></lucide-icon>
+                          <div>
+                            <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-0.5">Bio</p>
+                            <p class="text-xs font-medium text-neutral-700 leading-relaxed">{{ user.bio }}</p>
+                          </div>
+                        </div>
                       }
-                      Approve
-                    </button>
-                    <button (click)="rejectUser(user)" [disabled]="isProcessingUser(user.id)"
-                      class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-600 hover:border-red-650 hover:text-red-700 disabled:opacity-50 transition-colors rounded">
-                      Reject
-                    </button>
-                  </div>
+                    </div>
+                  }
                 </div>
               }
             </div>
@@ -214,8 +270,8 @@ import {
             <p class="text-xs text-neutral-400 mt-1 leading-snug">Manage flagged topics and posts</p>
           </a>
 
-          <!-- Alumni Hub Card -->
-          <a routerLink="/admin/alumni-hub" class="relative group flex flex-col p-4 border rounded-lg transition-all"
+          <!-- Pending Approvals Card -->
+          <a routerLink="/admin/users" [queryParams]="{tab: 'approvals'}" class="relative group flex flex-col p-4 border rounded-lg transition-all"
             [class.border-neutral-200/60]="stats().pendingUsers === 0"
             [class.bg-neutral-50/40]="stats().pendingUsers === 0"
             [class.hover:bg-neutral-100/50]="stats().pendingUsers === 0"
@@ -228,9 +284,9 @@ import {
                 {{ stats().pendingUsers }} pending
               </span>
             }
-            <lucide-icon [img]="uploadIcon" [size]="16" class="text-primary-700 mb-2"></lucide-icon>
-            <p class="text-sm font-bold text-neutral-950 group-hover:text-primary-700 transition-colors">Alumni Hub</p>
-            <p class="text-xs text-neutral-400 mt-1 leading-snug">Imports and roster registry</p>
+            <lucide-icon [img]="userCheckIcon" [size]="16" class="text-primary-700 mb-2"></lucide-icon>
+            <p class="text-sm font-bold text-neutral-950 group-hover:text-primary-700 transition-colors">Pending Approvals (Users)</p>
+            <p class="text-xs text-neutral-400 mt-1 leading-snug">Alumni accounts awaiting validation</p>
           </a>
 
         </div>
@@ -285,7 +341,7 @@ import {
           </div>
           <div class="flex justify-end gap-2 border-t border-neutral-100 pt-4">
             <button (click)="closeRejectionModal()" class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-600 hover:border-neutral-950 hover:text-neutral-900 transition-colors">Cancel</button>
-            <button (click)="confirmRejection()" class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider bg-red-650 hover:bg-red-750 text-white rounded transition-colors">Reject Account</button>
+            <button (click)="confirmRejection()" class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white rounded transition-colors">Reject Account</button>
           </div>
         </div>
       </div>
@@ -317,10 +373,15 @@ export class AdminDashboardComponent implements OnInit {
   readonly messageSquareIcon = MessageSquare;
   readonly userCheckIcon = UserCheck;
   readonly uploadIcon = Upload;
+  readonly chevronDownIcon = ChevronDown;
+  readonly phoneIcon = Phone;
+  readonly graduationIcon = GraduationCap;
+  readonly mapPinIcon = MapPin;
 
   user = signal<User | null>(null);
   sidebarOpen = signal(true);
   isLoading = signal(false);
+  expandedUserId = signal<string | null>(null);
   stats = signal({
     totalUsers: 0,
     pendingUsers: 0,
@@ -437,6 +498,14 @@ export class AdminDashboardComponent implements OnInit {
         console.error('Error loading pending forum flags for stats:', error);
       }
     });
+  }
+
+  toggleExpand(userId: string) {
+    if (this.expandedUserId() === userId) {
+      this.expandedUserId.set(null);
+    } else {
+      this.expandedUserId.set(userId);
+    }
   }
 
   getPendingUsers() {

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "USK4X4ga3SM=",
+  "dgSpecHash": "HHd4XTEej7g=",
   "success": true,
   "projectFilePath": "/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/IHCAE.Api.csproj",
   "expectedPackageFiles": [
@@ -30,7 +30,7 @@
     "/Users/sonamnorbu/.nuget/packages/microsoft.identitymodel.protocols/8.0.1/microsoft.identitymodel.protocols.8.0.1.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/microsoft.identitymodel.protocols.openidconnect/8.0.1/microsoft.identitymodel.protocols.openidconnect.8.0.1.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/microsoft.identitymodel.tokens/8.0.1/microsoft.identitymodel.tokens.8.0.1.nupkg.sha512",
-    "/Users/sonamnorbu/.nuget/packages/microsoft.openapi/2.4.1/microsoft.openapi.2.4.1.nupkg.sha512",
+    "/Users/sonamnorbu/.nuget/packages/microsoft.openapi/2.7.5/microsoft.openapi.2.7.5.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/mysqlconnector/2.4.0/mysqlconnector.2.4.0.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/pomelo.entityframeworkcore.mysql/9.0.0/pomelo.entityframeworkcore.mysql.9.0.0.nupkg.sha512",

@@ -12,4 +12,10 @@ public interface IUrlHelperService
     /// <param name="relativePath">The relative path (e.g., "/uploads/profiles/image.png")</param>
     /// <returns>The absolute URL (e.g., "http://localhost:5041/uploads/profiles/image.png")</returns>
     string GetAbsoluteUrl(string? relativePath);
+
+    /// <summary>
+    /// Gets the frontend base URL dynamically from the current request origin/referer or configuration fallback.
+    /// </summary>
+    /// <returns>The frontend base URL (e.g., "https://ihcae.argiasolutions.website")</returns>
+    string GetFrontendUrl();
 }

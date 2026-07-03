@@ -66,7 +66,7 @@ import { HeaderComponent } from '../../../shared/components';
         </div>
 
         <!-- Right Side - Flat Login Form -->
-        <div class="flex-1 flex items-center justify-center px-6 sm:px-8 lg:px-12 py-8 overflow-y-auto bg-white">
+        <div class="flex-1 flex items-start justify-center px-6 sm:px-8 lg:px-12 py-12 lg:py-8 overflow-y-auto bg-white lg:items-center">
           <div class="w-full max-w-sm">
             <!-- Mobile Logo -->
             <div class="lg:hidden text-center mb-10">

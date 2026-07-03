@@ -66,6 +66,10 @@
               "target": "Package",
               "version": "[9.0.9, )"
             },
+            "Microsoft.OpenApi": {
+              "target": "Package",
+              "version": "[2.7.5, )"
+            },
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
               "version": "[9.0.0, )"

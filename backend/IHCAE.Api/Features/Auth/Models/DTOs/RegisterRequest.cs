@@ -36,5 +36,37 @@ public class RegisterRequest
     [Required(ErrorMessage = "Password is required")]
     [MinLength(8, ErrorMessage = "Password must be at least 8 characters long")]
     public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// User's phone number.
+    /// </summary>
+    [Required(ErrorMessage = "Phone number is required")]
+    [StringLength(50, ErrorMessage = "Phone number cannot exceed 50 characters")]
+    public string Phone { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Course completed by user.
+    /// </summary>
+    [Required(ErrorMessage = "Course is required")]
+    [StringLength(255, ErrorMessage = "Course name cannot exceed 255 characters")]
+    public string Course { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Batch completed by user.
+    /// </summary>
+    [Required(ErrorMessage = "Batch is required")]
+    [StringLength(100, ErrorMessage = "Batch details cannot exceed 100 characters")]
+    public string Batch { get; set; } = string.Empty;
+
+    /// <summary>
+    /// User's location (optional).
+    /// </summary>
+    [StringLength(255, ErrorMessage = "Location cannot exceed 255 characters")]
+    public string? Location { get; set; }
+
+    /// <summary>
+    /// User's personal bio (optional).
+    /// </summary>
+    public string? Bio { get; set; }
 }
 

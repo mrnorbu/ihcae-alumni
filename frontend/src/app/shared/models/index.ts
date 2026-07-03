@@ -44,6 +44,11 @@ export interface RegisterRequest {
   lastName: string;
   email: string;
   password: string;
+  phone: string;
+  course: string;
+  batch: string;
+  location?: string;
+  bio?: string;
 }
 
 /**

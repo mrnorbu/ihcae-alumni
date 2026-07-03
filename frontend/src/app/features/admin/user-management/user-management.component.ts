@@ -71,7 +71,7 @@ interface UserStats {
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold text-neutral-900">User Management</h2>
+          <h2 class="text-xl font-bold text-neutral-900">Alumni & User Management</h2>
           <p class="text-sm text-neutral-500 mt-1">Manage platform accounts, security roles, alumni approvals, and legacy roster</p>
         </div>
         <button (click)="openCreateUserModal()" class="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-semibold hover:bg-neutral-800 transition-colors shadow-sm">
@@ -200,7 +200,7 @@ interface UserStats {
                           'bg-red-100 text-red-700': user.status === 'Rejected' || user.isBanned,
                           'bg-neutral-100 text-neutral-600': !['Approved','Rejected'].includes(user.status)
                         }">
-                        {{ user.isBanned ? 'Banned' : (user.status | titlecase) }}
+                        {{ user.isBanned ? 'Blocked' : (user.status | titlecase) }}
                       </span>
                     </td>
                     <!-- Email verified -->
@@ -235,12 +235,12 @@ interface UserStats {
                       <div class="flex items-center justify-end gap-1">
                         @if (user.status === 'Approved') {
                           @if (!user.isBanned) {
-                            <button (click)="openBanModal(user)" title="Ban user"
+                            <button (click)="openBanModal(user)" title="Block user"
                               class="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors">
                               <lucide-icon [img]="banIcon" [size]="14"></lucide-icon>
                             </button>
                           } @else {
-                            <button (click)="unbanUser(user)" title="Unban user"
+                            <button (click)="unbanUser(user)" title="Unblock user"
                               class="p-1.5 rounded text-primary-600 hover:bg-primary-50 transition-colors">
                               <lucide-icon [img]="checkIcon" [size]="14"></lucide-icon>
                             </button>
@@ -250,10 +250,6 @@ interface UserStats {
                         <button (click)="openEditDetailsModal(user)" title="Edit details"
                           class="p-1.5 rounded text-neutral-500 hover:bg-neutral-100 transition-colors">
                           <lucide-icon [img]="editIcon" [size]="14"></lucide-icon>
-                        </button>
-                        <button (click)="openDetailModal(user)" title="View details"
-                          class="p-1.5 rounded text-neutral-500 hover:bg-neutral-100 transition-colors">
-                          <lucide-icon [img]="eyeIcon" [size]="14"></lucide-icon>
                         </button>
                       </div>
                     </td>
@@ -304,7 +300,7 @@ interface UserStats {
             <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200">
               <div class="flex items-center gap-2">
                 <lucide-icon [img]="alertTriangleIcon" [size]="18" class="text-red-500"></lucide-icon>
-                <h3 class="text-sm font-bold text-neutral-900">Ban User</h3>
+                <h3 class="text-sm font-bold text-neutral-900">Block User</h3>
               </div>
               <button (click)="closeBanModal()" class="p-1 rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
                 <lucide-icon [img]="xIcon" [size]="16"></lucide-icon>
@@ -312,10 +308,10 @@ interface UserStats {
             </div>
             <div class="px-5 py-4 space-y-3">
               <p class="text-sm text-neutral-600">
-                Ban <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>? They will be unable to log in.
+                Block <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong>? They will be unable to log in.
               </p>
               <div>
-                <label class="block text-xs font-medium text-neutral-600 mb-1">Reason for ban (optional)</label>
+                <label class="block text-xs font-medium text-neutral-600 mb-1">Reason for block (optional)</label>
                 <textarea [(ngModel)]="banReason" rows="3" placeholder="Provide a reason..."
                   class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent resize-none"></textarea>
               </div>
@@ -323,7 +319,7 @@ interface UserStats {
             <div class="flex justify-end gap-2 px-5 py-3 border-t border-neutral-100 bg-neutral-50 rounded-b-lg">
               <button (click)="closeBanModal()" class="px-3 py-1.5 text-sm text-neutral-600 border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors">Cancel</button>
               <button (click)="confirmBan()"
-                class="px-3 py-1.5 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">Ban User</button>
+                class="px-3 py-1.5 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">Block User</button>
             </div>
           </div>
         </div>
@@ -358,7 +354,7 @@ interface UserStats {
                 <div class="grid grid-cols-2 gap-3">
                   <div class="px-3 py-2 bg-neutral-50 rounded-lg">
                     <p class="text-xs text-neutral-500">Status</p>
-                    <p class="text-sm font-medium text-neutral-900">{{ u.isBanned ? 'Banned' : (u.status | titlecase) }}</p>
+                    <p class="text-sm font-medium text-neutral-900">{{ u.isBanned ? 'Blocked' : (u.status | titlecase) }}</p>
                   </div>
                   <div class="px-3 py-2 bg-neutral-50 rounded-lg">
                     <p class="text-xs text-neutral-500">Email Verified</p>
@@ -784,7 +780,7 @@ export class UserManagementComponent implements OnInit {
     return [
       { label: 'Total Accounts', value: s.totalUsers, filter: 'all' },
       { label: 'Approved/Active', value: s.approvedUsers, filter: 'Approved' },
-      { label: 'Banned Accounts', value: s.bannedUsers, filter: 'Banned' },
+      { label: 'Blocked Accounts', value: s.bannedUsers, filter: 'Banned' },
       { label: 'Email Verified', value: s.emailVerifiedUsers, filter: 'Verified' },
       { label: 'Active Today', value: s.activeToday, filter: 'all' }
     ];
@@ -896,23 +892,23 @@ export class UserManagementComponent implements OnInit {
     if (!user) return;
     this.http.post(`${environment.apiUrl}/api/v1/admin/users/${user.id}/ban`, { reason: this.banReason }).subscribe({
       next: () => {
-        this.notificationService.showSuccess('Banned', `${user.firstName} ${user.lastName} has been banned`);
+        this.notificationService.showSuccess('Blocked', `${user.firstName} ${user.lastName} has been blocked`);
         this.closeBanModal();
         this.loadUsers();
         this.loadStats();
       },
-      error: () => this.notificationService.showError('Error', 'Failed to ban user')
+      error: () => this.notificationService.showError('Error', 'Failed to block user')
     });
   }
 
   unbanUser(user: UserRecord) {
     this.http.post(`${environment.apiUrl}/api/v1/admin/users/${user.id}/unban`, {}).subscribe({
       next: () => {
-        this.notificationService.showSuccess('Unbanned', `${user.firstName} ${user.lastName} has been unbanned`);
+        this.notificationService.showSuccess('Unblocked', `${user.firstName} ${user.lastName} has been unblocked`);
         this.loadUsers();
         this.loadStats();
       },
-      error: () => this.notificationService.showError('Error', 'Failed to unban user')
+      error: () => this.notificationService.showError('Error', 'Failed to unblock user')
     });
   }
 
@@ -1055,7 +1051,7 @@ export class UserManagementComponent implements OnInit {
   saveInlinePassword() {
     const user = this.selectedUser();
     if (!user || !this.inlineNewPassword || this.inlineNewPassword.length < 6) return;
-    this.http.post(`${environment.apiUrl}/api/v1/admin/users/${user.id}/password`, { newPassword: this.inlineNewPassword }).subscribe({
+    this.http.post(`${environment.apiUrl}/api/v1/admin/users/${user.id}/change-password`, { newPassword: this.inlineNewPassword }).subscribe({
       next: () => {
         this.notificationService.showSuccess('Password Changed', 'Successfully changed user password directly');
         this.showInlinePasswordInput.set(false);
@@ -1101,7 +1097,7 @@ export class UserManagementComponent implements OnInit {
   submitChangePassword() {
     const user = this.selectedUser();
     if (!user) return;
-    this.http.post(`${environment.apiUrl}/api/v1/admin/users/${user.id}/password`, this.changePasswordForm).subscribe({
+    this.http.post(`${environment.apiUrl}/api/v1/admin/users/${user.id}/change-password`, this.changePasswordForm).subscribe({
       next: () => {
         this.notificationService.showSuccess('Password Changed', 'Successfully updated user password');
         this.closeChangePasswordModal();

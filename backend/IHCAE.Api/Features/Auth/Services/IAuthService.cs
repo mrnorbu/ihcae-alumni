@@ -17,7 +17,17 @@ public interface IAuthService
     /// <param name="email">User's email address</param>
     /// <param name="password">User's plain text password</param>
     /// <returns>The created user entity</returns>
-    Task<User> RegisterAsync(string firstName, string lastName, string email, string password);
+    Task<User> RegisterAsync(
+        string firstName,
+        string lastName,
+        string email,
+        string password,
+        string phone,
+        string course,
+        string batch,
+        string? location = null,
+        string? bio = null
+    );
 
     /// <summary>
     /// Authenticates a user with email and password.

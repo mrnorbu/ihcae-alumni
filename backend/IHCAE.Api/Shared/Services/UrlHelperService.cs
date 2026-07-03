@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Configuration;
+
 namespace IHCAE.Api.Shared.Services;
 
 /// <summary>
@@ -8,13 +10,16 @@ namespace IHCAE.Api.Shared.Services;
 public class UrlHelperService : IUrlHelperService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<UrlHelperService> _logger;
 
     public UrlHelperService(
         IHttpContextAccessor httpContextAccessor,
+        IConfiguration configuration,
         ILogger<UrlHelperService> logger)
     {
         _httpContextAccessor = httpContextAccessor;
+        _configuration = configuration;
         _logger = logger;
     }
 
@@ -60,5 +65,50 @@ public class UrlHelperService : IUrlHelperService
         var absoluteUrl = $"{scheme}://{host}{normalizedPath}";
         
         return absoluteUrl;
+    }
+
+    /// <summary>
+    /// Gets the frontend base URL dynamically from the current request origin/referer or configuration fallback.
+    /// </summary>
+    /// <returns>The frontend base URL (e.g., "https://ihcae.argiasolutions.website")</returns>
+    public string GetFrontendUrl()
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext != null)
+        {
+            var request = httpContext.Request;
+            
+            // 1. Try to read the Origin header (sent by modern browsers for CORS requests)
+            var origin = request.Headers["Origin"].ToString();
+            if (!string.IsNullOrWhiteSpace(origin))
+            {
+                return origin.TrimEnd('/');
+            }
+
+            // 2. Try to read the Referer header
+            var referer = request.Headers["Referer"].ToString();
+            if (!string.IsNullOrWhiteSpace(referer))
+            {
+                try
+                {
+                    var uri = new Uri(referer);
+                    return $"{uri.Scheme}://{uri.Authority}".TrimEnd('/');
+                }
+                catch (UriFormatException)
+                {
+                    // Ignore malformed referers
+                }
+            }
+        }
+
+        // 3. Fallback to FrontendUrl configured in appsettings (e.g., Production or Base configuration)
+        var configuredUrl = _configuration["FrontendUrl"];
+        if (!string.IsNullOrWhiteSpace(configuredUrl))
+        {
+            return configuredUrl.TrimEnd('/');
+        }
+
+        // 4. Absolute fallback for local development
+        return "http://localhost:4200";
     }
 }

@@ -586,14 +586,14 @@ import {
                      [checked]="moderationAction() === 'ban_user'"
                      (change)="moderationAction.set('ban_user')"
                      class="h-4 w-4 text-red-600 focus:ring-red-500 border-neutral-300" />
-                   <span>Ban user</span>
+                   <span>Block user</span>
                  </label>
                  <label class="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer">
                    <input type="radio" name="modAction" value="delete_and_ban"
                      [checked]="moderationAction() === 'delete_and_ban'"
                      (change)="moderationAction.set('delete_and_ban')"
                      class="h-4 w-4 text-red-600 focus:ring-red-500 border-neutral-300" />
-                   <span>Hide comment & ban user</span>
+                   <span>Hide comment & block user</span>
                  </label>
                  <label class="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer">
                    <input type="radio" name="modAction" value="no_action"

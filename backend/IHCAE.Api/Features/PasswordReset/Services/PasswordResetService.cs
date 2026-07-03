@@ -22,18 +22,18 @@ public class PasswordResetService : IPasswordResetService
     private readonly AppDbContext _context;
     private readonly IEmailService _emailService;
     private readonly ILogger<PasswordResetService> _logger;
-    private readonly IConfiguration _configuration;
+    private readonly IUrlHelperService _urlHelperService;
 
     public PasswordResetService(
         AppDbContext context,
         IEmailService emailService,
         ILogger<PasswordResetService> logger,
-        IConfiguration configuration)
+        IUrlHelperService urlHelperService)
     {
         _context = context;
         _emailService = emailService;
         _logger = logger;
-        _configuration = configuration;
+        _urlHelperService = urlHelperService;
     }
 
     /// <summary>
@@ -165,19 +165,7 @@ public class PasswordResetService : IPasswordResetService
 
         // Password requirements:
         // - At least 8 characters
-        // - At least one uppercase letter
-        // - At least one lowercase letter
-        // - At least one digit
-        // - At least one special character
-        if (password.Length < 8)
-            return false;
-
-        bool hasUpper = password.Any(char.IsUpper);
-        bool hasLower = password.Any(char.IsLower);
-        bool hasDigit = password.Any(char.IsDigit);
-        bool hasSpecial = password.Any(c => !char.IsLetterOrDigit(c));
-
-        return hasUpper && hasLower && hasDigit && hasSpecial;
+        return password.Length >= 8;
     }
 
     /// <summary>
@@ -240,7 +228,7 @@ public class PasswordResetService : IPasswordResetService
     /// <returns>The complete reset URL</returns>
     private string GenerateResetUrl(string token)
     {
-        var baseUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+        var baseUrl = _urlHelperService.GetFrontendUrl();
         return $"{baseUrl}/reset-password?token={Uri.EscapeDataString(token)}";
     }
 }

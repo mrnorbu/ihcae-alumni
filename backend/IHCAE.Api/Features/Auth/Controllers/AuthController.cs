@@ -54,7 +54,12 @@ public class AuthController : ControllerBase
                 request.FirstName,
                 request.LastName,
                 request.Email,
-                request.Password
+                request.Password,
+                request.Phone,
+                request.Course,
+                request.Batch,
+                request.Location,
+                request.Bio
             );
 
             _logger.LogInformation("User registered successfully: {Email}", request.Email);

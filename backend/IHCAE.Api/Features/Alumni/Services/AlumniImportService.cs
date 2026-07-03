@@ -14,18 +14,18 @@ public class AlumniImportService : IAlumniImportService
     private readonly AppDbContext _context;
     private readonly ILogger<AlumniImportService> _logger;
     private readonly IHCAE.Api.Shared.Services.IEmailService _emailService;
-    private readonly IConfiguration _configuration;
+    private readonly IHCAE.Api.Shared.Services.IUrlHelperService _urlHelperService;
 
     public AlumniImportService(
         AppDbContext context,
         ILogger<AlumniImportService> logger,
         IHCAE.Api.Shared.Services.IEmailService emailService,
-        IConfiguration configuration)
+        IHCAE.Api.Shared.Services.IUrlHelperService urlHelperService)
     {
         _context = context;
         _logger = logger;
         _emailService = emailService;
-        _configuration = configuration;
+        _urlHelperService = urlHelperService;
     }
 
     /// <summary>
@@ -396,7 +396,7 @@ public class AlumniImportService : IAlumniImportService
     public async Task<BulkGenerateResultDto> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds)
     {
         var result = new BulkGenerateResultDto();
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+        var frontendUrl = _urlHelperService.GetFrontendUrl();
 
         // Fetch Alumni role once outside the loop
         var alumniRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Alumni");
@@ -562,7 +562,7 @@ public class AlumniImportService : IAlumniImportService
         if (alumni.MatchedUser.LastLoginAt != null)
             throw new InvalidOperationException("This account has already been claimed by the alumni.");
 
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+        var frontendUrl = _urlHelperService.GetFrontendUrl();
         var (token, tokenHash) = GenerateToken();
 
         _context.PasswordResetTokens.Add(new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken

@@ -66,7 +66,16 @@ public class AuthService : IAuthService
     /// <param name="email">User's email address</param>
     /// <param name="password">User's plain text password</param>
     /// <returns>The created user entity</returns>
-    public async Task<User> RegisterAsync(string firstName, string lastName, string email, string password)
+    public async Task<User> RegisterAsync(
+        string firstName,
+        string lastName,
+        string email,
+        string password,
+        string phone,
+        string course,
+        string batch,
+        string? location = null,
+        string? bio = null)
     {
         // Check if email already exists
         if (await _userRepository.EmailExistsAsync(email))
@@ -86,15 +95,17 @@ public class AuthService : IAuthService
             LastName = lastName,
             Email = email.ToLower(),
             PasswordHash = HashPassword(password),
+            Phone = phone,
             Status = userStatus,
             EmailVerified = false,
             IsBanned = false,
             CreatedAt = DateTime.UtcNow,
             AlumniProfile = new AlumniProfile
             {
-                Course = matchingAlumni?.Course,
-                Batch = matchingAlumni?.Batch,
-                Location = matchingAlumni?.Location,
+                Course = course,
+                Batch = batch,
+                Location = location,
+                Bio = bio,
                 CreatedAt = DateTime.UtcNow
             }
         };

@@ -75,10 +75,10 @@ public class PasswordResetController : ControllerBase
         // Validate password strength
         if (!_passwordResetService.IsValidPassword(request.NewPassword))
         {
-            _logger.LogWarning("Password validation failed: password does not meet strength requirements.");
+            _logger.LogWarning("Password validation failed: password does not meet requirements.");
             return BadRequest(new { 
                 success = false, 
-                message = "Password must be at least 8 characters long and contain uppercase, lowercase, digit, and special character" 
+                message = "Password must be at least 8 characters long" 
             });
         }
 
