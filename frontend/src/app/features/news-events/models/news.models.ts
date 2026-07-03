@@ -34,6 +34,7 @@ export interface NewsArticleSummary {
   author: AuthorDto;
   thumbnailUrl?: string;
   status: ContentStatus;
+  rejectionReason?: string;
   publishedAt?: Date;
   createdAt: Date;
   viewCount: number;
@@ -52,6 +53,7 @@ export interface NewsArticle {
   imageUrl?: string;
   thumbnailUrl?: string;
   status: ContentStatus;
+  rejectionReason?: string;
   publishedAt?: Date;
   createdAt: Date;
   updatedAt?: Date;
@@ -83,11 +85,12 @@ export interface UpdateNewsArticleRequest {
 }
 
 /**
- * Request model for alumni to submit success stories.
+ * Request model for alumni to submit news articles or success stories.
  */
-export interface CreateSuccessStoryRequest {
+export interface SubmitContentRequest {
   title: string;
   content: string;
-  imageUrl: string;
+  imageUrl?: string;
   thumbnailUrl?: string;
+  categorySlug?: string;
 }

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { HeaderComponent, FooterComponent } from '../../../../shared/components';
+import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption } from '../../../../shared/components';
 import { ModernAlumniCardComponent } from '../../components/modern-alumni-card/modern-alumni-card.component';
 import { DirectoryService, AlumniCard, DirectoryFilters } from '../../services/directory.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -23,7 +23,8 @@ import {
     HeaderComponent,
     FooterComponent,
     ModernAlumniCardComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    CustomSelectComponent
   ],
   template: `
     <div class="min-h-screen bg-neutral-50 flex flex-col page-fade-in">
@@ -32,7 +33,7 @@ import {
       <div class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pt-20 pb-10">
 
         <!-- ── Filter Bar ── -->
-        <div class="bg-white border border-neutral-200 rounded-xl p-3 mb-4 space-y-2.5">
+        <div class="bg-white border border-neutral-200 rounded-xl p-3 mb-4 space-y-2.5 overflow-visible">
 
           <!-- Search -->
           <div class="relative">
@@ -52,39 +53,34 @@ import {
           </div>
 
           <!-- Filter row -->
-          <div class="flex flex-wrap gap-2">
-            <select [(ngModel)]="filters.course" (ngModelChange)="onFilterChange()"
-              class="flex-1 min-w-[140px] px-3 py-2 text-sm border rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
-              [class.border-blue-400]="filters.course"
-              [class.bg-blue-50]="filters.course"
-              [class.text-blue-700]="filters.course"
-              [class.border-neutral-200]="!filters.course"
-              [class.text-neutral-600]="!filters.course">
-              <option value="">All Programmes</option>
-              @for (course of availableCourses(); track course) {
-                <option [value]="course">{{ course }}</option>
-              }
-            </select>
+          <div class="flex flex-wrap gap-2 items-center overflow-visible">
+            <div class="flex-1 min-w-[140px] overflow-visible">
+              <app-custom-select
+                [(ngModel)]="filters.course"
+                (ngModelChange)="onFilterChange()"
+                [options]="courseOptions()"
+                [customClass]="getCourseClass()"
+                placeholder="All Programmes"
+              ></app-custom-select>
+            </div>
 
-            <select [(ngModel)]="filters.graduationYear" (ngModelChange)="onFilterChange()"
-              class="w-36 px-3 py-2 text-sm border rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
-              [class.border-blue-400]="filters.graduationYear"
-              [class.bg-blue-50]="filters.graduationYear"
-              [class.text-blue-700]="filters.graduationYear"
-              [class.border-neutral-200]="!filters.graduationYear"
-              [class.text-neutral-600]="!filters.graduationYear">
-              <option [ngValue]="undefined">All Years</option>
-              @for (year of availableYears(); track year) {
-                <option [ngValue]="year">{{ year }}</option>
-              }
-            </select>
+            <div class="w-36 overflow-visible">
+              <app-custom-select
+                [(ngModel)]="filters.graduationYear"
+                (ngModelChange)="onFilterChange()"
+                [options]="yearOptions()"
+                [customClass]="getYearClass()"
+                placeholder="All Years"
+              ></app-custom-select>
+            </div>
 
-            <select [(ngModel)]="sortBy"
-              class="w-44 px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-              <option value="name">Name A–Z</option>
-              <option value="year-desc">Newest batch first</option>
-              <option value="year-asc">Oldest batch first</option>
-            </select>
+            <div class="w-44 overflow-visible">
+              <app-custom-select
+                [(ngModel)]="sortBy"
+                [options]="sortByOptions"
+                placeholder="Sort By"
+              ></app-custom-select>
+            </div>
 
             @if (hasActiveFilters()) {
               <button (click)="clearFilters()"
@@ -231,6 +227,40 @@ export class ModernDirectoryPageComponent implements OnInit, OnDestroy {
     page: 1,
     pageSize: this.pageSize
   };
+
+  courseOptions = computed<SelectOption[]>(() => {
+    const list = this.availableCourses().map(c => ({ label: c, value: c }));
+    return [{ label: 'All Programmes', value: '' }, ...list];
+  });
+
+  yearOptions = computed<SelectOption[]>(() => {
+    const list = this.availableYears().map(y => ({ label: y.toString(), value: y }));
+    return [{ label: 'All Years', value: undefined }, ...list];
+  });
+
+  sortByOptions: SelectOption[] = [
+    { label: 'Name A–Z', value: 'name' },
+    { label: 'Newest batch first', value: 'year-desc' },
+    { label: 'Oldest batch first', value: 'year-asc' }
+  ];
+
+  getCourseClass(): string {
+    const active = !!this.filters.course;
+    return `w-full px-3 py-2 text-sm border rounded-lg cursor-pointer flex items-center justify-between gap-1.5 text-left transition-colors ${
+      active 
+        ? 'border-blue-400 bg-blue-50 text-blue-700 font-medium' 
+        : 'border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 font-normal'
+    }`;
+  }
+
+  getYearClass(): string {
+    const active = this.filters.graduationYear !== undefined;
+    return `w-full px-3 py-2 text-sm border rounded-lg cursor-pointer flex items-center justify-between gap-1.5 text-left transition-colors ${
+      active 
+        ? 'border-blue-400 bg-blue-50 text-blue-700 font-medium' 
+        : 'border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 font-normal'
+    }`;
+  }
 
   readonly searchIcon = Search;
   readonly usersIcon = Users;

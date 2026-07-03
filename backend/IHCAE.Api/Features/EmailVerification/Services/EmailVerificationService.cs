@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Features.EmailVerification.Models.Entities;
 using IHCAE.Api.Shared.Data;
@@ -19,15 +20,18 @@ public class EmailVerificationService : IEmailVerificationService
     private readonly AppDbContext _context;
     private readonly IEmailService _emailService;
     private readonly ILogger<EmailVerificationService> _logger;
+    private readonly IConfiguration _configuration;
 
     public EmailVerificationService(
         AppDbContext context,
         IEmailService emailService,
-        ILogger<EmailVerificationService> logger)
+        ILogger<EmailVerificationService> logger,
+        IConfiguration configuration)
     {
         _context = context;
         _emailService = emailService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -190,12 +194,9 @@ public class EmailVerificationService : IEmailVerificationService
     /// </summary>
     /// <param name="token">The verification token</param>
     /// <returns>The complete verification URL</returns>
-    private static string GenerateVerificationUrl(string token)
+    private string GenerateVerificationUrl(string token)
     {
-        // In production, this should come from configuration
-        var baseUrl = "http://localhost:4200"; // Frontend URL
+        var baseUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
         return $"{baseUrl}/verify-email?token={Uri.EscapeDataString(token)}";
     }
-
-
 }

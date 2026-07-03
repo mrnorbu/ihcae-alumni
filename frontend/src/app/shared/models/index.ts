@@ -305,3 +305,17 @@ export interface SuccessStory {
   likesCount: number;
   isApproved: boolean;
 }
+
+/**
+ * In-App Notification model from the database backend.
+ */
+export interface InAppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string; // 'Reply' | 'Moderation' | 'System'
+  link?: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+

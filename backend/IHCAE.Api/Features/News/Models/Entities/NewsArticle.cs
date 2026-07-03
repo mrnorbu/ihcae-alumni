@@ -69,6 +69,11 @@ public class NewsArticle
     public DateTime? UpdatedAt { get; set; }
     
     /// <summary>
+    /// Reason why the article was rejected during review
+    /// </summary>
+    public string? RejectionReason { get; set; }
+    
+    /// <summary>
     /// Number of times the article has been viewed
     /// </summary>
     public int ViewCount { get; set; }

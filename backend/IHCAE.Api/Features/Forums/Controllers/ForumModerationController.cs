@@ -270,7 +270,41 @@ public class ForumModerationController : ControllerBase
     }
 
     /// <summary>
-    /// Resolves a flag (dismiss or take action).
+    /// Restores a post (reverses soft delete).
+    /// </summary>
+    [HttpPut("posts/{postId}/restore")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RestorePost(Guid postId)
+    {
+        try
+        {
+            var adminUserId = GetCurrentUserId();
+            var restored = await _forumService.RestorePostAsync(postId, adminUserId);
+            
+            if (!restored)
+            {
+                return NotFound(new ErrorResponse { Message = "Post not found." });
+            }
+
+            _logger.LogInformation("Admin {AdminId} restored post {PostId}", adminUserId, postId);
+            return Ok(new { Message = "Post restored successfully." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Post {PostId} not found", postId);
+            return NotFound(new ErrorResponse { Message = "Post not found." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error restoring post {PostId}", postId);
+            return StatusCode(500, new ErrorResponse { Message = "An error occurred while restoring the post." });
+        }
+    }
+
+    /// <summary>
+    /// Resolves a flag (dismiss, take action, or reset to pending).
     /// </summary>
     [HttpPut("flags/{flagId}/resolve")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -286,15 +320,15 @@ public class ForumModerationController : ControllerBase
                 return NotFound(new ErrorResponse { Message = "Flag not found." });
 
             if (!Enum.TryParse<FlagStatus>(request.Status, true, out var newStatus) ||
-                (newStatus != FlagStatus.Dismissed && newStatus != FlagStatus.ActionTaken && newStatus != FlagStatus.Reviewed))
+                (newStatus != FlagStatus.Dismissed && newStatus != FlagStatus.ActionTaken && newStatus != FlagStatus.Reviewed && newStatus != FlagStatus.Pending))
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid status. Use 'Dismissed', 'Reviewed', or 'ActionTaken'." });
+                return BadRequest(new ErrorResponse { Message = "Invalid status. Use 'Dismissed', 'Reviewed', 'ActionTaken', or 'Pending'." });
             }
 
             flag.Status = newStatus;
-            flag.ResolvedById = adminUserId;
+            flag.ResolvedById = newStatus == FlagStatus.Pending ? null : adminUserId;
             flag.ResolutionNotes = request.Notes;
-            flag.ResolvedAt = DateTime.UtcNow;
+            flag.ResolvedAt = newStatus == FlagStatus.Pending ? null : DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

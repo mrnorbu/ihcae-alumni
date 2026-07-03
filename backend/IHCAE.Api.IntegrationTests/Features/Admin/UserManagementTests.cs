@@ -63,19 +63,26 @@ public class UserManagementTests : IntegrationTestBase
                 Email = adminEmail,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
                 Status = UserStatus.Approved,
+                EmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             };
             context.Users.Add(admin);
+        }
+        else
+        {
+            adminId = existingAdmin.Id;
+            existingAdmin.EmailVerified = true;
+            existingAdmin.Status = UserStatus.Approved;
+        }
 
+        var existingUserRole = await context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == adminId && ur.RoleId == adminRole.Id);
+        if (existingUserRole == null)
+        {
             context.UserRoles.Add(new UserRole
             {
                 UserId = adminId,
                 RoleId = adminRole.Id
             });
-        }
-        else
-        {
-            adminId = existingAdmin.Id;
         }
 
         var existingPending1 = await context.Users.FirstOrDefaultAsync(u => u.Email == "pending.one@example.com");

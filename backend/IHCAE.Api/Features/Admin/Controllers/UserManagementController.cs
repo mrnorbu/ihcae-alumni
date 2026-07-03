@@ -5,6 +5,9 @@ using IHCAE.Api.Shared.Services;
 using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.Constants;
 using IHCAE.Api.Features.Auth.Models.Entities;
+using IHCAE.Api.Features.Admin.Models.DTOs;
+using IHCAE.Api.Features.Auth.Models.DTOs;
+using IHCAE.Api.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -76,6 +79,7 @@ public class UserManagementController : ControllerBase
                 course = u.AlumniProfile != null ? u.AlumniProfile.Course : null,
                 batch = u.AlumniProfile != null ? u.AlumniProfile.Batch : null,
                 location = u.AlumniProfile != null ? u.AlumniProfile.Location : null,
+                jobTitle = u.AlumniProfile != null ? u.AlumniProfile.JobTitle : null,
                 bio = u.AlumniProfile != null ? u.AlumniProfile.Bio : null
             }).ToList();
 
@@ -90,30 +94,66 @@ public class UserManagementController : ControllerBase
 
     /// <summary>
     /// Gets users with pending status for approval.
+    /// Supports pagination for testing routes.
     /// </summary>
-    /// <returns>List of pending users</returns>
+    /// <returns>List of pending users or PaginatedResult</returns>
     [HttpGet("pending")]
+    [HttpGet("~/api/v1/admin/users/pending")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetPendingUsers()
+    public async Task<IActionResult> GetPendingUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         try
         {
             var pendingUsers = await _userRepository.GetByStatusAsync(UserStatus.Pending);
-            var userDtos = pendingUsers.Select(u => new
+            
+            var path = HttpContext.Request.Path.Value;
+            if (path != null && path.Contains("admin/users/pending", StringComparison.OrdinalIgnoreCase))
             {
-                id = u.Id,
-                firstName = u.FirstName,
-                lastName = u.LastName,
-                email = u.Email,
-                status = u.Status.ToString(),
-                emailVerified = u.EmailVerified,
-                createdAt = u.CreatedAt,
-                updatedAt = u.UpdatedAt
-            }).ToList();
+                var totalCount = pendingUsers.Count();
+                var pagedUsers = pendingUsers
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(u => new UserSummaryDto
+                    {
+                        Id = u.Id,
+                        FirstName = u.FirstName,
+                        LastName = u.LastName,
+                        Email = u.Email,
+                        Status = u.Status.ToString(),
+                        CreatedAt = u.CreatedAt,
+                        LastLoginAt = u.LastLoginAt,
+                        Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList()
+                    })
+                    .ToList();
 
-            return Ok(new { success = true, users = userDtos });
+                var result = new PaginatedResult<UserSummaryDto>
+                {
+                    Items = pagedUsers,
+                    TotalCount = totalCount,
+                    Page = page,
+                    PageSize = pageSize
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                var userDtos = pendingUsers.Select(u => new
+                {
+                    id = u.Id,
+                    firstName = u.FirstName,
+                    lastName = u.LastName,
+                    email = u.Email,
+                    status = u.Status.ToString(),
+                    emailVerified = u.EmailVerified,
+                    createdAt = u.CreatedAt,
+                    updatedAt = u.UpdatedAt
+                }).ToList();
+
+                return Ok(new { success = true, users = userDtos });
+            }
         }
         catch (Exception ex)
         {
@@ -128,6 +168,7 @@ public class UserManagementController : ControllerBase
     /// <param name="userId">The ID of the user to approve</param>
     /// <returns>Success or error response</returns>
     [HttpPost("approve/{userId}")]
+    [HttpPost("~/api/v1/admin/users/{userId}/approve")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -189,7 +230,12 @@ public class UserManagementController : ControllerBase
             _logger.LogInformation("User {UserId} ({Email}) approved by admin {AdminId}",
                 userId, user.Email, User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            return Ok(new { success = true, message = "User approved successfully!" });
+            return Ok(new AdminActionResponse
+            {
+                Success = true,
+                Message = "User approved successfully!",
+                UserId = userId
+            });
         }
         catch (Exception ex)
         {
@@ -205,6 +251,7 @@ public class UserManagementController : ControllerBase
     /// <param name="reason">Optional reason for rejection</param>
     /// <returns>Success or error response</returns>
     [HttpPost("reject/{userId}")]
+    [HttpPost("~/api/v1/admin/users/{userId}/reject")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -246,7 +293,12 @@ public class UserManagementController : ControllerBase
             _logger.LogInformation("User {UserId} ({Email}) rejected by admin {AdminId}", 
                 userId, user.Email, User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            return Ok(new { success = true, message = "User rejected successfully!" });
+            return Ok(new AdminActionResponse
+            {
+                Success = true,
+                Message = "User rejected successfully!",
+                UserId = userId
+            });
         }
         catch (Exception ex)
         {

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using IHCAE.Api.Features.News.Services;
 using IHCAE.Api.Features.News.Models.DTOs;
 using IHCAE.Api.Shared.DTOs;
@@ -54,7 +55,19 @@ public class NewsController : ControllerBase
     {
         try
         {
-            var article = await _newsService.GetArticleByIdAsync(id);
+            Guid? currentUserId = null;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var userId))
+            {
+                currentUserId = userId;
+            }
+
+            var isAdmin = User.IsInRole("Admin");
+
+            _logger.LogInformation("GetArticleById - ID: {Id}, IsAuthenticated: {IsAuthenticated}, UserID: {UserId}, IsAdmin: {IsAdmin}", 
+                id, User.Identity?.IsAuthenticated, currentUserId, isAdmin);
+
+            var article = await _newsService.GetArticleByIdAsync(id, currentUserId, isAdmin);
             return Ok(article);
         }
         catch (KeyNotFoundException ex)

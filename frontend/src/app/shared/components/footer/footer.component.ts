@@ -44,7 +44,6 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
             <ul class="space-y-2">
               <li><a href="#about" class="text-sm text-neutral-400 hover:text-white transition-colors">About Us</a></li>
               <li><a href="#news" class="text-sm text-neutral-400 hover:text-white transition-colors">News & Stories</a></li>
-              <li><a href="#jobs" class="text-sm text-neutral-400 hover:text-white transition-colors">Careers</a></li>
               <li><a routerLink="/register" class="text-sm text-neutral-400 hover:text-white transition-colors">Join Network</a></li>
             </ul>
           </div>

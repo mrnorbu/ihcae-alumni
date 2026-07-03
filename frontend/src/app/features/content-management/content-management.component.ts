@@ -1,13 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { LucideAngularModule, Plus, Edit, Trash2, Eye, Calendar, MapPin, Users, Newspaper, CheckCircle, Clock, X, Upload, Image as ImageIcon } from 'lucide-angular';
-import { HeaderComponent, FooterComponent } from '../../shared/components';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { LucideAngularModule, Plus, Edit, Trash2, Eye, Calendar, MapPin, Users, Newspaper, CheckCircle, Clock, X, Upload, Image as ImageIcon, AlertCircle } from 'lucide-angular';
+import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption } from '../../shared/components';
 import { NewsService } from '../news-events/services/news.service';
 import { EventsService } from '../news-events/services/events.service';
 import { FileUploadService } from '../../shared/services/file-upload.service';
 import { UserAuthStore } from '../../core/state/user-auth.store';
+import { AppImageUrlPipe } from '../../shared/pipes/app-image-url.pipe';
 import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } from '../news-events/models';
 
 /**
@@ -21,7 +21,7 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
 @Component({
   selector: 'app-content-management',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, CustomSelectComponent, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
@@ -65,7 +65,7 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                   Events
                 </button>
               }
-              @if (isAlumni() && !isAdmin() && !isContentCreator()) {
+              @if (isAlumni()) {
                 <button 
                   (click)="setActiveTab('success-story')"
                   [class.tab-active]="activeTab() === 'success-story'"
@@ -115,6 +115,17 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                   </div>
                 }
 
+                <!-- Rejection Feedback -->
+                @if (editingItem()?.rejectionReason) {
+                  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex gap-3">
+                    <lucide-icon [img]="alertIcon" [size]="20" class="text-amber-600 flex-shrink-0 mt-0.5"></lucide-icon>
+                    <div>
+                      <p class="font-semibold text-amber-900 mb-1">Feedback from Administrator</p>
+                      <p class="text-sm text-amber-750 leading-normal">{{ editingItem().rejectionReason }}</p>
+                    </div>
+                  </div>
+                }
+
                 <!-- Form based on active tab -->
                 @if (activeTab() === 'news' || activeTab() === 'success-story') {
                   <!-- News/Success Story Form -->
@@ -129,16 +140,14 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                     @if (activeTab() === 'news') {
                       <div class="mb-6">
                         <label class="input-label">Category <span class="text-error-600">*</span></label>
-                        <select formControlName="categoryId" class="input-field">
-                          <option value="">Select category</option>
-                          @for (category of newsCategories(); track category.id) {
-                            <option [value]="category.id">{{ category.name }}</option>
-                          }
-                        </select>
+                        <app-custom-select
+                          formControlName="categoryId"
+                          [options]="newsCategoryOptions()"
+                          placeholder="Select category"
+                        ></app-custom-select>
                       </div>
                     }
 
-                    <!-- Content -->
                     <div class="mb-6">
                       <label class="input-label">Content <span class="text-error-600">*</span></label>
                       <textarea formControlName="content" rows="20" class="input-field min-h-[500px]" placeholder="Write your content here..."></textarea>
@@ -151,7 +160,7 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                       <div class="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
                         @if (imagePreview()) {
                           <div class="relative">
-                            <img [src]="imagePreview()" alt="Preview" class="max-h-64 mx-auto rounded-lg mb-4">
+                            <img [src]="imagePreview() | appImageUrl" alt="Preview" class="max-h-64 mx-auto rounded-lg mb-4">
                             <button type="button" (click)="removeImage()" class="btn-outline btn-sm">Remove</button>
                           </div>
                         } @else {
@@ -189,7 +198,7 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                               Submitting...
                             </span>
                           } @else {
-                            Submit for Review
+                            {{ editingItem() ? 'Resubmit for Review' : 'Submit for Review' }}
                           }
                         </button>
                       }
@@ -229,12 +238,11 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label class="input-label">Category</label>
-                        <select formControlName="categoryId" class="input-field">
-                          <option value="">Select category</option>
-                          @for (category of eventCategories(); track category.id) {
-                            <option [value]="category.id">{{ category.name }}</option>
-                          }
-                        </select>
+                        <app-custom-select
+                          formControlName="categoryId"
+                          [options]="eventCategoryOptions()"
+                          placeholder="Select category"
+                        ></app-custom-select>
                       </div>
                       <div>
                         <label class="input-label">Capacity (optional)</label>
@@ -297,13 +305,20 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                 @if (!isLoading() && getItems().length > 0) {
                   <div class="space-y-4">
                     @for (item of getItems(); track item.id) {
-                      <div class="border border-neutral-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                      <div class="border border-neutral-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
                         <div class="flex items-start justify-between gap-6">
                           <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
+                            <div class="flex items-center gap-3 mb-2 flex-wrap">
                               <h3 class="text-lg font-semibold text-neutral-900">{{ item.title }}</h3>
                               @if (item.status === 'Draft') {
-                                <span class="badge badge-secondary">Draft</span>
+                                @if (item.rejectionReason) {
+                                  <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100 flex items-center gap-1">
+                                    <lucide-icon [img]="alertIcon" [size]="12"></lucide-icon>
+                                    Rejected
+                                  </span>
+                                } @else {
+                                  <span class="badge badge-secondary">Draft</span>
+                                }
                               }
                               @if (item.status === 'PendingReview') {
                                 <span class="badge badge-warning">Pending Review</span>
@@ -315,6 +330,12 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                             <p class="text-neutral-600 mb-3 line-clamp-2">
                               {{ getItemDescription(item) }}
                             </p>
+                            @if (item.status === 'Draft' && item.rejectionReason) {
+                              <div class="mt-2.5 mb-3 text-xs text-red-750 bg-red-50/50 border border-red-100 rounded-lg p-3">
+                                <strong class="block text-red-800 mb-0.5 font-bold uppercase tracking-wider text-[10px]">Feedback from Administrator</strong>
+                                {{ item.rejectionReason }}
+                              </div>
+                            }
                             <div class="flex items-center gap-4 text-sm text-neutral-500">
                               <div class="flex items-center gap-1">
                                 <lucide-icon [img]="clockIcon" [size]="14"></lucide-icon>
@@ -322,17 +343,17 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                               </div>
                             </div>
                           </div>
-                          <div class="flex flex-col gap-2">
-                            <button class="btn-outline btn-sm">
-                              <lucide-icon [img]="eyeIcon" [size]="16"></lucide-icon>
+                          <div class="flex flex-col gap-2 shrink-0">
+                            <button (click)="viewArticleDetail(item)" class="btn-outline btn-sm flex items-center justify-center gap-1">
+                              <lucide-icon [img]="eyeIcon" [size]="14"></lucide-icon>
                               View
                             </button>
-                            <button (click)="editItem(item)" class="btn-outline btn-sm">
-                              <lucide-icon [img]="editIcon" [size]="16"></lucide-icon>
+                            <button (click)="editItem(item)" class="btn-outline btn-sm flex items-center justify-center gap-1">
+                              <lucide-icon [img]="editIcon" [size]="14"></lucide-icon>
                               Edit
                             </button>
-                            <button (click)="deleteItem(item.id)" class="btn-outline btn-sm text-error-600">
-                              <lucide-icon [img]="trashIcon" [size]="16"></lucide-icon>
+                            <button (click)="deleteItem(item.id)" class="btn-outline btn-sm text-error-600 flex items-center justify-center gap-1">
+                              <lucide-icon [img]="trashIcon" [size]="14"></lucide-icon>
                               Delete
                             </button>
                           </div>
@@ -365,6 +386,7 @@ export class ContentManagementComponent implements OnInit {
   private eventsService = inject(EventsService);
   private fileUploadService = inject(FileUploadService);
   private authStore = inject(UserAuthStore);
+  private router = inject(Router);
 
   // Icons
   plusIcon = Plus;
@@ -380,6 +402,7 @@ export class ContentManagementComponent implements OnInit {
   xIcon = X;
   uploadIcon = Upload;
   imageIconLucide = ImageIcon;
+  alertIcon = AlertCircle;
 
   // State
   activeTab = signal<'news' | 'events' | 'success-story'>('news');
@@ -394,6 +417,20 @@ export class ContentManagementComponent implements OnInit {
   myEvents = signal<EventSummary[]>([]);
   newsCategories = signal<NewsCategory[]>([]);
   eventCategories = signal<EventCategory[]>([]);
+
+  newsCategoryOptions = computed<SelectOption[]>(() => {
+    return [
+      { label: 'Select category', value: '' },
+      ...this.newsCategories().map(cat => ({ label: cat.name, value: cat.id }))
+    ];
+  });
+
+  eventCategoryOptions = computed<SelectOption[]>(() => {
+    return [
+      { label: 'Select category', value: '' },
+      ...this.eventCategories().map(cat => ({ label: cat.name, value: cat.id }))
+    ];
+  });
   
   // Image
   imagePreview = signal<string | null>(null);
@@ -420,17 +457,28 @@ export class ContentManagementComponent implements OnInit {
     });
   }
 
+  private route = inject(ActivatedRoute);
+
   ngOnInit(): void {
     const user = this.authStore.currentUser;
     if (!user) return;
 
-    // Set initial tab based on role
-    if (this.isAlumni() && !this.isAdmin() && !this.isContentCreator()) {
-      this.activeTab.set('success-story');
-    }
+    this.route.queryParams.subscribe(params => {
+      const tabParam = params['tab'];
+      if (tabParam === 'news' || tabParam === 'events' || tabParam === 'success-story') {
+        this.activeTab.set(tabParam);
+      } else {
+        // Set initial tab based on role
+        if (this.isAlumni() && !this.isAdmin() && !this.isContentCreator()) {
+          this.activeTab.set('success-story');
+        } else {
+          this.activeTab.set('news');
+        }
+      }
+      this.loadMyContent();
+    });
 
     this.loadCategories();
-    this.loadMyContent();
   }
 
   private loadCategories(): void {
@@ -446,25 +494,59 @@ export class ContentManagementComponent implements OnInit {
   }
 
   private loadMyContent(): void {
-    // TODO: Implement API to get user's own content
-    // For now, we'll show empty state
+    this.isLoading.set(true);
+    
+    this.newsService.getMyArticles().subscribe({
+      next: (articles) => {
+        if (this.activeTab() === 'success-story') {
+          this.myNews.set(articles.filter(a => a.category?.slug === 'success-story'));
+        } else {
+          this.myNews.set(articles.filter(a => a.category?.slug !== 'success-story'));
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading my articles:', err);
+        this.isLoading.set(false);
+      }
+    });
+
+    if (this.canManageEvents()) {
+      this.isLoading.set(true);
+      this.eventsService.getUpcomingEvents(1, 100).subscribe({
+        next: (res) => {
+          this.myEvents.set(res.items);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading events:', err);
+          this.isLoading.set(false);
+        }
+      });
+    }
   }
 
   setActiveTab(tab: 'news' | 'events' | 'success-story'): void {
     this.activeTab.set(tab);
     this.showForm.set(false);
+    this.loadMyContent();
   }
 
   openForm(): void {
-    this.showForm.set(true);
+    if (this.activeTab() === 'success-story') {
+      this.router.navigate(['/submit-content']);
+      return;
+    }
+    this.resetForms();
     this.editingItem.set(null);
     this.submissionSuccess.set(false);
-    this.resetForms();
+    this.showForm.set(true);
   }
 
   cancelForm(): void {
     this.showForm.set(false);
     this.resetForms();
+    this.editingItem.set(null);
   }
 
   private resetForms(): void {
@@ -477,15 +559,13 @@ export class ContentManagementComponent implements OnInit {
   submitNews(): void {
     if (this.newsForm.invalid) return;
 
-    // For success stories, image is required
-    if (this.activeTab() === 'success-story' && !this.selectedFile()) {
+    if (this.activeTab() === 'success-story' && !this.selectedFile() && !this.editingItem()?.imageUrl) {
       alert('Please upload an image for your success story');
       return;
     }
 
     this.isSubmitting.set(true);
 
-    // If there's a file, upload it first
     if (this.selectedFile()) {
       const contentType = this.activeTab() === 'success-story' ? 'story' : 'news';
       this.fileUploadService.uploadContentImage(this.selectedFile()!, contentType).subscribe({
@@ -499,7 +579,6 @@ export class ContentManagementComponent implements OnInit {
         }
       });
     } else {
-      // No image, submit without
       this.submitNewsWithImages('', '');
     }
   }
@@ -507,26 +586,32 @@ export class ContentManagementComponent implements OnInit {
   private submitNewsWithImages(imageUrl: string, thumbnailUrl: string): void {
     const formValue = this.newsForm.value;
     
-    // For success stories, use the success story category
+    const finalImageUrl = this.imagePreview() ? (imageUrl || this.editingItem()?.imageUrl) : undefined;
+    const finalThumbnailUrl = this.imagePreview() ? (thumbnailUrl || this.editingItem()?.thumbnailUrl) : undefined;
+
     const request = this.activeTab() === 'success-story' 
       ? {
           title: formValue.title,
           content: formValue.content,
-          imageUrl: imageUrl,
-          thumbnailUrl: thumbnailUrl
+          imageUrl: finalImageUrl,
+          thumbnailUrl: finalThumbnailUrl,
+          categorySlug: 'success-story'
         }
       : {
           title: formValue.title,
           content: formValue.content,
           categoryId: formValue.categoryId,
-          imageUrl: imageUrl || undefined,
-          thumbnailUrl: thumbnailUrl || undefined,
+          imageUrl: finalImageUrl || undefined,
+          thumbnailUrl: finalThumbnailUrl || undefined,
           publish: this.isAdmin()
         };
 
-    const apiCall = this.activeTab() === 'success-story'
-      ? this.newsService.submitSuccessStory(request as any)
-      : this.newsService.createArticle(request as any);
+    const isEdit = this.editingItem() !== null;
+    const apiCall = isEdit
+      ? this.newsService.updateArticle(this.editingItem().id, request as any)
+      : (this.activeTab() === 'success-story'
+        ? this.newsService.submitContent(request as any)
+        : this.newsService.createArticle(request as any));
 
     apiCall.subscribe({
       next: () => {
@@ -535,9 +620,9 @@ export class ContentManagementComponent implements OnInit {
         setTimeout(() => {
           this.cancelForm();
           this.loadMyContent();
-        }, 3000);
+        }, 2000);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error submitting:', err);
         alert(`Error: ${err.error?.message || 'Failed to submit. Please try again.'}`);
         this.isSubmitting.set(false);
@@ -557,7 +642,12 @@ export class ContentManagementComponent implements OnInit {
       publish: this.isAdmin()
     };
 
-    this.eventsService.createEvent(request).subscribe({
+    const isEdit = this.editingItem() !== null;
+    const apiCall = isEdit
+      ? this.eventsService.updateEvent(this.editingItem().id, request)
+      : this.eventsService.createEvent(request);
+
+    apiCall.subscribe({
       next: () => {
         this.isSubmitting.set(false);
         this.submissionSuccess.set(true);
@@ -574,22 +664,149 @@ export class ContentManagementComponent implements OnInit {
   }
 
   saveAsDraft(): void {
-    // TODO: Implement save as draft
+    if (this.newsForm.invalid) return;
+    this.isSubmitting.set(true);
+    const formValue = this.newsForm.value;
+    
+    const request = {
+      title: formValue.title,
+      content: formValue.content,
+      categoryId: formValue.categoryId,
+      publish: false
+    };
+
+    const isEdit = this.editingItem() !== null;
+    const apiCall = isEdit
+      ? this.newsService.updateArticle(this.editingItem().id, request as any)
+      : this.newsService.createArticle(request as any);
+
+    apiCall.subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.submissionSuccess.set(true);
+        setTimeout(() => {
+          this.cancelForm();
+          this.loadMyContent();
+        }, 2000);
+      },
+      error: (err) => {
+        console.error('Error saving draft:', err);
+        this.isSubmitting.set(false);
+      }
+    });
   }
 
   saveEventAsDraft(): void {
-    // TODO: Implement save event as draft
+    if (this.eventForm.invalid) return;
+    this.isSubmitting.set(true);
+    const formValue = this.eventForm.value;
+    
+    const request = {
+      ...formValue,
+      eventDate: new Date(formValue.eventDate),
+      publish: false
+    };
+
+    const isEdit = this.editingItem() !== null;
+    const apiCall = isEdit
+      ? this.eventsService.updateEvent(this.editingItem().id, request)
+      : this.eventsService.createEvent(request);
+
+    apiCall.subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.submissionSuccess.set(true);
+        setTimeout(() => {
+          this.cancelForm();
+          this.loadMyContent();
+        }, 2000);
+      },
+      error: (err) => {
+        console.error('Error saving event draft:', err);
+        this.isSubmitting.set(false);
+      }
+    });
   }
 
   editItem(item: any): void {
-    this.editingItem.set(item);
-    this.showForm.set(true);
-    // TODO: Populate form with item data
+    if (this.activeTab() === 'success-story') {
+      this.router.navigate(['/submit-content'], { queryParams: { editId: item.id } });
+      return;
+    }
+
+    this.submissionSuccess.set(false);
+    this.isLoading.set(true);
+    
+    if (this.activeTab() === 'news') {
+      this.newsService.getArticleById(item.id).subscribe({
+        next: (full) => {
+          this.editingItem.set(full);
+          this.newsForm.patchValue({
+            title: full.title,
+            content: full.content || '',
+            categoryId: full.category?.id || ''
+          });
+          if (full.imageUrl) {
+            this.imagePreview.set(full.imageUrl);
+          } else {
+            this.imagePreview.set(null);
+          }
+          this.selectedFile.set(null);
+          this.showForm.set(true);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading article for edit:', err);
+          alert('Failed to load article details.');
+          this.isLoading.set(false);
+        }
+      });
+    } else if (this.activeTab() === 'events') {
+      this.eventsService.getEventById(item.id).subscribe({
+        next: (full) => {
+          this.editingItem.set(full);
+          this.eventForm.patchValue({
+            title: full.title,
+            description: full.description,
+            eventDate: this.toDatetimeLocal(full.eventDate),
+            location: full.location,
+            categoryId: full.category?.id || '',
+            capacity: full.capacity || null
+          });
+          this.showForm.set(true);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading event for edit:', err);
+          alert('Failed to load event details.');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  private toDatetimeLocal(dateStr: string | Date): string {
+    const d = new Date(dateStr);
+    const pad = (num: number) => num.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   deleteItem(id: string): void {
     if (!confirm('Are you sure you want to delete this item?')) return;
-    // TODO: Implement delete
+    
+    const apiCall = this.activeTab() === 'events'
+      ? this.eventsService.deleteEvent(id)
+      : this.newsService.deleteArticle(id);
+
+    apiCall.subscribe({
+      next: () => {
+        this.loadMyContent();
+      },
+      error: (err) => {
+        console.error('Error deleting item:', err);
+        alert(err.error?.message || 'Failed to delete item.');
+      }
+    });
   }
 
   onImageSelected(event: Event): void {
@@ -609,6 +826,11 @@ export class ContentManagementComponent implements OnInit {
   removeImage(): void {
     this.imagePreview.set(null);
     this.selectedFile.set(null);
+  }
+
+  viewArticleDetail(item: any): void {
+    const path = this.activeTab() === 'events' ? `/events/${item.id}` : `/news/${item.id}`;
+    this.router.navigate([path]);
   }
 
   getItems(): any[] {

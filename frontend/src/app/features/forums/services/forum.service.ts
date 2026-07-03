@@ -112,14 +112,6 @@ export class ForumService {
   }
 
   /**
-   * Deletes a post (Admin only).
-   * Also deletes all nested replies.
-   */
-  deletePost(postId: string): Observable<void> {
-    return this.http.delete<void>(`${this.adminApiUrl}/posts/${postId}`);
-  }
-
-  /**
    * Updates a post (Admin only).
    * Used for content moderation.
    */
@@ -188,12 +180,27 @@ export class ForumService {
     return this.http.delete<void>(`${this.apiUrl}/posts/${postId}`);
   }
 
-  togglePinTopic(topicId: string): Observable<void> {
-    return this.http.put<void>(`${this.adminApiUrl}/topics/${topicId}/pin`, {});
+  /**
+   * Deletes a post (Admin only).
+   * Also deletes all nested replies.
+   */
+  deletePost(postId: string, reason?: string): Observable<void> {
+    const options = reason ? { body: { reason } } : {};
+    return this.http.delete<void>(`${this.adminApiUrl}/posts/${postId}`, options);
   }
 
-  toggleLockTopic(topicId: string): Observable<void> {
-    return this.http.put<void>(`${this.adminApiUrl}/topics/${topicId}/lock`, {});
+  /**
+   * Toggle pin status of a topic (Admin only).
+   */
+  togglePinTopic(topicId: string): Observable<any> {
+    return this.http.put(`${this.adminApiUrl}/topics/${topicId}/pin`, {});
+  }
+
+  /**
+   * Toggle lock status of a topic (Admin only).
+   */
+  toggleLockTopic(topicId: string): Observable<any> {
+    return this.http.put(`${this.adminApiUrl}/topics/${topicId}/lock`, {});
   }
 
   // ===================== Flagging =====================
@@ -223,5 +230,19 @@ export class ForumService {
    */
   resolveFlag(flagId: string, status: string, notes?: string): Observable<any> {
     return this.http.put(`${this.adminApiUrl}/flags/${flagId}/resolve`, { status, notes });
+  }
+
+  /**
+   * Bans a user (admin only).
+   */
+  banUser(userId: string, reason?: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/api/v1/admin/users/${userId}/ban`, { reason });
+  }
+
+  /**
+   * Restores a soft-deleted post (admin only).
+   */
+  restorePost(postId: string): Observable<any> {
+    return this.http.put<any>(`${this.adminApiUrl}/posts/${postId}/restore`, {});
   }
 }

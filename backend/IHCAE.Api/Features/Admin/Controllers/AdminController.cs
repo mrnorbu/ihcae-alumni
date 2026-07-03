@@ -271,6 +271,140 @@ public class AdminController : ControllerBase
         }
     }
 
+    // ===================== Admin Create User =====================
+
+    /// <summary>
+    /// Creates a new user (and alumni profile if applicable) directly from the admin panel.
+    /// </summary>
+    [HttpPost("users")]
+    [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateUser([FromBody] AdminCreateUserRequest request)
+    {
+        try
+        {
+            // Check if user already exists
+            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+            if (existingUser != null)
+                return BadRequest(new ErrorResponse { StatusCode = 400, Message = "A user with this email already exists." });
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, 12),
+                Status = UserStatus.Approved,
+                EmailVerified = true, // Admin created users are pre-verified
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _userRepository.AddAsync(user);
+
+            // Assign roles
+            if (request.Roles != null && request.Roles.Any())
+            {
+                foreach (var role in request.Roles)
+                {
+                    await _userRepository.AssignRoleAsync(user.Id, role);
+                }
+            }
+
+            // Create Alumni Profile if 'Alumni' role is assigned
+            if (request.Roles != null && request.Roles.Contains("Alumni"))
+            {
+                // Create a record in AlumniDatabase
+                var alumniRecord = new AlumniDatabaseDto
+                {
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    Email = request.Email,
+                    Phone = request.Phone,
+                    Course = request.Course,
+                    Batch = request.Batch
+                };
+                
+                try
+                {
+                    await _alumniImportService.CreateAlumniRecordAsync(alumniRecord);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to create legacy alumni record for new user {UserId}", user.Id);
+                    // Non-fatal, we continue
+                }
+
+                // Also initialize the public profile
+                var profile = new AlumniProfile
+                {
+                    UserId = user.Id,
+                    Bio = "New Alumni member",
+                    Location = request.Location,
+                    JobTitle = request.JobTitle,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.AlumniProfiles.Add(profile);
+                await _context.SaveChangesAsync();
+            }
+
+            _logger.LogInformation("Admin created user {UserId} ({Email}) with roles: {Roles}", user.Id, user.Email, string.Join(", ", request.Roles ?? new List<string>()));
+
+            return Ok(new AdminActionResponse
+            {
+                Success = true,
+                Message = $"User {user.FirstName} {user.LastName} created successfully.",
+                UserId = user.Id
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating user by admin");
+            return StatusCode(500, new ErrorResponse { StatusCode = 500, Message = "An error occurred while creating the user." });
+        }
+    }
+
+    // ===================== Admin Direct Password Change =====================
+
+    /// <summary>
+    /// Directly changes a user's password without requiring an email reset flow.
+    /// </summary>
+    [HttpPost("users/{userId}/change-password")]
+    [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ChangePassword(Guid userId, [FromBody] ChangePasswordRequest request)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return NotFound(new ErrorResponse { StatusCode = 404, Message = "User not found." });
+
+            if (string.IsNullOrWhiteSpace(request.NewPassword))
+                return BadRequest(new ErrorResponse { StatusCode = 400, Message = "Password cannot be empty." });
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword, 12);
+            user.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(user);
+
+            _logger.LogInformation("Admin changed password directly for user {UserId} ({Email})", userId, user.Email);
+
+            return Ok(new AdminActionResponse
+            {
+                Success = true,
+                Message = $"Password successfully changed for {user.FirstName} {user.LastName}.",
+                UserId = userId
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing password for user {UserId}", userId);
+            return StatusCode(500, new ErrorResponse { StatusCode = 500, Message = "An error occurred while changing password." });
+        }
+    }
+
     // ===================== Admin Edit User Profile =====================
 
     /// <summary>
@@ -290,6 +424,12 @@ public class AdminController : ControllerBase
             // Update phone on User entity
             if (request.Phone != null)
                 user.Phone = request.Phone;
+
+            if (request.FirstName != null)
+                user.FirstName = request.FirstName;
+
+            if (request.LastName != null)
+                user.LastName = request.LastName;
 
             user.UpdatedAt = DateTime.UtcNow;
 
@@ -725,10 +865,39 @@ public class UpdateRolesRequest
 /// </summary>
 public class AdminUpdateProfileRequest
 {
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
     public string? Bio { get; set; }
     public string? JobTitle { get; set; }
     public string? Location { get; set; }
     public string? Course { get; set; }
     public string? Batch { get; set; }
     public string? Phone { get; set; }
+}
+
+/// <summary>
+/// Request body for admin directly changing a user's password.
+/// </summary>
+public class ChangePasswordRequest
+{
+    public required string NewPassword { get; set; }
+}
+
+/// <summary>
+/// Request body for admin creating a new user (with roles and alumni data if applicable).
+/// </summary>
+public class AdminCreateUserRequest
+{
+    public required string FirstName { get; set; }
+    public required string LastName { get; set; }
+    public required string Email { get; set; }
+    public required string Password { get; set; }
+    public List<string> Roles { get; set; } = new();
+
+    // Alumni specific fields
+    public string? Course { get; set; }
+    public string? Batch { get; set; }
+    public string? Phone { get; set; }
+    public string? Location { get; set; }
+    public string? JobTitle { get; set; }
 }

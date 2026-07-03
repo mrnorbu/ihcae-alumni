@@ -13,6 +13,9 @@ IHCAE Alumni Network platform, a monolithic repository (monorepo) application ut
 | **Other** | Serilog (Logging), ImageSharp, Swashbuckle (Swagger) |
 
 ## 3. Dev Commands
+**Unified Dev Launcher:**
+- **Run both Frontend & Backend:** `./start.command` (Allows running concurrently, in separate Terminal windows, or cleaning caches first)
+
 **Backend (.NET 10):**
 - **Run API:** `cd backend/IHCAE.Api && dotnet run watch`
 - **Build API:** `cd backend/IHCAE.Api && dotnet build`

@@ -15,7 +15,7 @@ import { HeaderComponent, FooterComponent } from '../../shared/components';
 import {
   LucideAngularModule,
   Users, Calendar, MessageSquare, Newspaper,
-  ChevronRight, Shield, Star, Edit3, MapPin
+  ChevronRight, Shield, Star, Edit3, MapPin, Trash2
 } from 'lucide-angular';
 
 @Component({
@@ -55,18 +55,11 @@ import {
                 Admin Panel
               </a>
             }
-            @if (isAlumni() && !isAdmin()) {
-              <a routerLink="/content-management"
-                class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-700 rounded hover:border-neutral-900 hover:text-neutral-950 transition-colors w-full sm:w-auto justify-center bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-                <lucide-icon [img]="starIcon" [size]="12"></lucide-icon>
-                Share Story
-              </a>
-            }
-            @if (isContentCreator() && !isAdmin()) {
-              <a routerLink="/content-management"
-                class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-neutral-200 text-neutral-700 rounded hover:border-neutral-900 hover:text-neutral-950 transition-colors w-full sm:w-auto justify-center bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            @if ((isAlumni() || isContentCreator()) && !isAdmin()) {
+              <a routerLink="/submit-content"
+                class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-neutral-950 text-white rounded hover:bg-neutral-800 transition-colors w-full sm:w-auto justify-center shadow-sm">
                 <lucide-icon [img]="editIcon" [size]="12"></lucide-icon>
-                Manage Content
+                Submit Content
               </a>
             }
           </div>
@@ -191,6 +184,81 @@ import {
           </div>
         </div>
 
+        <!-- My Submissions (only for non-admin users) -->
+        @if (!isAdmin()) {
+          <div class="bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] mt-1">
+            <div class="flex items-center justify-between pb-2.5 border-b border-neutral-200/50 mb-3.5">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-950">My Submissions</h2>
+              <a routerLink="/submit-content" class="text-xs font-bold text-primary-700 hover:text-primary-950 flex items-center gap-0.5 transition-colors">
+                + Submit Content
+              </a>
+            </div>
+            
+            @if (isLoadingSubmissions()) {
+              <div class="animate-pulse space-y-3">
+                <div class="h-10 bg-white border border-neutral-200/30 rounded p-2.5"></div>
+              </div>
+            } @else if (mySubmissions().length === 0) {
+              <div class="py-6 text-center bg-white border border-neutral-200/30 rounded">
+                <p class="text-xs text-neutral-400">You haven't submitted any content yet.</p>
+                <a routerLink="/submit-content" class="text-xs font-semibold text-primary-700 hover:underline mt-1 inline-block">
+                  Submit your first post
+                </a>
+              </div>
+            } @else {
+              <div class="space-y-2.5">
+                @for (item of mySubmissions(); track item.id) {
+                  <div class="flex items-center justify-between p-2.5 bg-white border border-neutral-200/30 rounded hover:shadow-[0_1px_3px_rgba(0,0,0,0.015)] transition-all">
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-2 mb-1 flex-wrap">
+                        @if ($any(item.status) === 2 || item.status === 'Published' || $any(item.status) === 1 || item.status === 'PendingReview') {
+                          <a [routerLink]="['/news', item.id]" class="text-sm font-semibold text-neutral-850 hover:text-primary-700 hover:underline truncate leading-snug">
+                            {{ item.title }}
+                          </a>
+                        } @else {
+                          <p class="text-sm font-semibold text-neutral-850 truncate leading-snug">{{ item.title }}</p>
+                        }
+
+                        @if ($any(item.status) === 0 || item.status === 'Draft') {
+                          @if (item.rejectionReason) {
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-50 text-red-700 border border-red-100">Rejected</span>
+                          } @else {
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-neutral-50 text-neutral-600 border border-neutral-200">Draft</span>
+                          }
+                        }
+                        @if ($any(item.status) === 1 || item.status === 'PendingReview') {
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Pending Review</span>
+                        }
+                        @if ($any(item.status) === 2 || item.status === 'Published') {
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-green-50 text-green-700 border border-green-200">Approved</span>
+                        }
+                      </div>
+                      <p class="text-xs text-neutral-400">
+                        {{ item.category.name }} · Submitted on {{ formatDate(item.createdAt.toString()) }}
+                      </p>
+                      @if (($any(item.status) === 0 || item.status === 'Draft') && item.rejectionReason) {
+                        <p class="text-[11px] text-red-650 bg-red-50/50 rounded border border-red-100 p-2 mt-1.5 leading-normal">
+                          <strong>Feedback:</strong> {{ item.rejectionReason }}
+                        </p>
+                      }
+                    </div>
+                    <div class="ml-3 shrink-0 flex items-center gap-1.5">
+                      <a routerLink="/submit-content" [queryParams]="{ editId: item.id }" 
+                        class="px-2.5 py-1 text-xs font-semibold border border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 rounded bg-white transition-colors">
+                        Edit
+                      </a>
+                      <button (click)="deleteDraft(item.id)" 
+                        class="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded border border-neutral-200 transition-colors flex items-center justify-center" title="Delete Submission">
+                        <lucide-icon [img]="trashIcon" [size]="12"></lucide-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
         <!-- Latest News inside premium cardless layered containers -->
         <div class="bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] mt-1">
           <div class="flex items-center justify-between pb-2.5 border-b border-neutral-200/50 mb-4">
@@ -296,9 +364,11 @@ export class DashboardComponent implements OnInit {
   showOnboardingWizard = signal(false);
   profileData = signal<ProfileData | null>(null);
   isLoading = signal(true);
+  isLoadingSubmissions = signal(false);
   upcomingEvents = signal<EventSummary[]>([]);
   recentNews = signal<NewsArticleSummary[]>([]);
   recentTopics = signal<TopicSummaryDto[]>([]);
+  mySubmissions = signal<NewsArticleSummary[]>([]);
   alumniCount = signal<number | null>(null);
   eventsCount = signal<number | null>(null);
   forumsCount = signal<number | null>(null);
@@ -312,11 +382,33 @@ export class DashboardComponent implements OnInit {
   readonly newsIcon = Newspaper;
   readonly chevronIcon = ChevronRight;
   readonly mapPinIcon = MapPin;
+  readonly trashIcon = Trash2;
+
+  deleteDraft(id: string): void {
+    if (!confirm('Are you sure you want to delete this draft?')) return;
+    this.newsService.deleteArticle(id).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Deleted', 'Draft deleted successfully.');
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        console.error('Error deleting draft:', err);
+        this.notificationService.showError('Error', 'Failed to delete draft.');
+      }
+    });
+  }
 
   ngOnInit() {
     this.authStore.state$.subscribe((authState: any) => {
       if (authState?.user) {
         this.user.set(authState.user);
+        
+        // Redirect Admin and Content Creators to Admin Console
+        const roles = authState.user.roles || [];
+        if (roles.includes('Admin') || roles.includes('ContentCreator')) {
+          this.router.navigate(['/admin']);
+          return;
+        }
       }
     });
     this.loadDashboardData();
@@ -324,6 +416,23 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardData() {
     this.isLoading.set(true);
+
+    const currentUser = this.authStore.currentUser;
+    const isUserAdmin = currentUser?.roles?.includes('Admin') || false;
+
+    if (currentUser && !isUserAdmin) {
+      this.isLoadingSubmissions.set(true);
+      this.newsService.getMyArticles().subscribe({
+        next: (articles) => {
+          this.mySubmissions.set(articles);
+          this.isLoadingSubmissions.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading my submissions for dashboard:', err);
+          this.isLoadingSubmissions.set(false);
+        }
+      });
+    }
 
     forkJoin({
       events: this.eventsService.getUpcomingEvents(1, 3).pipe(catchError(() => of({ items: [], totalCount: 0 } as any))),
@@ -349,6 +458,10 @@ export class DashboardComponent implements OnInit {
   }
 
   checkOnboarding() {
+    const currentUser = this.authStore.currentUser;
+    const isAlumni = currentUser?.roles?.includes('Alumni') || false;
+    if (!isAlumni) return;
+
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
         this.profileData.set(profile);

@@ -24,6 +24,7 @@ public interface IEventService
     
     // Admin operations
     Task<PaginatedResult<EventSummaryDto>> GetPendingEventsAsync(int page, int pageSize);
+    Task<List<EventSummaryDto>> GetManagementEventsAsync(Guid userId, bool isAdmin);
     
     Task<EventDto> ApproveEventAsync(Guid id, Guid adminId);
     

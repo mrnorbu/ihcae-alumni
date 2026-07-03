@@ -431,6 +431,7 @@ import {
                       id="event-date"
                       type="datetime-local"
                       [(ngModel)]="eventForm.eventDate"
+                      [min]="minEventDate"
                       name="eventDate"
                       class="input-field"
                       required
@@ -554,6 +555,12 @@ export class ContentManagementComponent implements OnInit {
     location: '',
     isPublished: false
   };
+
+  get minEventDate(): string {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
+  }
 
   ngOnInit() {
     this.loadData();

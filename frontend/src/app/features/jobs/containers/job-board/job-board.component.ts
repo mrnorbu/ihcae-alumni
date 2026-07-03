@@ -1,9 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, Search, Filter, MapPin, Clock, Building, DollarSign, Briefcase, Plus, ChevronRight, LogIn } from 'lucide-angular';
-import { HeaderComponent, FooterComponent } from '../../../../shared/components';
+import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption } from '../../../../shared/components';
 import { UserAuthStore } from '../../../../core/state/user-auth.store';
 
 /**
@@ -18,7 +17,7 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
 @Component({
   selector: 'app-job-board',
   standalone: true,
-  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, CustomSelectComponent],
   template: `
     <div class="min-h-screen bg-white page-fade-in">
       <app-header></app-header>
@@ -54,21 +53,18 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
                 ></lucide-icon>
               </div>
             </div>
-    
+
             <!-- Location Filter -->
             <div>
               <label class="block text-xs font-semibold text-neutral-600 mb-1">
                 Location
               </label>
-              <select [ngModel]="filters().location" (ngModelChange)="updateLocation($event)" class="input-field">
-                <option value="">All Locations</option>
-                <option value="remote">Remote</option>
-                <option value="delhi">Delhi</option>
-                <option value="mumbai">Mumbai</option>
-                <option value="bangalore">Bangalore</option>
-                <option value="himachal">Himachal Pradesh</option>
-                <option value="international">International</option>
-              </select>
+              <app-custom-select
+                [options]="locationOptions"
+                [ngModel]="filters().location"
+                (ngModelChange)="updateLocation($event)"
+                placeholder="All Locations"
+              ></app-custom-select>
             </div>
     
             <!-- Job Type Filter -->
@@ -76,14 +72,12 @@ import { UserAuthStore } from '../../../../core/state/user-auth.store';
               <label class="block text-xs font-semibold text-neutral-600 mb-1">
                 Job Type
               </label>
-              <select [ngModel]="filters().jobType" (ngModelChange)="updateJobType($event)" class="input-field">
-                <option value="">All Types</option>
-                <option value="full-time">Full Time</option>
-                <option value="part-time">Part Time</option>
-                <option value="contract">Contract</option>
-                <option value="internship">Internship</option>
-                <option value="freelance">Freelance</option>
-              </select>
+              <app-custom-select
+                [options]="jobTypeOptions"
+                [ngModel]="filters().jobType"
+                (ngModelChange)="updateJobType($event)"
+                placeholder="All Types"
+              ></app-custom-select>
             </div>
           </div>
     
@@ -236,6 +230,25 @@ export class JobBoardComponent implements OnInit {
   clockIcon = Clock;
   plusIcon = Plus;
   loginIcon = LogIn;
+
+  locationOptions: SelectOption[] = [
+    { label: 'All Locations', value: '' },
+    { label: 'Remote', value: 'remote' },
+    { label: 'Delhi', value: 'delhi' },
+    { label: 'Mumbai', value: 'mumbai' },
+    { label: 'Bangalore', value: 'bangalore' },
+    { label: 'Himachal Pradesh', value: 'himachal' },
+    { label: 'International', value: 'international' }
+  ];
+
+  jobTypeOptions: SelectOption[] = [
+    { label: 'All Types', value: '' },
+    { label: 'Full Time', value: 'full-time' },
+    { label: 'Part Time', value: 'part-time' },
+    { label: 'Contract', value: 'contract' },
+    { label: 'Internship', value: 'internship' },
+    { label: 'Freelance', value: 'freelance' }
+  ];
 
   // Filters
   filters = signal({

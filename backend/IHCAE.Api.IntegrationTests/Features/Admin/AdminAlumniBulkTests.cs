@@ -38,6 +38,7 @@ public class AdminAlumniBulkTests : IntegrationTestBase
             Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
             Status = UserStatus.Approved,
+            EmailVerified = true,
             CreatedAt = DateTime.UtcNow
         };
         context.Users.Add(user);

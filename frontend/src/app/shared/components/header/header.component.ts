@@ -28,29 +28,22 @@ import { Subscription } from 'rxjs';
           <div class="hidden lg:flex items-center gap-6">
             <!-- Public Navigation (when not authenticated) -->
             @if (!authState.isAuthenticated) {
-              <a href="#about" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors">About</a>
               <a routerLink="/news-events" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
                 <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
                 News & Events
               </a>
-              <a routerLink="/jobs" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
-                <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
-                Jobs
-              </a>
-              <a href="#contact" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors">Contact</a>
+              <a routerLink="/contact" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors">Contact</a>
             }
     
             <!-- Authenticated User Navigation -->
             @if (authState.isAuthenticated) {
               <!-- Common features for all authenticated users -->
-              <a routerLink="/news-events" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
-                <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
-                News & Events
-              </a>
-              <a routerLink="/jobs" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
-                <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
-                Jobs
-              </a>
+              @if (!isAdmin() && !isContentCreator()) {
+                <a routerLink="/news-events" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                  <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
+                  News & Events
+                </a>
+              }
               <!-- Applicant-specific features -->
               @if (isApplicant()) {
                 <a routerLink="/resume-builder" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
@@ -69,15 +62,15 @@ import { Subscription } from 'rxjs';
                   Forums
                 </a>
               }
-              <a routerLink="/dashboard" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
-                <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
-                Dashboard
-              </a>
-              <!-- Admin-specific features -->
-              @if (isAdmin()) {
-                <a routerLink="/admin" class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors flex items-center gap-1">
+              @if (isAdmin() || isContentCreator()) {
+                <a routerLink="/admin" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
                   <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
-                  Admin Panel
+                  Dashboard
+                </a>
+              } @else {
+                <a routerLink="/dashboard" class="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors flex items-center gap-1">
+                  <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
+                  Dashboard
                 </a>
               }
             }
@@ -121,11 +114,13 @@ import { Subscription } from 'rxjs';
                       <p class="text-sm font-medium text-neutral-900">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
                       <p class="text-xs text-neutral-500">{{ authState.user?.email }}</p>
                     </div>
-                    <a routerLink="/profile" (click)="closeUserMenu()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                      <lucide-icon [img]="userIcon" [size]="16"></lucide-icon>
-                      My Profile
-                    </a>
-                    <a routerLink="/dashboard" (click)="closeUserMenu()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
+                    @if (isAlumni()) {
+                      <a routerLink="/profile" (click)="closeUserMenu()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
+                        <lucide-icon [img]="userIcon" [size]="16"></lucide-icon>
+                        My Profile
+                      </a>
+                    }
+                    <a [routerLink]="(isAdmin() || isContentCreator()) ? '/admin' : '/dashboard'" (click)="closeUserMenu()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
                       <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
                       Dashboard
                     </a>
@@ -156,16 +151,11 @@ import { Subscription } from 'rxjs';
           <div class="px-4 py-3 space-y-1">
             <!-- Public Mobile Menu (when not authenticated) -->
             @if (!authState.isAuthenticated) {
-              <a href="#about" (click)="toggleMobileMenu()" class="block px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">About</a>
               <a routerLink="/news-events" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
                 <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
                 News & Events
               </a>
-              <a routerLink="/jobs" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
-                <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
-                Jobs
-              </a>
-              <a href="#contact" (click)="toggleMobileMenu()" class="block px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">Contact</a>
+              <a routerLink="/contact" (click)="toggleMobileMenu()" class="block px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">Contact</a>
               <div class="pt-3 space-y-2">
                 <a routerLink="/login" (click)="toggleMobileMenu()" class="block btn-outline w-full text-center">Sign In</a>
                 <a routerLink="/register" (click)="toggleMobileMenu()" class="block btn-primary w-full text-center">Join Network</a>
@@ -179,14 +169,12 @@ import { Subscription } from 'rxjs';
                 <p class="text-xs text-primary-600 font-medium">{{ getUserRole() }}</p>
               </div>
               <!-- Common features for all authenticated users -->
-              <a routerLink="/news-events" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
-                <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
-                News & Events
-              </a>
-              <a routerLink="/jobs" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
-                <lucide-icon [img]="briefcaseIcon" [size]="14"></lucide-icon>
-                Jobs
-              </a>
+              @if (!isAdmin() && !isContentCreator()) {
+                <a routerLink="/news-events" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+                  <lucide-icon [img]="newspaperIcon" [size]="14"></lucide-icon>
+                  News & Events
+                </a>
+              }
               <!-- Applicant-specific features -->
               @if (isApplicant()) {
                 <a routerLink="/resume-builder" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
@@ -196,6 +184,10 @@ import { Subscription } from 'rxjs';
               }
               <!-- Alumni-specific features -->
               @if (isAlumni()) {
+                <a routerLink="/profile" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+                  <lucide-icon [img]="userIcon" [size]="16"></lucide-icon>
+                  My Profile
+                </a>
                 <a routerLink="/directory" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
                   <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
                   Alumni Directory
@@ -205,15 +197,15 @@ import { Subscription } from 'rxjs';
                   Community Forums
                 </a>
               }
-              <a routerLink="/dashboard" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
-                <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
-                Dashboard
-              </a>
-              <!-- Admin-specific features -->
-              @if (isAdmin()) {
-                <a routerLink="/admin" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-md transition-colors">
+              @if (isAdmin() || isContentCreator()) {
+                <a routerLink="/admin" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
                   <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
-                  Admin Panel
+                  Dashboard
+                </a>
+              } @else {
+                <a routerLink="/dashboard" (click)="toggleMobileMenu()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-md transition-colors">
+                  <lucide-icon [img]="settingsIcon" [size]="16"></lucide-icon>
+                  Dashboard
                 </a>
               }
               <div class="pt-3">
@@ -346,10 +338,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Check if user is a content creator
+   */
+  isContentCreator(): boolean {
+    return this.authState.user?.roles?.includes('ContentCreator') || false;
+  }
+
+  /**
    * Get user role display name
    */
   getUserRole(): string {
     if (this.isAdmin()) return 'Administrator';
+    if (this.isContentCreator()) return 'Content Creator';
     if (this.isAlumni()) return 'Alumni';
     if (this.isApplicant()) return 'Job Applicant';
     return 'User';

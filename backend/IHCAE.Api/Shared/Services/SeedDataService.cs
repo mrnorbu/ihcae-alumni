@@ -34,12 +34,56 @@ public class SeedDataService : IHostedService
         {
             await SeedRolesAsync(context);
             await SeedAdminUserAsync(context);
+            await AddRejectionReasonColumnIfMissingAsync(context);
             _logger.LogInformation("Database seeding completed successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while seeding database");
             throw;
+        }
+    }
+
+    private async Task AddRejectionReasonColumnIfMissingAsync(AppDbContext context)
+    {
+        try
+        {
+            var connection = context.Database.GetDbConnection();
+            var dbName = connection.Database;
+            
+            // Check if column exists in information_schema
+            var sql = $"SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '{dbName}' AND TABLE_NAME = 'NewsArticles' AND COLUMN_NAME = 'RejectionReason';";
+            
+            var count = 0;
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+                
+                var result = await command.ExecuteScalarAsync();
+                if (result != null && int.TryParse(result.ToString(), out var parsedCount))
+                {
+                    count = parsedCount;
+                }
+            }
+
+            if (count == 0)
+            {
+                _logger.LogInformation("Adding column 'RejectionReason' to 'NewsArticles' table...");
+                await context.Database.ExecuteSqlRawAsync("ALTER TABLE NewsArticles ADD COLUMN RejectionReason VARCHAR(1000) NULL;");
+                _logger.LogInformation("Column 'RejectionReason' added successfully.");
+            }
+            else
+            {
+                _logger.LogInformation("Column 'RejectionReason' already exists on 'NewsArticles' table.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to dynamically add 'RejectionReason' column to 'NewsArticles' table.");
         }
     }
 

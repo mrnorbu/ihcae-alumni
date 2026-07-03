@@ -70,6 +70,11 @@ public interface IForumService
     Task<bool> DeletePostAsAdminAsync(Guid postId, Guid adminUserId, string reason);
 
     /// <summary>
+    /// Restores a soft-deleted post (Admin only).
+    /// </summary>
+    Task<bool> RestorePostAsync(Guid postId, Guid adminUserId);
+
+    /// <summary>
     /// Gets top users by engagement (likes received).
     /// </summary>
     Task<List<TopUserDto>> GetTopUsersAsync(int limit = 5);

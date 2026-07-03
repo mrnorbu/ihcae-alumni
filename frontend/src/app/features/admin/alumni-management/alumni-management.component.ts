@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, ViewChild, ElementRef, computed } fr
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../core/services/notification.service';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { exportToCSV } from '../../../shared/utils/csv-exporter';
 import { environment } from '../../../../environments/environment';
@@ -50,7 +51,7 @@ interface AlumniRecord {
 @Component({
   selector: 'app-alumni-management',
   standalone: true,
-  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent],
+  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent, CustomSelectComponent],
   template: `
     <div class="p-1 sm:p-2 space-y-3">
  
@@ -132,14 +133,15 @@ interface AlumniRecord {
              placeholder="Search by name, email, or course..."
              class="w-full pl-10 pr-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent">
          </div>
-         <div class="flex items-center gap-2">
-           <select [(ngModel)]="filterStatus" (ngModelChange)="onSearch()"
-             class="px-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 cursor-pointer">
-             <option value="all">All Records</option>
-             <option value="registered">Registered</option>
-             <option value="pending">Pending Invitation</option>
-             <option value="invited">Invitation Sent (Unclaimed)</option>
-           </select>
+          <div class="flex items-center gap-2">
+            <div class="w-[180px]">
+              <app-custom-select
+                [options]="statusFilterOptions"
+                [(ngModel)]="filterStatus"
+                (ngModelChange)="onSearch()"
+                customClass="w-full px-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 cursor-pointer bg-white flex items-center justify-between gap-1.5 text-left text-neutral-700"
+              ></app-custom-select>
+            </div>
            @if (selectedIds().length > 0 && selectedUnmatchedCount() > 0) {
              <button (click)="bulkGenerateAccounts()" [disabled]="isLoading() || isBulkProcessing()"
                class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors">
@@ -679,6 +681,13 @@ export class AlumniManagementComponent implements OnInit {
   isExporting = signal(false);
   searchQuery = '';
   filterStatus = 'all';
+
+  statusFilterOptions: SelectOption[] = [
+    { label: 'All Records', value: 'all' },
+    { label: 'Registered', value: 'registered' },
+    { label: 'Pending Invitation', value: 'pending' },
+    { label: 'Invitation Sent (Unclaimed)', value: 'invited' }
+  ];
   currentPage = signal(1);
   pageSize = 50;
   selectedIds = signal<string[]>([]);

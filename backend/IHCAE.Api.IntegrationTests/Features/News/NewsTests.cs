@@ -8,6 +8,10 @@ using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Features.News.Models.Entities;
 using IHCAE.Api.Features.News.Models.DTOs;
 using IHCAE.Api.Shared.DTOs;
+using System.Net.Http.Headers;
+using IHCAE.Api.Features.Auth.Models.DTOs;
+using IHCAE.Api.Shared.Constants;
+using IHCAE.Api.Shared.Models;
 
 namespace IHCAE.Api.IntegrationTests.Features.News;
 
@@ -242,5 +246,98 @@ public class NewsTests : IntegrationTestBase
         result.Should().NotBeNull();
         result!.Should().Contain(c => c.Slug == "general-news");
         result.Should().Contain(c => c.Slug == "success-story");
+    }
+
+    private async Task<string> GetTokenAsync(string email, string password)
+    {
+        var request = new LoginRequest { Email = email, Password = password };
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", request);
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        return result!.Token;
+    }
+
+    private async Task SeedAlumniRoleAndUserAsync(AppDbContext context, Guid userId, string email, string password, string firstName, string lastName)
+    {
+        var alumniRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.Alumni);
+        if (alumniRole == null)
+        {
+            alumniRole = new Role { Name = RoleConstants.Alumni, Description = "Alumni Role", CreatedAt = DateTime.UtcNow };
+            context.Roles.Add(alumniRole);
+            await context.SaveChangesAsync();
+        }
+
+        var user = new User
+        {
+            Id = userId,
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+            Status = UserStatus.Approved,
+            EmailVerified = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        context.Users.Add(user);
+
+        context.UserRoles.Add(new UserRole
+        {
+            UserId = userId,
+            RoleId = alumniRole.Id
+        });
+
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task SubmitContent_AsAlumni_ReturnsSuccess()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var email = "submit.alumni@example.com";
+        var password = "Password123!";
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            
+            // Seed News categories
+            var generalCategory = await context.NewsCategories.FirstOrDefaultAsync(c => c.Slug == "general-news");
+            if (generalCategory == null)
+            {
+                context.NewsCategories.Add(new NewsCategory
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "General News",
+                    Slug = "general-news",
+                    CreatedAt = DateTime.UtcNow
+                });
+                await context.SaveChangesAsync();
+            }
+
+            await SeedAlumniRoleAndUserAsync(context, userId, email, password, "Submitting", "Alumni");
+        }
+
+        var token = await GetTokenAsync(email, password);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var requestBody = new SubmitContentRequest
+        {
+            Title = "Submit News Test Title",
+            Content = "This is a long generic news content that exceeds 100 characters in length to pass validation rule checks.",
+            CategorySlug = "general-news"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/api/v1/news/management/submit", requestBody);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var article = await response.Content.ReadFromJsonAsync<NewsArticleDto>();
+        article.Should().NotBeNull();
+        article!.Title.Should().Be("Submit News Test Title");
+        article.Category.Slug.Should().Be("general-news");
+        article.Status.Should().Be(ContentStatus.PendingReview);
     }
 }

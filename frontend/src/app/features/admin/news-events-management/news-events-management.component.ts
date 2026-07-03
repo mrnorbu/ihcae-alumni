@@ -1,18 +1,21 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Newspaper, Calendar, Plus, Edit, Trash2, Eye, RefreshCw, Users, Download, CheckCircle, XCircle } from 'lucide-angular';
 import { NewsService } from '../../news-events/services/news.service';
 import { EventsService } from '../../news-events/services/events.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { FileUploadService } from '../../../shared/services/file-upload.service';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { AppImageUrlPipe } from '../../../shared/pipes/app-image-url.pipe';
 import type { NewsArticleSummary, NewsCategory, CreateNewsArticleRequest, UpdateNewsArticleRequest } from '../../news-events/models';
 import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventRequest, EventRegistration } from '../../news-events/models';
 
 @Component({
   selector: 'app-news-events-management',
   standalone: true,
-  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent],
+  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent, CustomSelectComponent, AppImageUrlPipe],
   template: `
     <div class="p-4 sm:p-6 space-y-4">
 
@@ -90,13 +93,13 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2 mb-1">
                         <h3 class="text-sm font-semibold text-neutral-900 truncate">{{ article.title }}</h3>
-                        @if (article.status === 'Published') {
+                        @if ($any(article.status) === 'Published' || $any(article.status) === 2) {
                           <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">Published</span>
                         }
-                        @if (article.status === 'PendingReview') {
+                        @if ($any(article.status) === 'PendingReview' || $any(article.status) === 1) {
                           <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
                         }
-                        @if (article.status === 'Draft') {
+                        @if ($any(article.status) === 'Draft' || $any(article.status) === 0) {
                           <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500 border border-neutral-200">Draft</span>
                         }
                       </div>
@@ -154,11 +157,14 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2 mb-1">
                         <h3 class="text-sm font-semibold text-neutral-900 truncate">{{ event.title }}</h3>
-                        @if (event.status === 'Published') {
+                        @if ($any(event.status) === 'Published' || $any(event.status) === 2) {
                           <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">Published</span>
                         }
-                        @if (event.status === 'PendingReview') {
+                        @if ($any(event.status) === 'PendingReview' || $any(event.status) === 1) {
                           <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
+                        }
+                        @if ($any(event.status) === 'Draft' || $any(event.status) === 0) {
+                          <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500 border border-neutral-200">Draft</span>
                         }
                       </div>
                       <div class="flex items-center gap-3 text-xs text-neutral-400">
@@ -234,28 +240,19 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
 
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">Category</label>
-              <div class="relative">
-                <select [(ngModel)]="articleForm.categoryId" 
-                  class="w-full pl-3.5 pr-10 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 appearance-none bg-white transition-all">
-                  <option value="">Select category</option>
-                  @for (cat of newsCategories(); track cat.id) {
-                    <option [value]="cat.id">{{ cat.name }}</option>
-                  }
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-neutral-400">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+              <app-custom-select
+                [options]="newsCategoryOptions()"
+                [(ngModel)]="articleForm.categoryId"
+                placeholder="Select category"
+                customClass="w-full px-3.5 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 bg-white transition-all text-left text-neutral-700 flex items-center justify-between gap-1.5"
+              ></app-custom-select>
             </div>
-
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">Cover Image</label>
               
               @if (articleForm.imageUrl) {
                 <div class="relative rounded-xl overflow-hidden border border-neutral-100 aspect-video bg-neutral-50 shadow-sm group">
-                  <img [src]="articleForm.imageUrl" class="w-full h-full object-cover" />
+                  <img [src]="articleForm.imageUrl | appImageUrl" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-neutral-900/60 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col items-center justify-center gap-2">
                     <button type="button" (click)="articleForm.imageUrl = ''" 
                       class="px-4 py-2 text-xs font-semibold bg-white text-red-600 rounded-lg shadow-md hover:bg-neutral-50 transition-all active:scale-[0.95]">
@@ -367,12 +364,12 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">Event Date</label>
-                <input type="datetime-local" [(ngModel)]="eventForm.eventDate" 
+                <input type="datetime-local" [(ngModel)]="eventForm.eventDate" [min]="minEventDate"
                   class="w-full px-3.5 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all bg-white" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">End Date (optional)</label>
-                <input type="datetime-local" [(ngModel)]="eventForm.eventEndDate" 
+                <input type="datetime-local" [(ngModel)]="eventForm.eventEndDate" [min]="eventForm.eventDate || minEventDate"
                   class="w-full px-3.5 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all bg-white" />
               </div>
             </div>
@@ -387,20 +384,12 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">Category</label>
-                <div class="relative">
-                  <select [(ngModel)]="eventForm.categoryId" 
-                    class="w-full pl-3.5 pr-10 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 appearance-none bg-white transition-all">
-                    <option value="">Select category</option>
-                    @for (cat of eventCategories(); track cat.id) {
-                      <option [value]="cat.id">{{ cat.name }}</option>
-                    }
-                  </select>
-                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-neutral-400">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
+                <app-custom-select
+                  [options]="eventCategoryOptions()"
+                  [(ngModel)]="eventForm.categoryId"
+                  placeholder="Select category"
+                  customClass="w-full px-3.5 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 bg-white transition-all text-left text-neutral-700 flex items-center justify-between gap-1.5"
+                ></app-custom-select>
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">Capacity</label>
@@ -415,7 +404,7 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
               
               @if (eventForm.imageUrl) {
                 <div class="relative rounded-xl overflow-hidden border border-neutral-100 aspect-video bg-neutral-50 shadow-sm group">
-                  <img [src]="eventForm.imageUrl" class="w-full h-full object-cover" />
+                  <img [src]="eventForm.imageUrl | appImageUrl" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-neutral-900/60 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col items-center justify-center gap-2">
                     <button type="button" (click)="eventForm.imageUrl = ''" 
                       class="px-4 py-2 text-xs font-semibold bg-white text-red-600 rounded-lg shadow-md hover:bg-neutral-50 transition-all active:scale-[0.95]">
@@ -564,6 +553,7 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
 })
 export class NewsEventsManagementComponent implements OnInit {
   private newsService = inject(NewsService);
+  private router = inject(Router);
   private eventsService = inject(EventsService);
   private notificationService = inject(NotificationService);
   private fileUploadService = inject(FileUploadService);
@@ -603,6 +593,20 @@ export class NewsEventsManagementComponent implements OnInit {
   newsCategories = signal<NewsCategory[]>([]);
   eventCategories = signal<EventCategory[]>([]);
 
+  newsCategoryOptions = computed<SelectOption[]>(() => {
+    return [
+      { label: 'Select category', value: '' },
+      ...this.newsCategories().map(cat => ({ label: cat.name, value: cat.id }))
+    ];
+  });
+
+  eventCategoryOptions = computed<SelectOption[]>(() => {
+    return [
+      { label: 'Select category', value: '' },
+      ...this.eventCategories().map(cat => ({ label: cat.name, value: cat.id }))
+    ];
+  });
+
   // Article modal
   showArticleModal = signal(false);
   editingArticleId = '';
@@ -631,9 +635,9 @@ export class NewsEventsManagementComponent implements OnInit {
 
   private loadArticles() {
     this.isLoading.set(true);
-    this.newsService.getPublishedArticles(1, 100).subscribe({
+    this.newsService.getManagementArticles().subscribe({
       next: (result) => {
-        this.articles.set(result.items);
+        this.articles.set(result);
         this.isLoading.set(false);
       },
       error: () => {
@@ -645,9 +649,9 @@ export class NewsEventsManagementComponent implements OnInit {
 
   private loadEvents() {
     this.isLoadingEvents.set(true);
-    this.eventsService.getUpcomingEvents(1, 100).subscribe({
+    this.eventsService.getManagementEvents().subscribe({
       next: (result) => {
-        this.events.set(result.items);
+        this.events.set(result);
         this.isLoadingEvents.set(false);
       },
       error: () => {
@@ -740,7 +744,7 @@ export class NewsEventsManagementComponent implements OnInit {
   }
 
   viewArticle(id: string) {
-    window.open(`/news/${id}`, '_blank');
+    this.router.navigate([`/news/${id}`]);
   }
 
   deleteArticle(article: NewsArticleSummary) {
@@ -835,7 +839,7 @@ export class NewsEventsManagementComponent implements OnInit {
   }
 
   viewEvent(id: string) {
-    window.open(`/events/${id}`, '_blank');
+    this.router.navigate([`/events/${id}`]);
   }
 
   deleteEvent(event: EventSummary) {
@@ -883,6 +887,12 @@ export class NewsEventsManagementComponent implements OnInit {
   }
 
   // === Helpers ===
+
+  get minEventDate(): string {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
+  }
 
   private toDatetimeLocal(date: Date | string): string {
     const d = new Date(date);

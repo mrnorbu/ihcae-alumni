@@ -27,6 +27,30 @@ public class EventManagementController : ControllerBase
 
     /// <summary>
     /// Create a new event (Admin/ContentCreator)
+    /// <summary>
+    /// Get events for management (Admin sees all, ContentCreator sees own)
+    /// </summary>
+    [HttpGet]
+    [Authorize(Roles = "Admin,ContentCreator")]
+    [ProducesResponseType(typeof(List<EventSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetManagementEvents()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
+            var events = await _eventService.GetManagementEventsAsync(userId, isAdmin);
+            return Ok(events);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving management events");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Create a new event (Admin/ContentCreator)
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin,ContentCreator")]
@@ -43,7 +67,7 @@ public class EventManagementController : ControllerBase
             }
 
             var userId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var eventDto = await _eventService.CreateEventAsync(userId, request, isAdmin);
             return CreatedAtRoute("GetEventById", new { controller = "Events", id = eventDto.Id }, eventDto);
@@ -79,7 +103,7 @@ public class EventManagementController : ControllerBase
             }
 
             var userId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var eventDto = await _eventService.UpdateEventAsync(id, userId, request, isAdmin);
             return Ok(eventDto);
@@ -119,7 +143,7 @@ public class EventManagementController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var deleted = await _eventService.DeleteEventAsync(id, userId, isAdmin);
             if (!deleted)
@@ -145,7 +169,7 @@ public class EventManagementController : ControllerBase
     /// Get pending events for admin review
     /// </summary>
     [HttpGet("pending")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(typeof(PaginatedResult<EventSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetPendingEvents(
@@ -168,7 +192,7 @@ public class EventManagementController : ControllerBase
     /// Approve a pending event (Admin only)
     /// </summary>
     [HttpPost("{id}/approve")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -202,7 +226,7 @@ public class EventManagementController : ControllerBase
     /// Reject a pending event (Admin only)
     /// </summary>
     [HttpPost("{id}/reject")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]

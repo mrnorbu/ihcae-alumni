@@ -160,6 +160,50 @@ export class AlumniGuard implements CanActivate {
 }
 
 /**
+ * Content Creator Guard.
+ * Protects news/events submission routes.
+ * Requires authentication and either ContentCreator, Alumni, or Admin role.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class ContentCreatorGuard implements CanActivate {
+  constructor(
+    private authStore: UserAuthStore,
+    private router: Router
+  ) {}
+
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> {
+    return this.authStore.state$.pipe(
+      take(1),
+      map(authState => {
+        if (authState.isAuthenticated && authState.user) {
+          const hasAccess = 
+            authState.user.roles.includes('ContentCreator') || 
+            authState.user.roles.includes('Alumni') || 
+            authState.user.roles.includes('Admin');
+          
+          if (hasAccess) {
+            return true;
+          } else {
+            this.router.navigate(['/dashboard']);
+            return false;
+          }
+        } else {
+          this.router.navigate(['/login'], { 
+            queryParams: { returnUrl: state.url } 
+          });
+          return false;
+        }
+      })
+    );
+  }
+}
+
+/**
  * Guest guard.
  * Prevents authenticated users from accessing guest-only pages (like login/register).
  * Redirects authenticated users to the dashboard.
@@ -203,3 +247,85 @@ export class GuestGuard implements CanActivate {
     );
   }
 }
+
+/**
+ * Admin or Content Creator Guard.
+ * Protects layout routes for Admins and Content Creators.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class AdminOrContentCreatorGuard implements CanActivate {
+  constructor(
+    private authStore: UserAuthStore,
+    private router: Router
+  ) {}
+
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> {
+    return this.authStore.state$.pipe(
+      take(1),
+      map(authState => {
+        if (authState.isAuthenticated && authState.user) {
+          const hasAccess = authState.user.roles.includes('Admin') || authState.user.roles.includes('ContentCreator');
+          if (hasAccess) {
+            return true;
+          } else {
+            this.router.navigate(['/unauthorized']);
+            return false;
+          }
+        } else {
+          this.router.navigate(['/login'], { 
+            queryParams: { returnUrl: state.url } 
+          });
+          return false;
+        }
+      })
+    );
+  }
+}
+
+/**
+ * Admin Dashboard Guard.
+ * Restricts main dashboard view to Admin role.
+ * Redirects Content Creators to their dedicated content tab.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class AdminDashboardGuard implements CanActivate {
+  constructor(
+    private authStore: UserAuthStore,
+    private router: Router
+  ) {}
+
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> {
+    return this.authStore.state$.pipe(
+      take(1),
+      map(authState => {
+        if (authState.isAuthenticated && authState.user) {
+          if (authState.user.roles.includes('Admin')) {
+            return true;
+          } else if (authState.user.roles.includes('ContentCreator')) {
+            this.router.navigate(['/admin/content']);
+            return false;
+          } else {
+            this.router.navigate(['/unauthorized']);
+            return false;
+          }
+        } else {
+          this.router.navigate(['/login'], { 
+            queryParams: { returnUrl: state.url } 
+          });
+          return false;
+        }
+      })
+    );
+  }
+}
+

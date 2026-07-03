@@ -42,6 +42,7 @@ public class ForumTests : IntegrationTestBase
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
                 Status = UserStatus.Approved,
+                EmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             };
             context.Users.Add(user);
@@ -49,6 +50,7 @@ public class ForumTests : IntegrationTestBase
         else
         {
             userId = existingUser.Id;
+            existingUser.EmailVerified = true;
         }
 
         if (!await context.DiscussionTopics.AnyAsync(t => t.Id == topicId))

@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil, forkJoin, catchError, of } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil, forkJoin, catchError, of, switchMap, Observable } from 'rxjs';
 import { ForumService } from '../../forums/services/forum.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { TopicSummaryDto, TopicDetailDto, PostDto } from '../../../shared/models';
 import {
@@ -24,13 +25,14 @@ import {
   XCircle,
   Calendar,
   TrendingUp,
-  CornerDownRight
+  CornerDownRight,
+  ChevronDown
 } from 'lucide-angular';
 
 @Component({
   selector: 'app-forum-moderation',
   standalone: true,
-  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent],
+  imports: [FormsModule, LucideAngularModule, ConfirmationModalComponent, CustomSelectComponent],
   template: `
     <div class="p-4 sm:p-6 space-y-4">
 
@@ -120,21 +122,22 @@ import {
               class="w-full pl-11 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors" />
           </div>
           <div class="flex items-center gap-2">
-            <select [(ngModel)]="selectedStatus" (change)="applyFilters()"
-              class="px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-              <option value="">All Topics</option>
-              <option value="pinned">Pinned</option>
-              <option value="locked">Locked</option>
-              <option value="recent">Recent (7 days)</option>
-              <option value="popular">Popular</option>
-            </select>
-            <select [(ngModel)]="selectedSort" (change)="applyFilters()"
-              class="px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="most_posts">Most Posts</option>
-              <option value="most_recent">Most Recent</option>
-            </select>
+            <div class="w-[140px]">
+              <app-custom-select
+                [options]="topicStatusOptions"
+                [(ngModel)]="selectedStatus"
+                (ngModelChange)="applyFilters()"
+                customClass="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700"
+              ></app-custom-select>
+            </div>
+            <div class="w-[150px]">
+              <app-custom-select
+                [options]="topicSortOptions"
+                [(ngModel)]="selectedSort"
+                (ngModelChange)="applyFilters()"
+                customClass="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700"
+              ></app-custom-select>
+            </div>
             <button (click)="clearFilters()"
               class="flex items-center gap-1.5 px-3 py-2 text-sm border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
               <lucide-icon [img]="filterIcon" [size]="14"></lucide-icon>
@@ -280,74 +283,100 @@ import {
 
       @if (activeTab() === 'flags') {
       <!-- Flagged Content -->
-      <div class="bg-white border border-neutral-200 rounded-xl overflow-hidden">
-        <div class="flex items-center gap-2 px-4 py-3 border-b border-neutral-100">
-          <select [(ngModel)]="flagFilter" (change)="loadFlags()"
-            class="px-3 py-1.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-            <option value="">All Flags</option>
-            <option value="Pending">Pending</option>
-            <option value="Reviewed">Reviewed</option>
-            <option value="Dismissed">Dismissed</option>
-            <option value="ActionTaken">Action Taken</option>
-          </select>
+      <div class="bg-white border border-neutral-200 rounded-xl">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 flex-wrap">
+          <div class="w-[130px]">
+            <app-custom-select
+              [options]="flagStatusOptions"
+              [(ngModel)]="flagFilter"
+              (ngModelChange)="loadFlags()"
+              customClass="w-full px-3 py-1.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700"
+            ></app-custom-select>
+          </div>
+          <div class="w-[140px]">
+            <app-custom-select
+              [options]="flagReasonOptions"
+              [(ngModel)]="flagReasonFilter"
+              customClass="w-full px-3 py-1.5 text-sm border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700"
+            ></app-custom-select>
+          </div>
         </div>
 
-        @if (isLoadingFlags()) {
-          <div class="py-12 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-2 border-neutral-200 border-t-neutral-600 mx-auto mb-2"></div>
-            <p class="text-sm text-neutral-400">Loading flags...</p>
-          </div>
-        } @else if (flags().length === 0) {
-          <div class="py-12 text-center">
-            <lucide-icon [img]="alertTriangleIcon" [size]="32" class="text-neutral-200 mx-auto mb-2"></lucide-icon>
-            <p class="text-sm font-medium text-neutral-600 mb-1">No flagged content</p>
-            <p class="text-sm text-neutral-400">No flags match the current filter.</p>
-          </div>
-        } @else {
-          <div class="divide-y divide-neutral-50">
-            @for (flag of flags(); track flag.id) {
-              <div class="p-4 hover:bg-neutral-50 transition-colors">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                      <span class="px-2 py-0.5 rounded-full text-xs font-medium"
-                        [class]="flag.status === 'Pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                 flag.status === 'ActionTaken' ? 'bg-red-50 text-red-600 border border-red-100' :
-                                 flag.status === 'Dismissed' ? 'bg-neutral-100 text-neutral-500 border border-neutral-200' :
-                                 'bg-blue-50 text-blue-600 border border-blue-100'">
-                        {{ flag.status }}
-                      </span>
-                      <span class="text-xs text-neutral-400">{{ flag.reason }}</span>
-                      <span class="text-xs text-neutral-300">·</span>
-                      <span class="text-xs text-neutral-400">{{ formatDate(flag.createdAt) }}</span>
+        <div class="rounded-b-xl overflow-hidden">
+          @if (isLoadingFlags()) {
+            <div class="py-12 text-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-2 border-neutral-200 border-t-neutral-600 mx-auto mb-2"></div>
+              <p class="text-sm text-neutral-400">Loading flags...</p>
+            </div>
+          } @else if (getFilteredFlags().length === 0) {
+            <div class="py-12 text-center">
+              <lucide-icon [img]="alertTriangleIcon" [size]="32" class="text-neutral-200 mx-auto mb-2"></lucide-icon>
+              <p class="text-sm font-medium text-neutral-600 mb-1">No flagged content</p>
+              <p class="text-sm text-neutral-400">No flags match the current filter.</p>
+            </div>
+          } @else {
+            <div class="divide-y divide-neutral-50">
+              @for (flag of getFilteredFlags(); track flag.id) {
+                <div class="p-4 hover:bg-neutral-50 transition-colors">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                          [class]="flag.status === 'Pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                   flag.status === 'ActionTaken' ? 'bg-red-50 text-red-600 border border-red-100' :
+                                   flag.status === 'Dismissed' ? 'bg-neutral-100 text-neutral-500 border border-neutral-200' :
+                                   'bg-blue-50 text-blue-600 border border-blue-100'">
+                          {{ flag.status }}
+                        </span>
+                        <span class="text-xs text-neutral-400">{{ flag.reason }}</span>
+                        <span class="text-xs text-neutral-300">·</span>
+                        <span class="text-xs text-neutral-400">{{ formatDate(flag.createdAt) }}</span>
+                      </div>
+                      <p class="text-sm text-neutral-700 line-clamp-2 mb-1">{{ flag.postContent }}</p>
+                      <div class="flex items-center gap-3 text-xs text-neutral-400">
+                        <span>Post by <strong class="text-neutral-600">{{ flag.postAuthorName }}</strong></span>
+                        <span>in <strong class="text-neutral-600">{{ flag.topicTitle }}</strong></span>
+                        <span>Flagged by {{ flag.flaggedByName }}</span>
+                      </div>
+                      @if (flag.details) {
+                        <p class="text-xs text-neutral-500 mt-1 italic">"{{ flag.details }}"</p>
+                      }
                     </div>
-                    <p class="text-sm text-neutral-700 line-clamp-2 mb-1">{{ flag.postContent }}</p>
-                    <div class="flex items-center gap-3 text-xs text-neutral-400">
-                      <span>Post by <strong class="text-neutral-600">{{ flag.postAuthorName }}</strong></span>
-                      <span>in <strong class="text-neutral-600">{{ flag.topicTitle }}</strong></span>
-                      <span>Flagged by {{ flag.flaggedByName }}</span>
-                    </div>
-                    @if (flag.details) {
-                      <p class="text-xs text-neutral-500 mt-1 italic">"{{ flag.details }}"</p>
-                    }
-                  </div>
-                  @if (flag.status === 'Pending') {
                     <div class="flex items-center gap-1 shrink-0">
-                      <button (click)="resolveFlag(flag.id, 'Dismissed')" title="Dismiss"
-                        class="px-2.5 py-1.5 text-xs font-medium border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-                        Dismiss
+                      <button (click)="viewTopicById(flag.topicId, flag.topicTitle)" title="View Full Thread Context"
+                        class="p-1.5 rounded-md text-neutral-450 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
+                        <lucide-icon [img]="eyeIcon" [size]="16"></lucide-icon>
                       </button>
-                      <button (click)="resolveFlag(flag.id, 'ActionTaken')" title="Take Action"
-                        class="px-2.5 py-1.5 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                        Action
-                      </button>
+                      @if (flag.status === 'Pending') {
+                        <button (click)="resolveFlag(flag.id, 'Dismissed')" title="Dismiss"
+                          class="px-2.5 py-1.5 text-xs font-medium border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+                          Dismiss
+                        </button>
+                        <button (click)="openActionModal(flag)" title="Take Action"
+                          class="px-2.5 py-1.5 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                          Action
+                        </button>
+                      } @else {
+                        <div class="flex items-center gap-1">
+                          @if (flag.status === 'ActionTaken') {
+                            <button (click)="restorePost(flag)" title="Restore Post & Re-open Flag"
+                              class="px-2.5 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                              Restore Post
+                            </button>
+                          }
+                          <button (click)="reopenFlag(flag)" title="Re-open flag for review"
+                            class="px-2.5 py-1.5 text-xs font-medium border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 transition-colors">
+                            Re-open
+                          </button>
+                        </div>
+                      }
                     </div>
-                  }
+                  </div>
                 </div>
-              </div>
-            }
-          </div>
-        }
+              }
+            </div>
+          }
+        </div>
       </div>
       } <!-- end flags tab -->
     </div>
@@ -515,6 +544,98 @@ import {
       </div>
     }
 
+    <!-- Action Taken Moderation Modal -->
+    @if (showActionModal()) {
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]" (click)="closeActionModal()">
+        <div class="bg-white rounded-xl border border-neutral-200 max-w-xl w-full mx-4 max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between p-4 border-b border-neutral-100 shrink-0">
+            <h3 class="text-base font-bold text-neutral-900">Moderate Flagged Content</h3>
+            <button (click)="closeActionModal()" class="p-1 rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
+              <lucide-icon [img]="xIcon" [size]="18"></lucide-icon>
+            </button>
+          </div>
+
+          <div class="p-4 overflow-y-auto flex-1 space-y-4 text-left">
+            <!-- Simplified Flag Summary Info -->
+            <div class="space-y-2 text-sm">
+              <div class="flex flex-wrap items-center justify-between text-xs text-neutral-500 gap-2">
+                <span>By <strong class="text-neutral-700">{{ selectedFlag()?.postAuthorName }}</strong> · Flagged by {{ selectedFlag()?.flaggedByName }}</span>
+                <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100 text-xs font-semibold">{{ selectedFlag()?.reason }}</span>
+              </div>
+              @if (selectedFlag()?.details) {
+                <p class="text-xs text-neutral-500 italic bg-neutral-50 px-2 py-1 rounded">Flagger note: "{{ selectedFlag()?.details }}"</p>
+              }
+              <div class="border border-neutral-200 bg-neutral-50 rounded p-2.5 text-sm text-neutral-700 whitespace-pre-wrap max-h-24 overflow-y-auto italic">
+                "{{ selectedFlag()?.postContent }}"
+              </div>
+            </div>
+
+            <!-- Friendly Moderation Action Radios -->
+             <div class="space-y-2">
+               <label class="block text-sm font-semibold text-neutral-800">Select Moderation Action:</label>
+               <div class="flex flex-col gap-1.5 pl-1">
+                 <label class="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer">
+                   <input type="radio" name="modAction" value="delete_post"
+                     [checked]="moderationAction() === 'delete_post'"
+                     (change)="moderationAction.set('delete_post')"
+                     class="h-4 w-4 text-red-600 focus:ring-red-500 border-neutral-300" />
+                   <span>Hide comment</span>
+                 </label>
+                 <label class="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer">
+                   <input type="radio" name="modAction" value="ban_user"
+                     [checked]="moderationAction() === 'ban_user'"
+                     (change)="moderationAction.set('ban_user')"
+                     class="h-4 w-4 text-red-600 focus:ring-red-500 border-neutral-300" />
+                   <span>Ban user</span>
+                 </label>
+                 <label class="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer">
+                   <input type="radio" name="modAction" value="delete_and_ban"
+                     [checked]="moderationAction() === 'delete_and_ban'"
+                     (change)="moderationAction.set('delete_and_ban')"
+                     class="h-4 w-4 text-red-600 focus:ring-red-500 border-neutral-300" />
+                   <span>Hide comment & ban user</span>
+                 </label>
+                 <label class="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer">
+                   <input type="radio" name="modAction" value="no_action"
+                     [checked]="moderationAction() === 'no_action'"
+                     (change)="moderationAction.set('no_action')"
+                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-neutral-300" />
+                   <span>Dismiss report (no action)</span>
+                 </label>
+               </div>
+             </div>
+
+            <!-- Resolution Notes -->
+            <div class="space-y-1">
+              <label class="block text-sm font-semibold text-neutral-800">Resolution Notes (required/recommended):</label>
+              <textarea
+                [(ngModel)]="resolutionNotes"
+                class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:bg-white resize-none"
+                rows="3"
+                placeholder="Enter details for the audit log..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="p-4 border-t border-neutral-100 flex justify-end gap-2 shrink-0 bg-neutral-50 rounded-b-xl">
+            <button
+              (click)="closeActionModal()"
+              [disabled]="isResolving()"
+              class="px-4 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 disabled:opacity-40 transition-colors">
+              Cancel
+            </button>
+            <button
+              (click)="confirmAction()"
+              [disabled]="isResolving()"
+              class="px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-40 transition-colors"
+              [class]="moderationAction() === 'no_action' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'">
+              {{ isResolving() ? 'Executing...' : 'Confirm Action' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     <app-confirmation-modal
       [isVisible]="showConfirmModal()"
       [title]="confirmModalConfig().title"
@@ -550,6 +671,40 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
   readonly calendarIcon = Calendar;
   readonly trendingIcon = TrendingUp;
   readonly replyIcon = CornerDownRight;
+  readonly chevronDownIcon = ChevronDown;
+
+  // Dropdown Options
+  topicStatusOptions: SelectOption[] = [
+    { label: 'All Topics', value: '' },
+    { label: 'Pinned', value: 'pinned' },
+    { label: 'Locked', value: 'locked' },
+    { label: 'Recent (7 days)', value: 'recent' },
+    { label: 'Popular', value: 'popular' }
+  ];
+
+  topicSortOptions: SelectOption[] = [
+    { label: 'Newest First', value: 'newest' },
+    { label: 'Oldest First', value: 'oldest' },
+    { label: 'Most Posts', value: 'most_posts' },
+    { label: 'Most Recent', value: 'most_recent' }
+  ];
+
+  flagStatusOptions: SelectOption[] = [
+    { label: 'All Flags', value: '' },
+    { label: 'Pending', value: 'Pending' },
+    { label: 'Reviewed', value: 'Reviewed' },
+    { label: 'Dismissed', value: 'Dismissed' },
+    { label: 'Action Taken', value: 'ActionTaken' }
+  ];
+
+  flagReasonOptions: SelectOption[] = [
+    { label: 'All Reasons', value: '' },
+    { label: 'Spam', value: 'Spam' },
+    { label: 'Harassment', value: 'Harassment' },
+    { label: 'Inappropriate', value: 'Inappropriate' },
+    { label: 'Off-topic', value: 'OffTopic' },
+    { label: 'Other', value: 'Other' }
+  ];
 
   // Confirmation modal
   showConfirmModal = signal(false);
@@ -578,6 +733,7 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
   flagCount = signal(0);
   isLoadingFlags = signal(false);
   flagFilter = '';
+  flagReasonFilter = '';
 
   stats = signal({ totalTopics: 0, totalPosts: 0, activeUsers: 0, pinnedTopics: 0 });
   topics = signal<TopicSummaryDto[]>([]);
@@ -589,6 +745,124 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
   showEditModal = signal(false);
   editPostId = '';
   editContent = '';
+
+  // Interactive Moderation Actions Modal
+  showActionModal = signal(false);
+  selectedFlag = signal<any | null>(null);
+  moderationAction = signal<'delete_post' | 'ban_user' | 'delete_and_ban' | 'no_action'>('delete_post');
+  resolutionNotes = signal('');
+  isResolving = signal(false);
+
+  openActionModal(flag: any) {
+    this.selectedFlag.set(flag);
+    this.moderationAction.set('delete_post');
+    this.resolutionNotes.set('');
+    this.isResolving.set(false);
+    this.showActionModal.set(true);
+    document.body.classList.add('overflow-hidden');
+  }
+
+  closeActionModal() {
+    this.showActionModal.set(false);
+    this.selectedFlag.set(null);
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  confirmAction() {
+    const flag = this.selectedFlag();
+    if (!flag) return;
+
+    this.isResolving.set(true);
+    const action = this.moderationAction();
+    const notes = this.resolutionNotes().trim() || 'No notes provided.';
+
+    // Create tasks
+    const operations: Observable<any>[] = [];
+
+    if (action === 'delete_post' || action === 'delete_and_ban') {
+      operations.push(this.forumService.deletePost(flag.postId, notes));
+    }
+    if (action === 'ban_user' || action === 'delete_and_ban') {
+      operations.push(this.forumService.banUser(flag.postAuthorId, notes));
+    }
+
+    // Resolve status mapping
+    const status = action === 'no_action' ? 'Dismissed' : 'ActionTaken';
+
+    if (operations.length > 0) {
+      forkJoin(operations).pipe(
+        switchMap(() => this.forumService.resolveFlag(flag.id, status, notes)),
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Moderation Complete', 'Corrective action taken and flag resolved.');
+          this.closeActionModal();
+          this.loadFlags();
+          this.loadFlagCount();
+        },
+        error: (err) => {
+          this.notificationService.showError('Moderation Failed', err?.error?.message || 'An error occurred during moderation.');
+          this.isResolving.set(false);
+        }
+      });
+    } else {
+      this.forumService.resolveFlag(flag.id, status, notes).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Resolved', 'Flag resolved successfully.');
+          this.closeActionModal();
+          this.loadFlags();
+          this.loadFlagCount();
+        },
+        error: (err) => {
+          this.notificationService.showError('Error', err?.error?.message || 'Failed to resolve flag.');
+          this.isResolving.set(false);
+        }
+      });
+    }
+  }
+
+  reopenFlag(flag: any) {
+    this.openConfirm(
+      'Re-open Flag',
+      'Are you sure you want to re-open this flag for review?',
+      'Re-open Flag',
+      () => {
+        this.forumService.resolveFlag(flag.id, 'Pending', 'Re-opened flag for re-evaluation.').pipe(
+          takeUntil(this.destroy$)
+        ).subscribe({
+          next: () => {
+            this.notificationService.showSuccess('Re-opened', 'Flag status set back to Pending.');
+            this.loadFlags();
+            this.loadFlagCount();
+          },
+          error: (err) => this.notificationService.showError('Error', err?.error?.message || 'Failed to re-open flag.')
+        });
+      }
+    );
+  }
+
+  restorePost(flag: any) {
+    this.openConfirm(
+      'Restore Post & Re-open Flag',
+      'This will restore the soft-deleted post (making it visible again to all alumni) and re-open the flag. Proceed?',
+      'Restore & Re-open',
+      () => {
+        this.forumService.restorePost(flag.postId).pipe(
+          switchMap(() => this.forumService.resolveFlag(flag.id, 'Pending', 'Restored post and re-opened flag.')),
+          takeUntil(this.destroy$)
+        ).subscribe({
+          next: () => {
+            this.notificationService.showSuccess('Restored', 'Post restored and flag re-opened.');
+            this.loadFlags();
+            this.loadFlagCount();
+          },
+          error: (err) => this.notificationService.showError('Error', err?.error?.message || 'Failed to restore post.')
+        });
+      }
+    );
+  }
 
   ngOnInit() {
     this.loadTopics();
@@ -622,8 +896,8 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
     });
   }
 
-  resolveFlag(flagId: string, status: string) {
-    this.forumService.resolveFlag(flagId, status).pipe(
+  resolveFlag(flagId: string, status: string, notes?: string) {
+    this.forumService.resolveFlag(flagId, status, notes).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
@@ -633,6 +907,14 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
       },
       error: () => this.notificationService.showError('Error', 'Failed to resolve flag')
     });
+  }
+
+  getFilteredFlags(): any[] {
+    let items = this.flags();
+    if (this.flagReasonFilter) {
+      items = items.filter(f => f.reason === this.flagReasonFilter);
+    }
+    return items;
   }
 
   ngOnDestroy() {
@@ -748,6 +1030,11 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
         this.isLoadingTopic.set(false);
       }
     });
+  }
+
+  viewTopicById(topicId: string, topicTitle: string = 'Topic Details') {
+    const fakeTopic: any = { id: topicId, title: topicTitle };
+    this.viewTopic(fakeTopic);
   }
 
   togglePinTopic(topic: TopicSummaryDto) {

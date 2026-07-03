@@ -121,6 +121,11 @@ public class AppDbContext : DbContext
     public DbSet<EventRegistration> EventRegistrations { get; set; } = null!;
 
     /// <summary>
+    /// Notifications table - in-app user notifications
+    /// </summary>
+    public DbSet<Notification> Notifications { get; set; } = null!;
+
+    /// <summary>
     /// Configures entity relationships and constraints using Fluent API.
     /// This method is called when the model is being created.
     /// </summary>
@@ -466,6 +471,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Excerpt).HasMaxLength(500);
             entity.Property(e => e.ImageUrl).HasMaxLength(1024);
             entity.Property(e => e.ThumbnailUrl).HasMaxLength(1024);
+            entity.Property(e => e.RejectionReason).HasMaxLength(1000);
             entity.Property(e => e.Status).IsRequired();
             entity.Property(e => e.ViewCount).HasDefaultValue(0);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
@@ -567,6 +573,30 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.Email);
             entity.HasIndex(e => e.Status);
+        });
+
+        // Configure Notification entity
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Message).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Type).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Link).HasMaxLength(255);
+            entity.Property(e => e.IsRead).HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+
+            // Foreign key to User
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes for query performance
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.IsRead);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

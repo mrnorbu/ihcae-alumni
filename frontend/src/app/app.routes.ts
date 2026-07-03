@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { AuthGuard, AdminGuard, AlumniGuard } from './core/guards/auth.guard';
+import { AuthGuard, AdminGuard, AlumniGuard, ContentCreatorGuard, AdminOrContentCreatorGuard, AdminDashboardGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -43,7 +43,7 @@ export const routes: Routes = [
   {
     path: 'profile',
     loadComponent: () => import('./features/profile/containers/my-profile/my-profile.component').then(m => m.MyProfileComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AlumniGuard]
   },
   {
     path: 'directory',
@@ -58,18 +58,18 @@ export const routes: Routes = [
   {
     path: 'admin',
     loadComponent: () => import('./features/admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
-    canActivate: [AdminGuard],
+    canActivate: [AdminOrContentCreatorGuard],
     children: [
-      { path: '', loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
+      { path: '', loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent), canActivate: [AdminDashboardGuard] },
       { path: 'content-review', loadComponent: () => import('./features/admin/content-review/content-review.component').then(m => m.ContentReviewComponent) },
-      { path: 'alumni-hub', loadComponent: () => import('./features/admin/alumni-hub/alumni-hub.component').then(m => m.AlumniHubComponent) },
+      { path: 'alumni-hub', loadComponent: () => import('./features/admin/alumni-hub/alumni-hub.component').then(m => m.AlumniHubComponent), canActivate: [AdminGuard] },
       { path: 'alumni', redirectTo: 'alumni-hub', pathMatch: 'full' },
       { path: 'directory', redirectTo: 'alumni-hub', pathMatch: 'full' },
-      { path: 'forums', loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent) },
+      { path: 'forums', loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent), canActivate: [AdminGuard] },
       { path: 'content', loadComponent: () => import('./features/admin/news-events-management/news-events-management.component').then(m => m.NewsEventsManagementComponent) },
-      { path: 'users', loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent) },
-      { path: 'analytics', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Analytics' } },
-      { path: 'settings', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Settings' } },
+      { path: 'users', loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent), canActivate: [AdminGuard] },
+      { path: 'analytics', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Analytics' }, canActivate: [AdminGuard] },
+      { path: 'settings', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Settings' }, canActivate: [AdminGuard] },
     ]
   },
   {
@@ -123,9 +123,18 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'submit-content',
+    loadComponent: () => import('./features/news-events/containers/submit-content/submit-content.component').then(m => m.SubmitContentComponent),
+    canActivate: [ContentCreatorGuard]
+  },
+  {
     path: 'submit-success-story',
-    loadComponent: () => import('./features/news-events/containers/submit-success-story/submit-success-story.component').then(m => m.SubmitSuccessStoryComponent),
-    canActivate: [AlumniGuard]
+    redirectTo: 'submit-content',
+    pathMatch: 'full'
+  },
+  {
+    path: 'contact',
+    loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent)
   },
   {
     path: '**',

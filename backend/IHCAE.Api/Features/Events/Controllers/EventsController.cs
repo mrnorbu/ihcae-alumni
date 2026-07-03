@@ -198,7 +198,7 @@ public class EventsController : ControllerBase
     /// Get event registrations (Admin only)
     /// </summary>
     [HttpGet("{id}/registrations")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(typeof(PaginatedResult<EventRegistrationDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetEventRegistrations(
@@ -222,7 +222,7 @@ public class EventsController : ControllerBase
     /// Export event registrations as CSV (Admin only)
     /// </summary>
     [HttpGet("{id}/registrations/export")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ExportRegistrations(Guid id)

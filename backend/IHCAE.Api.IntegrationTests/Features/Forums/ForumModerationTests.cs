@@ -35,15 +35,16 @@ public class ForumModerationTests : IntegrationTestBase
     {
         var adminEmail = "admin.mod@example.com";
         var existingAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
+        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.Admin);
+        if (adminRole == null)
+        {
+            adminRole = new Role { Name = RoleConstants.Admin, Description = "Administrator", CreatedAt = DateTime.UtcNow };
+            context.Roles.Add(adminRole);
+            await context.SaveChangesAsync();
+        }
+
         if (existingAdmin == null)
         {
-            var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.Admin);
-            if (adminRole == null)
-            {
-                adminRole = new Role { Name = RoleConstants.Admin, Description = "Administrator", CreatedAt = DateTime.UtcNow };
-                context.Roles.Add(adminRole);
-                await context.SaveChangesAsync();
-            }
 
             var admin = new User
             {
@@ -53,19 +54,26 @@ public class ForumModerationTests : IntegrationTestBase
                 Email = adminEmail,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
                 Status = UserStatus.Approved,
+                EmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             };
             context.Users.Add(admin);
+        }
+        else
+        {
+            adminId = existingAdmin.Id;
+            existingAdmin.EmailVerified = true;
+            existingAdmin.Status = UserStatus.Approved;
+        }
 
+        var existingUserRole = await context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == adminId && ur.RoleId == adminRole.Id);
+        if (existingUserRole == null)
+        {
             context.UserRoles.Add(new UserRole
             {
                 UserId = adminId,
                 RoleId = adminRole.Id
             });
-        }
-        else
-        {
-            adminId = existingAdmin.Id;
         }
 
         if (!await context.DiscussionTopics.AnyAsync(t => t.Id == topicId))
@@ -98,6 +106,7 @@ public class ForumModerationTests : IntegrationTestBase
     public async Task DeleteTopic_AsAdmin_ReturnsSuccess()
     {
         // Arrange
+        _factory.EmailServiceMock.ClearReceivedCalls();
         var adminId = Guid.NewGuid();
         var topicId = Guid.NewGuid();
         var postId = Guid.NewGuid();
@@ -132,6 +141,42 @@ public class ForumModerationTests : IntegrationTestBase
                 Arg.Any<string>(), 
                 "deleted", 
                 Arg.Any<string>());
+        }
+    }
+
+    [Fact]
+    public async Task DeletePost_AsAdmin_ReturnsSuccess()
+    {
+        // Arrange
+        _factory.EmailServiceMock.ClearReceivedCalls();
+        var adminId = Guid.NewGuid();
+        var topicId = Guid.NewGuid();
+        var postId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedAdminAndForumDataAsync(context, adminId, topicId, postId);
+        }
+
+        var token = await GetAdminTokenAsync("admin.mod@example.com", "Password123!");
+        
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/admin/forums/posts/{postId}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = JsonContent.Create(new { Reason = "Abusive language" });
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var post = await context.ForumPosts.FirstAsync(p => p.Id == postId);
+            post.IsDeleted.Should().BeTrue();
+            post.DeletionReason.Should().Be("Abusive language");
         }
     }
 
@@ -301,6 +346,46 @@ public class ForumModerationTests : IntegrationTestBase
             flag.ResolutionNotes.Should().Be("No violation found upon review.");
             flag.ResolvedById.Should().Be(adminId);
             flag.ResolvedAt.Should().NotBeNull();
+        }
+    }
+
+    [Fact]
+    public async Task RestorePost_AsAdmin_ReturnsSuccess()
+    {
+        // Arrange
+        var adminId = Guid.NewGuid();
+        var topicId = Guid.NewGuid();
+        var postId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await SeedAdminAndForumDataAsync(context, adminId, topicId, postId);
+
+            // Mark post as soft-deleted first
+            var post = await context.ForumPosts.FirstAsync(p => p.Id == postId);
+            post.IsDeleted = true;
+            post.DeletionReason = "Abusive content";
+            await context.SaveChangesAsync();
+        }
+
+        var token = await GetAdminTokenAsync("admin.mod@example.com", "Password123!");
+        
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/admin/forums/posts/{postId}/restore");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var post = await context.ForumPosts.FirstAsync(p => p.Id == postId);
+            post.IsDeleted.Should().BeFalse();
+            post.DeletionReason.Should().BeNull();
         }
     }
 }

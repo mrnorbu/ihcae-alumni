@@ -8,7 +8,7 @@ import type {
   NewsCategory,
   CreateNewsArticleRequest,
   UpdateNewsArticleRequest,
-  CreateSuccessStoryRequest,
+  SubmitContentRequest,
 } from '../models';
 import type { PaginatedResult } from '../../../shared/models';
 
@@ -104,11 +104,11 @@ export class NewsService {
   }
 
   /**
-   * Submits a success story (Alumni only).
-   * Story will be pending review.
+   * Submits news or a success story (Alumni only).
+   * Content will be pending review.
    */
-  submitSuccessStory(request: CreateSuccessStoryRequest): Observable<NewsArticle> {
-    return this.http.post<NewsArticle>(`${this.managementApiUrl}/success-story`, request);
+  submitContent(request: SubmitContentRequest): Observable<NewsArticle> {
+    return this.http.post<NewsArticle>(`${this.managementApiUrl}/submit`, request);
   }
 
   /**
@@ -139,5 +139,19 @@ export class NewsService {
    */
   rejectArticle(id: string, reason: string): Observable<void> {
     return this.http.post<void>(`${this.managementApiUrl}/${id}/reject`, { reason });
+  }
+
+  /**
+   * Gets articles created by the current user.
+   */
+  getMyArticles(): Observable<NewsArticleSummary[]> {
+    return this.http.get<NewsArticleSummary[]>(`${this.managementApiUrl}/my-articles`);
+  }
+
+  /**
+   * Gets articles for console management.
+   */
+  getManagementArticles(): Observable<NewsArticleSummary[]> {
+    return this.http.get<NewsArticleSummary[]>(this.managementApiUrl);
   }
 }

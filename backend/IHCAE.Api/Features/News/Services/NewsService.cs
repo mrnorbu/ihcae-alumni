@@ -97,22 +97,34 @@ public class NewsService : INewsService
         };
     }
 
-    public async Task<NewsArticleDto> GetArticleByIdAsync(Guid id)
+    public async Task<NewsArticleDto> GetArticleByIdAsync(Guid id, Guid? currentUserId = null, bool isAdmin = false)
     {
         var article = await _context.NewsArticles
             .Include(a => a.Category)
             .Include(a => a.Author)
                 .ThenInclude(u => u.AlumniProfile)
-            .FirstOrDefaultAsync(a => a.Id == id && a.Status == ContentStatus.Published);
+            .FirstOrDefaultAsync(a => a.Id == id);
 
         if (article == null)
         {
             throw new KeyNotFoundException($"Article with ID {id} not found");
         }
 
-        // Increment view count
-        article.ViewCount++;
-        await _context.SaveChangesAsync();
+        // If not published, only allow author or admin to view
+        if (article.Status != ContentStatus.Published)
+        {
+            if (!isAdmin && article.AuthorId != currentUserId)
+            {
+                throw new KeyNotFoundException($"Article with ID {id} not found");
+            }
+        }
+
+        // Increment view count (only for published articles or if view count should be incremented)
+        if (article.Status == ContentStatus.Published)
+        {
+            article.ViewCount++;
+            await _context.SaveChangesAsync();
+        }
 
         return MapToDto(article);
     }
@@ -206,6 +218,8 @@ public class NewsService : INewsService
             throw new ArgumentException("Invalid category ID");
         }
 
+        var wasDraft = article.Status == ContentStatus.Draft;
+
         article.Title = request.Title;
         article.Content = request.Content;
         article.Excerpt = request.Content.Length > 200 ? request.Content.Substring(0, 200) + "..." : request.Content;
@@ -214,16 +228,29 @@ public class NewsService : INewsService
         article.ThumbnailUrl = request.ThumbnailUrl;
         article.UpdatedAt = DateTime.UtcNow;
 
+        // If non-admin updates their draft/rejected article, submit it for review again
+        if (!isAdmin && wasDraft)
+        {
+            article.Status = ContentStatus.PendingReview;
+            article.RejectionReason = null;
+        }
+
         // Only admins can change publish status
         if (isAdmin && request.Publish && article.Status != ContentStatus.Published)
         {
             article.Status = ContentStatus.Published;
             article.PublishedAt = DateTime.UtcNow;
+            article.RejectionReason = null;
         }
 
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Article {ArticleId} updated by user {UserId}", id, userId);
+
+        if (!isAdmin && wasDraft)
+        {
+            await SendContentSubmittedNotificationAsync(article.Id);
+        }
 
         return await GetArticleByIdForManagement(id);
     }
@@ -355,7 +382,10 @@ public class NewsService : INewsService
         var authorName = $"{article.Author.FirstName} {article.Author.LastName}";
         var articleTitle = article.Title;
 
-        _context.NewsArticles.Remove(article);
+        article.Status = ContentStatus.Draft;
+        article.RejectionReason = reason;
+        article.UpdatedAt = DateTime.UtcNow;
+        
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Article {ArticleId} rejected by admin {AdminId}. Reason: {Reason}", 
@@ -367,15 +397,53 @@ public class NewsService : INewsService
         return true;
     }
 
-    public async Task<NewsArticleDto> SubmitSuccessStoryAsync(Guid alumniId, CreateSuccessStoryRequest request)
+    public async Task<List<NewsArticleSummaryDto>> GetMyArticlesAsync(Guid userId)
     {
-        // Get the Success Story category
-        var successStoryCategory = await _context.NewsCategories
-            .FirstOrDefaultAsync(c => c.Slug == "success-story");
+        var articles = await _context.NewsArticles
+            .Include(a => a.Category)
+            .Include(a => a.Author)
+                .ThenInclude(u => u.AlumniProfile)
+            .Where(a => a.AuthorId == userId)
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
 
-        if (successStoryCategory == null)
+        return articles.Select(MapToSummaryDto).ToList();
+    }
+
+    public async Task<List<NewsArticleSummaryDto>> GetManagementArticlesAsync(Guid userId, bool isAdmin)
+    {
+        var query = _context.NewsArticles
+            .Include(a => a.Category)
+            .Include(a => a.Author)
+                .ThenInclude(u => u.AlumniProfile)
+            .AsQueryable();
+
+        if (!isAdmin)
         {
-            throw new InvalidOperationException("Success Story category not found");
+            query = query.Where(a => a.AuthorId == userId);
+        }
+
+        var articles = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
+
+        return articles.Select(MapToSummaryDto).ToList();
+    }
+
+    public async Task<NewsArticleDto> SubmitContentAsync(Guid alumniId, SubmitContentRequest request)
+    {
+        var categorySlug = string.IsNullOrEmpty(request.CategorySlug) ? "success-story" : request.CategorySlug.ToLower();
+        var category = await _context.NewsCategories
+            .FirstOrDefaultAsync(c => c.Slug == categorySlug);
+
+        if (category == null)
+        {
+            throw new InvalidOperationException($"Category '{categorySlug}' not found");
+        }
+
+        if (categorySlug == "success-story" && string.IsNullOrEmpty(request.ImageUrl))
+        {
+            throw new ArgumentException("Image is required for success stories");
         }
 
         var article = new NewsArticle
@@ -384,7 +452,7 @@ public class NewsService : INewsService
             Title = request.Title,
             Content = request.Content,
             Excerpt = request.Content.Length > 200 ? request.Content.Substring(0, 200) + "..." : request.Content,
-            CategoryId = successStoryCategory.Id,
+            CategoryId = category.Id,
             AuthorId = alumniId,
             ImageUrl = request.ImageUrl,
             ThumbnailUrl = request.ThumbnailUrl,
@@ -396,8 +464,8 @@ public class NewsService : INewsService
         _context.NewsArticles.Add(article);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Success story {ArticleId} submitted by alumni {AlumniId}", 
-            article.Id, alumniId);
+        _logger.LogInformation("Content {ArticleId} under category {CategorySlug} submitted by alumni {AlumniId}", 
+            article.Id, categorySlug, alumniId);
 
         // Send notification to admins
         await SendContentSubmittedNotificationAsync(article.Id);
@@ -462,6 +530,7 @@ public class NewsService : INewsService
             ImageUrl = _urlHelperService.GetAbsoluteUrl(article.ImageUrl),
             ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(article.ThumbnailUrl),
             Status = article.Status,
+            RejectionReason = article.RejectionReason,
             PublishedAt = article.PublishedAt,
             CreatedAt = article.CreatedAt,
             UpdatedAt = article.UpdatedAt,
@@ -492,6 +561,7 @@ public class NewsService : INewsService
             },
             ThumbnailUrl = _urlHelperService.GetAbsoluteUrl(article.ThumbnailUrl),
             Status = article.Status,
+            RejectionReason = article.RejectionReason,
             PublishedAt = article.PublishedAt,
             CreatedAt = article.CreatedAt,
             ViewCount = article.ViewCount

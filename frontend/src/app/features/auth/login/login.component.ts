@@ -204,9 +204,10 @@ export class LoginComponent {
             if (result.success) {
               this.notificationService.showSuccess('Welcome back!', 'Login successful');
               
-              // Check if user is admin and redirect accordingly
-              const isAdmin = result.user?.roles?.includes('Admin') || false;
-              if (isAdmin) {
+              // Check if user is admin/moderator and redirect accordingly
+              const roles = result.user?.roles || [];
+              const isStaff = roles.includes('Admin') || roles.includes('ContentCreator');
+              if (isStaff) {
                 this.router.navigate(['/admin']);
               } else {
                 this.router.navigate(['/dashboard']);
@@ -217,13 +218,11 @@ export class LoginComponent {
             this.isLoading = false;
           },
           error: (error) => {
-            this.notificationService.showError('Login failed', 'An unexpected error occurred');
             console.error('Login error:', error);
             this.isLoading = false;
           }
         });
       } catch (error) {
-        this.notificationService.showError('Login failed', 'An unexpected error occurred');
         console.error('Login error:', error);
         this.isLoading = false;
       }

@@ -91,6 +91,8 @@ export interface DirectoryFilters {
   course?: string;
   /** Optional graduation year filter (e.g., 2020) */
   graduationYear?: number;
+  /** Optional batch filter */
+  batch?: string;
   /** Page number (1-based, default: 1) */
   page?: number;
   /** Number of records per page (default: 20) */
@@ -125,24 +127,6 @@ export class DirectoryService {
    * 
    * @param filters Optional filters for search, course, graduation year, and pagination
    * @returns Observable of paginated alumni cards
-   * @example
-   * ```typescript
-   * // Get first page with default settings
-   * this.directoryService.getAlumniDirectory().subscribe(result => {
-   *   console.log(result.items); // Array of AlumniCard objects
-   * });
-   * 
-   * // Search for alumni with specific filters
-   * this.directoryService.getAlumniDirectory({
-   *   search: 'John',
-   *   course: 'Advanced Mountaineering',
-   *   graduationYear: 2020,
-   *   page: 1,
-   *   pageSize: 20
-   * }).subscribe(result => {
-   *   console.log(`Found ${result.totalCount} alumni`);
-   * });
-   * ```
    */
   getAlumniDirectory(filters: DirectoryFilters = {}): Observable<PaginatedResult<AlumniCard>> {
     // Build query parameters from filters
@@ -155,7 +139,10 @@ export class DirectoryService {
       params = params.set('course', filters.course);
     }
     if (filters.graduationYear) {
-      params = params.set('graduationYear', filters.graduationYear.toString());
+      params = params.set('batch', filters.graduationYear.toString());
+    }
+    if (filters.batch) {
+      params = params.set('batch', filters.batch);
     }
     if (filters.page) {
       params = params.set('page', filters.page.toString());
@@ -175,14 +162,6 @@ export class DirectoryService {
    * 
    * @param userId The unique identifier of the alumnus
    * @returns Observable of detailed alumni information
-   * @example
-   * ```typescript
-   * this.directoryService.getAlumniDetail('user-id-123').subscribe(alumni => {
-   *   console.log(`${alumni.firstName} ${alumni.lastName}`);
-   *   console.log(`Email: ${alumni.email}`);
-   *   console.log(`Phone: ${alumni.phone}`);
-   * });
-   * ```
    */
   getAlumniDetail(userId: string): Observable<AlumniDetail> {
     return this.http.get<AlumniDetail>(`${this.apiUrl}/${userId}`);
@@ -191,19 +170,6 @@ export class DirectoryService {
   /**
    * Convenience method to get all available courses from the directory.
    * Extracts unique courses by querying a large page of results.
-   * Used to populate course filter dropdowns.
-   * 
-   * Note: This is a workaround implementation. In production, this should be
-   * a dedicated API endpoint for better performance.
-   * 
-   * @returns Observable of unique course names sorted alphabetically
-   * @example
-   * ```typescript
-   * this.directoryService.getAvailableCourses().subscribe(courses => {
-   *   console.log('Available courses:', courses);
-   *   // ['Advanced Mountaineering', 'Eco-Tourism Management', 'Wildlife Conservation']
-   * });
-   * ```
    */
   getAvailableCourses(): Observable<string[]> {
     return new Observable(observer => {
@@ -229,19 +195,6 @@ export class DirectoryService {
   /**
    * Convenience method to get graduation years available in the directory.
    * Extracts unique graduation years by querying a large page of results.
-   * Used to populate graduation year filter dropdowns.
-   * 
-   * Note: This is a workaround implementation. In production, this should be
-   * a dedicated API endpoint for better performance.
-   * 
-   * @returns Observable of unique graduation years sorted in descending order
-   * @example
-   * ```typescript
-   * this.directoryService.getAvailableYears().subscribe(years => {
-   *   console.log('Available graduation years:', years);
-   *   // [2023, 2022, 2021, 2020, 2019]
-   * });
-   * ```
    */
   getAvailableYears(): Observable<number[]> {
     return new Observable(observer => {
@@ -257,6 +210,29 @@ export class DirectoryService {
           });
           // Return sorted array of unique years (newest first)
           observer.next(Array.from(years).sort((a, b) => b - a));
+          observer.complete();
+        },
+        error: (error) => observer.error(error)
+      });
+    });
+  }
+
+  /**
+   * Convenience method to get distinct batch values available in the directory.
+   * Extracts unique batch strings by querying a large page of results.
+   */
+  getAvailableBatches(): Observable<string[]> {
+    return new Observable(observer => {
+      this.getAlumniDirectory({ pageSize: 100 }).subscribe({
+        next: (result) => {
+          const batches = new Set<string>();
+          result.items.forEach(alumni => {
+            if (alumni.batch) {
+              batches.add(alumni.batch);
+            }
+          });
+          // Return sorted array of unique batches (newest first)
+          observer.next(Array.from(batches).sort().reverse());
           observer.complete();
         },
         error: (error) => observer.error(error)

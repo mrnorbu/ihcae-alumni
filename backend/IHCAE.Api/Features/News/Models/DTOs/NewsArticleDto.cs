@@ -17,6 +17,7 @@ public class NewsArticleDto
     public string? ImageUrl { get; set; }
     public string? ThumbnailUrl { get; set; }
     public ContentStatus Status { get; set; }
+    public string? RejectionReason { get; set; }
     public DateTime? PublishedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

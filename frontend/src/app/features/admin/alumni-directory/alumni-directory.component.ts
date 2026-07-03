@@ -1,68 +1,55 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { LucideAngularModule, Search, Eye, RefreshCw, Users, MapPin, Briefcase, GraduationCap, Mail, Phone, Calendar, User as UserIcon, Edit2 } from 'lucide-angular';
+import { LucideAngularModule, Search, Eye, RefreshCw, Users, MapPin, Briefcase, GraduationCap, Mail, Phone, Calendar, User as UserIcon, Edit2, Download } from 'lucide-angular';
 import { DirectoryService, AlumniCard, AlumniDetail } from '../../directory/services/directory.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { environment } from '../../../../environments/environment';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components';
 
 @Component({
   selector: 'app-alumni-directory',
   standalone: true,
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, LucideAngularModule, CustomSelectComponent],
   template: `
-    <div class="p-4 sm:p-6 space-y-4">
-
-      <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-xl font-bold text-neutral-900">Alumni Directory</h1>
-          <p class="text-sm text-neutral-500">Browse and view alumni profiles</p>
-        </div>
-        <button (click)="loadAlumni()" [disabled]="isLoading()"
-          class="p-2 rounded-lg border border-neutral-200 text-neutral-500 hover:bg-neutral-100 disabled:opacity-40 transition-colors">
-          <lucide-icon [img]="refreshIcon" [size]="18" [class.animate-spin]="isLoading()"></lucide-icon>
-        </button>
-      </div>
-
+    <div class="p-1 sm:p-2 space-y-3">
       <!-- Stats -->
       <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <div class="bg-white border border-neutral-200 rounded-xl p-4">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-secondary-50 flex items-center justify-center">
-              <lucide-icon [img]="usersIcon" [size]="18" class="text-secondary-600"></lucide-icon>
+        <div class="bg-white border border-neutral-200 rounded-xl p-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-secondary-50 flex items-center justify-center shrink-0">
+              <lucide-icon [img]="usersIcon" [size]="16" class="text-secondary-600"></lucide-icon>
             </div>
             <div>
-              <p class="text-xl font-bold text-neutral-900">{{ totalCount() }}</p>
-              <p class="text-xs text-neutral-500">Total Alumni</p>
+              <p class="text-lg font-extrabold text-neutral-900 leading-tight">{{ totalCount() }}</p>
+              <p class="text-xs text-neutral-500 font-medium">Total Alumni</p>
             </div>
           </div>
         </div>
-        <div class="bg-white border border-neutral-200 rounded-xl p-4">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
-              <lucide-icon [img]="graduationCapIcon" [size]="18" class="text-primary-600"></lucide-icon>
+        <div class="bg-white border border-neutral-200 rounded-xl p-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+              <lucide-icon [img]="graduationCapIcon" [size]="16" class="text-primary-600"></lucide-icon>
             </div>
             <div>
-              <p class="text-xl font-bold text-neutral-900">{{ courses().length }}</p>
-              <p class="text-xs text-neutral-500">Courses</p>
+              <p class="text-lg font-extrabold text-neutral-900 leading-tight">{{ courses().length }}</p>
+              <p class="text-xs text-neutral-500 font-medium">Courses</p>
             </div>
           </div>
         </div>
-        <div class="bg-white border border-neutral-200 rounded-xl p-4">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-secondary-50 flex items-center justify-center">
-              <lucide-icon [img]="mapPinIcon" [size]="18" class="text-secondary-600"></lucide-icon>
+        <div class="bg-white border border-neutral-200 rounded-xl p-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-secondary-50 flex items-center justify-center shrink-0">
+              <lucide-icon [img]="mapPinIcon" [size]="16" class="text-secondary-600"></lucide-icon>
             </div>
             <div>
-              <p class="text-xl font-bold text-neutral-900">{{ getUniqueLocations() }}</p>
-              <p class="text-xs text-neutral-500">Locations</p>
+              <p class="text-lg font-extrabold text-neutral-900 leading-tight">{{ getUniqueLocations() }}</p>
+              <p class="text-xs text-neutral-500 font-medium">Locations</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Search & Filters -->
       <div class="bg-white border border-neutral-200 rounded-xl p-3">
         <div class="flex flex-col sm:flex-row gap-2">
           <div class="flex-1 relative">
@@ -71,18 +58,31 @@ import { environment } from '../../../../environments/environment';
               placeholder="Search by name..."
               class="w-full pl-11 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
           </div>
-          <div class="flex items-center gap-2">
-            <select [(ngModel)]="selectedCourse" (change)="loadAlumni()"
-              class="px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer">
-              <option value="">All Courses</option>
-              @for (course of courses(); track course) {
-                <option [value]="course">{{ course }}</option>
-              }
-            </select>
+          <div class="w-[180px]">
+            <app-custom-select
+              [options]="courseOptions()"
+              [(ngModel)]="selectedCourse"
+              (ngModelChange)="loadAlumni()"
+              customClass="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700 font-normal"
+            ></app-custom-select>
           </div>
+          <div class="w-[150px]">
+            <app-custom-select
+              [options]="batchOptions()"
+              [(ngModel)]="selectedBatch"
+              (ngModelChange)="loadAlumni()"
+              customClass="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700 font-normal"
+            ></app-custom-select>
+          </div>
+          <button (click)="exportToExcel()" class="flex items-center justify-center gap-2 px-4 py-2 text-sm text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors shrink-0 font-medium">
+            <lucide-icon [img]="downloadIcon" [size]="14"></lucide-icon>
+            Export CSV
+          </button>
+          <button (click)="loadAlumni()" [disabled]="isLoading()" class="flex items-center justify-center px-3 py-2 text-neutral-500 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-40 transition-colors shrink-0">
+            <lucide-icon [img]="refreshIcon" [size]="14" [class.animate-spin]="isLoading()"></lucide-icon>
+          </button>
         </div>
       </div>
-
       <!-- Alumni Table -->
       <div class="bg-white border border-neutral-200 rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
@@ -362,6 +362,7 @@ export class AlumniDirectoryComponent implements OnInit {
   readonly calendarIcon = Calendar;
   readonly userIcon = UserIcon;
   readonly editIcon = Edit2;
+  readonly downloadIcon = Download;
 
   private http = inject(HttpClient);
 
@@ -370,11 +371,27 @@ export class AlumniDirectoryComponent implements OnInit {
   alumni = signal<AlumniCard[]>([]);
   totalCount = signal(0);
   currentPage = signal(1);
-  pageSize = 20;
+  pageSize = 10;
   courses = signal<string[]>([]);
+  batches = signal<string[]>([]);
+
+  courseOptions = computed<SelectOption[]>(() => {
+    return [
+      { label: 'All Courses', value: '' },
+      ...this.courses().map(c => ({ label: c, value: c }))
+    ];
+  });
+
+  batchOptions = computed<SelectOption[]>(() => {
+    return [
+      { label: 'All Batches', value: '' },
+      ...this.batches().map(b => ({ label: `Batch ${b}`, value: b }))
+    ];
+  });
 
   searchQuery = '';
   selectedCourse = '';
+  selectedBatch = '';
 
   showDetailModal = signal(false);
   selectedAlumni = signal<AlumniDetail | null>(null);
@@ -394,6 +411,7 @@ export class AlumniDirectoryComponent implements OnInit {
   ngOnInit() {
     this.loadAlumni();
     this.loadCourses();
+    this.loadBatches();
   }
 
   loadAlumni() {
@@ -401,6 +419,7 @@ export class AlumniDirectoryComponent implements OnInit {
     this.directoryService.getAlumniDirectory({
       search: this.searchQuery.trim() || undefined,
       course: this.selectedCourse || undefined,
+      batch: this.selectedBatch || undefined,
       page: this.currentPage(),
       pageSize: this.pageSize
     }).subscribe({
@@ -420,6 +439,59 @@ export class AlumniDirectoryComponent implements OnInit {
     this.directoryService.getAvailableCourses().subscribe({
       next: (courses) => this.courses.set(courses),
       error: () => console.error('Failed to load courses')
+    });
+  }
+
+  private loadBatches() {
+    this.directoryService.getAvailableBatches().subscribe({
+      next: (batches) => this.batches.set(batches),
+      error: () => console.error('Failed to load batches')
+    });
+  }
+
+  exportToExcel() {
+    this.directoryService.getAlumniDirectory({
+      search: this.searchQuery.trim() || undefined,
+      course: this.selectedCourse || undefined,
+      batch: this.selectedBatch || undefined,
+      page: 1,
+      pageSize: 1000 // Get all items matching current filter
+    }).subscribe({
+      next: (result) => {
+        const items = result.items;
+        if (items.length === 0) {
+          this.notificationService.showWarning('No Data', 'There are no alumni matching the selected filters to export.');
+          return;
+        }
+
+        const headers = ['First Name', 'Last Name', 'Email', 'Course', 'Batch', 'Job Title', 'Location'];
+        const rows = items.map(a => [
+          a.firstName,
+          a.lastName,
+          a.email,
+          a.course || '',
+          a.batch || '',
+          a.jobTitle || '',
+          a.location || ''
+        ]);
+
+        const csvContent = [
+          headers.join(','),
+          ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Alumni_Directory_${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.notificationService.showSuccess('Exported', 'Successfully exported alumni directory to CSV');
+      },
+      error: () => this.notificationService.showError('Error', 'Failed to fetch alumni for export')
     });
   }
 

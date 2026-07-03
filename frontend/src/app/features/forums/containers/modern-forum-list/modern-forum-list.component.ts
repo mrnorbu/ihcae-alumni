@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Plus, Search, ArrowLeft, ThumbsUp, Reply, Send, Lock, Pin, Trash2, X, MessageCircle, Hash, Users, ChevronRight } from 'lucide-angular';
-import { HeaderComponent, FooterComponent } from '../../../../shared/components';
+import { LucideAngularModule, Plus, Search, ArrowLeft, ThumbsUp, Reply, Send, Lock, Pin, Trash2, X, MessageCircle, Hash, Users, ChevronRight, Flag } from 'lucide-angular';
+import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption } from '../../../../shared/components';
 import { CreateTopicModalComponent } from '../../components/create-topic-modal/create-topic-modal.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { UserAuthStore } from '../../../../core/state/user-auth.store';
@@ -18,7 +18,8 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
     FormsModule, NgTemplateOutlet,
     LucideAngularModule,
     HeaderComponent, FooterComponent,
-    CreateTopicModalComponent, ConfirmationModalComponent
+    CreateTopicModalComponent, ConfirmationModalComponent,
+    CustomSelectComponent
   ],
   template: `
     <div class="min-h-screen bg-neutral-50 flex flex-col page-fade-in">
@@ -29,10 +30,10 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
 
           <!-- ═══ LEFT SIDEBAR ═══ -->
           <aside class="w-48 flex-shrink-0 hidden lg:block">
-            <div class="sticky top-6 space-y-3">
+            <div class="sticky top-24 space-y-3">
 
               <!-- New Thread -->
-              <button (click)="showCreateTopicModal = true"
+              <button (click)="openCreateTopicModal()"
                 class="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
                 <lucide-icon [img]="plusIcon" [size]="15"></lucide-icon>
                 New Thread
@@ -101,7 +102,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
           <div class="flex-1 min-w-0">
 
             <!-- ── PERSISTENT TOP BAR (always visible) ── -->
-            <div class="sticky top-20 z-20 bg-white rounded-lg border border-neutral-200 mb-3 px-4 py-3 flex items-center gap-3">
+            <div class="sticky top-24 z-20 bg-white rounded-lg border border-neutral-200 mb-3 px-4 py-3 flex items-center gap-3">
               @if (view === 'detail') {
                 <button (click)="backToList()"
                   class="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0 mr-1">
@@ -172,7 +173,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
                   <lucide-icon [img]="messageIcon" [size]="40" class="text-neutral-300 mb-4 mx-auto"></lucide-icon>
                   <h3 class="text-base font-semibold text-neutral-700 mb-1">No threads yet</h3>
                   <p class="text-sm text-neutral-400 mb-4">Be the first to start a discussion</p>
-                  <button (click)="showCreateTopicModal = true" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                  <button (click)="openCreateTopicModal()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
                     Start a Thread
                   </button>
                 </div>
@@ -346,6 +347,13 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
                               Reply
                             </button>
                           }
+                          @if (!isCurrentUser(detailMainPost.author.id)) {
+                            <button (click)="openFlagModal(detailMainPost.id)"
+                              class="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-red-600 transition-colors">
+                              <lucide-icon [img]="flagIcon" [size]="13"></lucide-icon>
+                              Flag
+                            </button>
+                          }
                           <span class="text-xs text-neutral-400 ml-auto">{{ detailAllReplies.length }} {{ detailAllReplies.length === 1 ? 'reply' : 'replies' }}</span>
                         </div>
                       </div>
@@ -398,6 +406,13 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
                                       Reply
                                     </button>
                                   }
+                                  @if (!isCurrentUser(reply.author.id)) {
+                                    <button (click)="openFlagModal(reply.id)"
+                                      class="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-red-600 transition-colors">
+                                      <lucide-icon [img]="flagIcon" [size]="12"></lucide-icon>
+                                      Flag
+                                    </button>
+                                  }
                                   @if (isCurrentUser(reply.author.id)) {
                                     <button (click)="confirmDeleteReply(reply.id)"
                                       class="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 ml-auto">
@@ -441,6 +456,13 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
                                       <lucide-icon [img]="thumbsUpIcon" [size]="12"></lucide-icon>
                                       <span>{{ nested.likeCount }}</span>
                                     </button>
+                                    @if (!isCurrentUser(nested.author.id)) {
+                                      <button (click)="openFlagModal(nested.id)"
+                                        class="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-red-600 transition-colors">
+                                        <lucide-icon [img]="flagIcon" [size]="12"></lucide-icon>
+                                        Flag
+                                      </button>
+                                    }
                                     @if (isCurrentUser(nested.author.id)) {
                                       <button (click)="confirmDeleteReply(nested.id)"
                                         class="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 ml-auto">
@@ -482,7 +504,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
 
           <!-- ═══ RIGHT SIDEBAR ═══ -->
           <aside class="w-56 flex-shrink-0 hidden xl:block">
-            <div class="sticky top-6 space-y-4">
+            <div class="sticky top-24 space-y-4">
 
               <!-- Top Users -->
               <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
@@ -562,7 +584,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
       <app-create-topic-modal
         [isVisible]="showCreateTopicModal"
         (submit)="onCreateTopicSubmit($event)"
-        (cancel)="showCreateTopicModal = false"
+        (cancel)="closeCreateTopicModal()"
       ></app-create-topic-modal>
 
       <app-confirmation-modal
@@ -571,11 +593,84 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
         message="Are you sure you want to delete this reply?"
         confirmText="Delete"
         (confirm)="deleteReply()"
-        (cancel)="showDeleteModal = false"
+        (cancel)="closeDeleteModal()"
       ></app-confirmation-modal>
+
+      <!-- Flag Modal -->
+      @if (showFlagModal) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-fade-in text-left overflow-visible">
+            <div class="flex justify-between items-center mb-4 border-b border-neutral-100 pb-2">
+              <h3 class="text-sm font-semibold text-neutral-900 flex items-center gap-2 m-0">
+                <lucide-icon [img]="flagIcon" [size]="15" class="text-red-500"></lucide-icon>
+                Flag Post for Review
+              </h3>
+              <button (click)="closeFlagModal()" class="text-neutral-400 hover:text-neutral-600 focus:outline-none bg-transparent border-0 cursor-pointer">
+                <lucide-icon [img]="xIcon" [size]="14"></lucide-icon>
+              </button>
+            </div>
+            
+            <p class="text-xs text-neutral-500 mb-4">
+              Please choose a reason for flagging this post. Flagged content is sent directly to the moderators for review.
+            </p>
+
+            <div class="space-y-3 mb-5 overflow-visible">
+              <div class="overflow-visible">
+                <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Reason *</label>
+                <app-custom-select
+                  [(ngModel)]="flagReason"
+                  [options]="flagReasonOptions"
+                  placeholder="Select a reason..."
+                ></app-custom-select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Additional Details</label>
+                <textarea
+                  [(ngModel)]="flagDetails"
+                  rows="3"
+                  placeholder="Provide context or specific details..."
+                  class="w-full px-3 py-2 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="flex gap-3 justify-end pt-2 border-t border-neutral-100">
+              <button
+                (click)="closeFlagModal()"
+                class="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors focus:outline-none cursor-pointer"
+                >
+                Cancel
+              </button>
+              <button
+                (click)="submitFlag()"
+                [disabled]="!flagReason || flagSubmitting"
+                class="px-4 py-2 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none cursor-pointer"
+                >
+                {{ flagSubmitting ? 'Submitting...' : 'Flag Post' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
-  styles: []
+  styles: [`
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.2s ease-out;
+    }
+  `]
 })
 export class ModernForumListComponent implements OnInit, OnDestroy {
   // List state
@@ -608,6 +703,13 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   showDeleteModal = false;
   replyToDelete: string | null = null;
 
+  // Flagging variables
+  showFlagModal = false;
+  postToFlag: string | null = null;
+  flagReason = '';
+  flagDetails = '';
+  flagSubmitting = false;
+
   readonly Math = Math;
   readonly plusIcon = Plus;
   readonly searchIcon = Search;
@@ -623,12 +725,21 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   readonly hashIcon = Hash;
   readonly usersIcon = Users;
   readonly chevronRightIcon = ChevronRight;
+  readonly flagIcon = Flag;
 
   readonly sortOptions = [
     { value: 'recent', label: 'Most Recent' },
     { value: 'oldest', label: 'Oldest First' },
     { value: 'popular', label: 'Most Popular' },
     { value: 'mostdiscussed', label: 'Most Discussed' },
+  ];
+
+  readonly flagReasonOptions: SelectOption[] = [
+    { label: 'Spam (unsolicited advertisement, links)', value: 'Spam' },
+    { label: 'Harassment / Hate speech', value: 'Harassment' },
+    { label: 'Inappropriate content', value: 'Inappropriate' },
+    { label: 'Off-topic', value: 'OffTopic' },
+    { label: 'Other', value: 'Other' }
   ];
 
   private authStore = inject(UserAuthStore);
@@ -645,6 +756,9 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('overflow-hidden');
+    }
   }
 
   // ── Computed ──────────────────────────────────────────────
@@ -735,15 +849,29 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   onCreateTopicSubmit(request: CreateTopicRequest): void {
     this.forumService.createTopic(request).pipe(takeUntil(this.destroy$)).subscribe({
       next: (created) => {
-        this.showCreateTopicModal = false;
+        this.closeCreateTopicModal();
         this.notificationService.showSuccess('Created', 'Your thread has been posted');
         this.openThread(created.id);
       },
       error: () => {
-        this.showCreateTopicModal = false;
+        this.closeCreateTopicModal();
         this.notificationService.showError('Error', 'Failed to create topic.');
       }
     });
+  }
+
+  openCreateTopicModal(): void {
+    this.showCreateTopicModal = true;
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('overflow-hidden');
+    }
+  }
+
+  closeCreateTopicModal(): void {
+    this.showCreateTopicModal = false;
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('overflow-hidden');
+    }
   }
 
   // ── Detail actions ────────────────────────────────────────
@@ -815,22 +943,83 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     });
   }
 
-  confirmDeleteReply(postId: string): void { this.replyToDelete = postId; this.showDeleteModal = true; }
+  confirmDeleteReply(postId: string): void {
+    this.replyToDelete = postId;
+    this.showDeleteModal = true;
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('overflow-hidden');
+    }
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.replyToDelete = null;
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('overflow-hidden');
+    }
+  }
 
   deleteReply(): void {
     if (!this.replyToDelete || !this.detailMainPost) return;
     const id = this.replyToDelete;
     this.forumService.deleteOwnPost(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
-        this.showDeleteModal = false;
-        this.replyToDelete = null;
+        this.closeDeleteModal();
         this.detailMainPost!.replies = this.detailMainPost!.replies.filter(r => r.id !== id);
         for (const r of this.detailMainPost!.replies) {
           if (r.replies?.length) r.replies = r.replies.filter(n => n.id !== id);
         }
       },
-      error: () => { this.showDeleteModal = false; this.notificationService.showError('Error', 'Failed to delete reply.'); }
+      error: () => {
+        this.closeDeleteModal();
+        this.notificationService.showError('Error', 'Failed to delete reply.');
+      }
     });
+  }
+
+  openFlagModal(postId: string): void {
+    this.postToFlag = postId;
+    this.flagReason = '';
+    this.flagDetails = '';
+    this.showFlagModal = true;
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('overflow-hidden');
+    }
+  }
+
+  closeFlagModal(): void {
+    this.showFlagModal = false;
+    this.postToFlag = null;
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('overflow-hidden');
+    }
+  }
+
+  submitFlag(): void {
+    if (!this.postToFlag || !this.flagReason) return;
+    this.flagSubmitting = true;
+
+    this.forumService.flagPost(this.postToFlag, this.flagReason, this.flagDetails)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.flagSubmitting = false;
+          this.showFlagModal = false;
+          this.postToFlag = null;
+          if (typeof document !== 'undefined') {
+            document.body.classList.remove('overflow-hidden');
+          }
+          this.notificationService.showSuccess('Report Submitted', 'Thank you. The post has been flagged for moderation.');
+        },
+        error: (err: any) => {
+          this.flagSubmitting = false;
+          let errMsg = 'Failed to flag post. Please try again.';
+          if (err?.status === 409 || err?.error?.message?.includes('already flagged')) {
+            errMsg = 'You have already flagged this post for review.';
+          }
+          this.notificationService.showError('Error', errMsg);
+        }
+      });
   }
 
   // ── Helpers ───────────────────────────────────────────────
@@ -864,3 +1053,4 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     return d.toLocaleDateString();
   }
 }
+

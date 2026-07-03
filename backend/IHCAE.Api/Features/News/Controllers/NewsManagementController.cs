@@ -42,7 +42,7 @@ public class NewsManagementController : ControllerBase
             }
 
             var userId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var article = await _newsService.CreateArticleAsync(userId, request, isAdmin);
             return CreatedAtRoute("GetArticleById", new { controller = "News", id = article.Id }, article);
@@ -60,10 +60,10 @@ public class NewsManagementController : ControllerBase
     }
 
     /// <summary>
-    /// Update an existing news article (Admin/ContentCreator - own articles only)
+    /// Update an existing news article (Admin/ContentCreator/Alumni - own articles only)
     /// </summary>
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,ContentCreator")]
+    [Authorize(Roles = "Admin,ContentCreator,Alumni")]
     [ProducesResponseType(typeof(NewsArticleDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -78,7 +78,7 @@ public class NewsManagementController : ControllerBase
             }
 
             var userId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var article = await _newsService.UpdateArticleAsync(id, userId, request, isAdmin);
             return Ok(article);
@@ -106,10 +106,10 @@ public class NewsManagementController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a news article (Admin/ContentCreator - own articles only)
+    /// Delete a news article (Admin/ContentCreator/Alumni - own articles only)
     /// </summary>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin,ContentCreator")]
+    [Authorize(Roles = "Admin,ContentCreator,Alumni")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -118,7 +118,7 @@ public class NewsManagementController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var deleted = await _newsService.DeleteArticleAsync(id, userId, isAdmin);
             if (!deleted)
@@ -141,10 +141,52 @@ public class NewsManagementController : ControllerBase
     }
 
     /// <summary>
+    /// Get articles for management (Admin sees all, ContentCreator/Alumni sees own)
+    /// </summary>
+    [HttpGet]
+    [Authorize(Roles = "Admin,ContentCreator")]
+    [ProducesResponseType(typeof(List<NewsArticleSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetManagementArticles()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
+            var articles = await _newsService.GetManagementArticlesAsync(userId, isAdmin);
+            return Ok(articles);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving management articles");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get articles created by the current user (Alumni, ContentCreator, Admin)
+    /// </summary>
+    [HttpGet("my-articles")]
+    [ProducesResponseType(typeof(List<NewsArticleSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyArticles()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var articles = await _newsService.GetMyArticlesAsync(userId);
+            return Ok(articles);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving my articles");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Get pending articles for admin review
     /// </summary>
     [HttpGet("pending")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(typeof(PaginatedResult<NewsArticleSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetPendingArticles(
@@ -167,7 +209,7 @@ public class NewsManagementController : ControllerBase
     /// Approve a pending article (Admin only)
     /// </summary>
     [HttpPost("{id}/approve")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(typeof(NewsArticleDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -201,7 +243,7 @@ public class NewsManagementController : ControllerBase
     /// Reject a pending article (Admin only)
     /// </summary>
     [HttpPost("{id}/reject")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -238,14 +280,14 @@ public class NewsManagementController : ControllerBase
     }
 
     /// <summary>
-    /// Submit a success story (Alumni only)
+    /// Submit content for admin review (Alumni only)
     /// </summary>
-    [HttpPost("success-story")]
+    [HttpPost("submit")]
     [Authorize(Roles = "Alumni,Admin")]
     [ProducesResponseType(typeof(NewsArticleDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> SubmitSuccessStory([FromBody] CreateSuccessStoryRequest request)
+    public async Task<IActionResult> SubmitContent([FromBody] SubmitContentRequest request)
     {
         try
         {
@@ -255,17 +297,22 @@ public class NewsManagementController : ControllerBase
             }
 
             var alumniId = GetCurrentUserId();
-            var article = await _newsService.SubmitSuccessStoryAsync(alumniId, request);
+            var article = await _newsService.SubmitContentAsync(alumniId, request);
             return CreatedAtRoute("GetArticleById", new { controller = "News", id = article.Id }, article);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid arguments when submitting content");
+            return BadRequest(new ErrorResponse { Message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Invalid operation when submitting success story");
+            _logger.LogWarning(ex, "Invalid operation when submitting content");
             return BadRequest(new ErrorResponse { Message = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting success story");
+            _logger.LogError(ex, "Error submitting content");
             throw;
         }
     }

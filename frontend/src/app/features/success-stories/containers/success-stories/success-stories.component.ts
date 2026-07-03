@@ -3,7 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, Star, Calendar, MapPin, Award, Plus, Eye, Edit, Trash2, User, Search } from 'lucide-angular';
-import { HeaderComponent, FooterComponent } from '../../../../shared/components';
+import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption } from '../../../../shared/components';
 import { NewsService } from '../../../news-events/services/news.service';
 import type { NewsArticleSummary } from '../../../news-events/models';
 
@@ -19,7 +19,7 @@ import type { NewsArticleSummary } from '../../../news-events/models';
 @Component({
   selector: 'app-success-stories',
   standalone: true,
-  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, CustomSelectComponent],
   template: `
     <div class="min-h-screen bg-white page-fade-in">
       <app-header></app-header>
@@ -86,17 +86,12 @@ import type { NewsArticleSummary } from '../../../news-events/models';
             <!-- Year Filter -->
             <div>
               <label class="block text-xs font-semibold text-neutral-600 mb-1">Year</label>
-              <select 
+              <app-custom-select
                 [ngModel]="yearFilter()"
                 (ngModelChange)="onYearChange($event)"
-                class="input-field">
-                <option value="">All Years</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="2021">2021</option>
-              </select>
+                [options]="yearOptions"
+                placeholder="All Years"
+              ></app-custom-select>
             </div>
           </div>
         </div>
@@ -201,12 +196,12 @@ import type { NewsArticleSummary } from '../../../news-events/models';
         <div class="border-t border-neutral-200/60 pt-6 mb-6">
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 class="text-base font-bold text-neutral-900">Share Your Success Story</h3>
-              <p class="text-xs text-neutral-500 mt-0.5">Inspire others by sharing your achievements and journey</p>
+              <h3 class="text-base font-bold text-neutral-900">Share Your News & Success Stories</h3>
+              <p class="text-xs text-neutral-500 mt-0.5">Inspire others by sharing achievements, news, and updates</p>
             </div>
-            <button class="btn-primary btn-sm whitespace-nowrap inline-flex items-center gap-1.5" routerLink="/submit-success-story">
+            <button class="btn-primary btn-sm whitespace-nowrap inline-flex items-center gap-1.5" routerLink="/submit-content">
               <lucide-icon [img]="plusIcon" [size]="14"></lucide-icon>
-              Submit Story
+              Submit Content
             </button>
           </div>
         </div>
@@ -239,6 +234,14 @@ export class SuccessStoriesComponent implements OnInit {
   // Filters
   searchTerm = signal('');
   yearFilter = signal('');
+  yearOptions: SelectOption[] = [
+    { label: 'All Years', value: '' },
+    { label: '2025', value: '2025' },
+    { label: '2024', value: '2024' },
+    { label: '2023', value: '2023' },
+    { label: '2022', value: '2022' },
+    { label: '2021', value: '2021' }
+  ];
 
   ngOnInit() {
     this.loadSuccessStories();

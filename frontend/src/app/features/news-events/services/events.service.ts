@@ -175,4 +175,11 @@ export class EventsService {
       responseType: 'blob'
     });
   }
+
+  /**
+   * Gets events for console management.
+   */
+  getManagementEvents(): Observable<EventSummary[]> {
+    return this.http.get<EventSummary[]>(this.managementApiUrl);
+  }
 }

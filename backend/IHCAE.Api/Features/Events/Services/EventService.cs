@@ -114,7 +114,7 @@ public class EventService : IEventService
         }
 
         // Validate dates
-        if (request.EventDate < DateTime.UtcNow)
+        if (request.EventDate.Date < DateTime.UtcNow.Date)
         {
             throw new ArgumentException("Event date cannot be in the past");
         }
@@ -502,6 +502,25 @@ public class EventService : IEventService
         {
             _logger.LogError(ex, "Failed to send approval notification for event {EventId}", eventId);
         }
+    }
+
+    public async Task<List<EventSummaryDto>> GetManagementEventsAsync(Guid userId, bool isAdmin)
+    {
+        var query = _context.Events
+            .Include(e => e.Category)
+            .Include(e => e.Registrations)
+            .AsQueryable();
+
+        if (!isAdmin)
+        {
+            query = query.Where(e => e.CreatedById == userId);
+        }
+
+        var events = await query
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        return events.Select(MapToSummaryDto).ToList();
     }
 
     private async Task SendEventRejectedNotificationAsync(string email, string name, string title, string reason)

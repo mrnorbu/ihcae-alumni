@@ -47,6 +47,7 @@ public class DirectoryTests : IntegrationTestBase
             Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
             Status = UserStatus.Approved,
+            EmailVerified = true,
             CreatedAt = DateTime.UtcNow
         };
         

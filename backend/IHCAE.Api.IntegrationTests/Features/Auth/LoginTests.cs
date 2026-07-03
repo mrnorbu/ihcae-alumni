@@ -33,6 +33,7 @@ public class LoginTests : IntegrationTestBase
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                 Status = UserStatus.Approved,
+                EmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             });
             await context.SaveChangesAsync();
@@ -138,6 +139,7 @@ public class LoginTests : IntegrationTestBase
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                 Status = UserStatus.Approved,
                 IsBanned = true,
+                EmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             });
             await context.SaveChangesAsync();

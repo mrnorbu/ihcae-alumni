@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using IHCAE.Api.Features.Forums.Models.Entities;
 using IHCAE.Api.Features.Forums.Models.DTOs;
 using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.DTOs;
+using IHCAE.Api.Shared.Models;
 using IHCAE.Api.Shared.Services;
 
 namespace IHCAE.Api.Features.Forums.Services;
@@ -18,19 +20,22 @@ public class ForumService : IForumService
     private readonly ITagService _tagService;
     private readonly IUrlHelperService _urlHelperService;
     private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
     public ForumService(
         AppDbContext context, 
         ILogger<ForumService> logger, 
         ITagService tagService, 
         IUrlHelperService urlHelperService,
-        IEmailService emailService)
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
         _tagService = tagService;
         _urlHelperService = urlHelperService;
         _emailService = emailService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -366,10 +371,11 @@ public class ForumService : IForumService
                 .ThenInclude(pp => pp!.Author)
             .FirstOrDefaultAsync(p => p.Id == post.Id);
 
-        // Send email notification for new reply
+        // Send notifications for new reply
         if (createdPost != null)
         {
-            var postLink = $"/forums/topic/{topicId}";
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+            var postLink = $"{frontendUrl}/forums/topic/{topicId}";
             var authorName = $"{createdPost.Author.FirstName} {createdPost.Author.LastName}";
 
             if (createdPost.ParentPost != null)
@@ -385,6 +391,19 @@ public class ForumService : IForumService
                         authorName,
                         postLink
                     );
+
+                    var notification = new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = parentAuthor.Id,
+                        Title = "New reply to your post",
+                        Message = $"{authorName} replied to your post in: {createdPost.Topic.Title}",
+                        Type = "Reply",
+                        Link = $"/forums/topic/{topicId}",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Notifications.Add(notification);
                 }
             }
             else
@@ -400,8 +419,22 @@ public class ForumService : IForumService
                         authorName,
                         postLink
                     );
+
+                    var notification = new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = topicCreator.Id,
+                        Title = "New reply to your topic",
+                        Message = $"{authorName} replied to your topic: {createdPost.Topic.Title}",
+                        Type = "Reply",
+                        Link = $"/forums/topic/{topicId}",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Notifications.Add(notification);
                 }
             }
+            await _context.SaveChangesAsync();
         }
 
         return MapToPostDto(createdPost!, userId);
@@ -596,7 +629,7 @@ public class ForumService : IForumService
 
         _logger.LogWarning("Topic {TopicId} deleted by admin {AdminId}", topicId, adminUserId);
 
-        // Send email notification
+        // Send email and in-app notification
         if (topic.CreatedBy != null)
         {
             await _emailService.SendTopicModerationNotificationAsync(
@@ -606,6 +639,20 @@ public class ForumService : IForumService
                 "deleted",
                 "Topic violated community guidelines or was removed by an administrator."
             );
+
+            var notification = new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = topic.CreatedBy.Id,
+                Title = "Topic Deleted by Moderator",
+                Message = $"Your topic \"{topic.Title}\" was deleted. Reason: Topic violated community guidelines or was removed by an administrator.",
+                Type = "Moderation",
+                Link = null,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
         }
 
         return true;
@@ -657,7 +704,7 @@ public class ForumService : IForumService
         _logger.LogInformation("Topic {TopicId} lock status toggled to {IsLocked} by admin {AdminId}", 
             topicId, topic.IsLocked, adminUserId);
 
-        // Send email notification if locked
+        // Send email and in-app notification if locked
         if (topic.IsLocked && topic.CreatedBy != null)
         {
             await _emailService.SendTopicModerationNotificationAsync(
@@ -667,6 +714,20 @@ public class ForumService : IForumService
                 "locked",
                 "Topic has been locked by an administrator. No further replies can be added."
             );
+
+            var notification = new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = topic.CreatedBy.Id,
+                Title = "Topic Locked by Moderator",
+                Message = $"Your topic \"{topic.Title}\" has been locked by an administrator.",
+                Type = "Moderation",
+                Link = $"/forums/topic/{topicId}",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
         }
 
         return topic.IsLocked;
@@ -708,7 +769,7 @@ public class ForumService : IForumService
         _logger.LogWarning("Post {PostId} and {ReplyCount} replies soft deleted by admin {AdminId} with reason: {Reason}", 
             postId, post.Replies.Count, adminUserId, reason);
 
-        // Send email notification
+        // Send email and in-app notification
         if (post.Author != null && post.Topic != null)
         {
             await _emailService.SendTopicModerationNotificationAsync(
@@ -718,6 +779,20 @@ public class ForumService : IForumService
                 "deleted",
                 reason
             );
+
+            var notification = new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = post.Author.Id,
+                Title = "Post Deleted by Moderator",
+                Message = $"Your post in \"{post.Topic.Title}\" was deleted by a moderator. Reason: {reason}",
+                Type = "Moderation",
+                Link = null,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
         }
 
         return true;
@@ -760,6 +835,47 @@ public class ForumService : IForumService
         }
 
         return dto;
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted post (Admin only).
+    /// </summary>
+    public async Task<bool> RestorePostAsync(Guid postId, Guid adminUserId)
+    {
+        var post = await _context.ForumPosts
+            .Include(p => p.Replies)
+            .Include(p => p.Topic)
+            .Include(p => p.Author)
+            .FirstOrDefaultAsync(p => p.Id == postId);
+
+        if (post == null)
+        {
+            return false;
+        }
+
+        // Restore the post
+        post.IsDeleted = false;
+        post.DeletedAt = null;
+        post.DeletedBy = null;
+        post.DeletionReason = null;
+
+        // Cascade restore to replies that were cascade soft-deleted
+        foreach (var reply in post.Replies)
+        {
+            if (reply.IsDeleted && reply.DeletionReason != null && reply.DeletionReason.StartsWith("Parent post deleted:"))
+            {
+                reply.IsDeleted = false;
+                reply.DeletedAt = null;
+                reply.DeletedBy = null;
+                reply.DeletionReason = null;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Post {PostId} restored by admin {AdminId}", postId, adminUserId);
+
+        return true;
     }
 
     /// <summary>

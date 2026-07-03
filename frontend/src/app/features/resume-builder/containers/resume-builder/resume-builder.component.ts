@@ -3,7 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, FileText, Download, Eye, User, Mail, Phone, MapPin, Calendar, Award, Briefcase, GraduationCap, Save } from 'lucide-angular';
-import { HeaderComponent, FooterComponent } from '../../../../shared/components';
+import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption } from '../../../../shared/components';
 
 /**
  * Resume Builder Component
@@ -17,7 +17,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
 @Component({
   selector: 'app-resume-builder',
   standalone: true,
-  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, CustomSelectComponent],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
@@ -182,7 +182,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
           </div>
     
           <!-- Availability -->
-          <div class="mb-8">
+          <div class="mb-8 overflow-visible">
             <h3 class="text-md font-semibold text-neutral-900 mb-4 flex items-center gap-2">
               <lucide-icon [img]="calendarIcon" [size]="18"></lucide-icon>
               Availability
@@ -190,26 +190,19 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="input-label">Preferred Job Type</label>
-                <select [(ngModel)]="profile().availability.jobType" class="input-field">
-                  <option value="">Select job type</option>
-                  <option value="full-time">Full Time</option>
-                  <option value="part-time">Part Time</option>
-                  <option value="contract">Contract</option>
-                  <option value="internship">Internship</option>
-                  <option value="freelance">Freelance</option>
-                </select>
+                <app-custom-select
+                  [(ngModel)]="profile().availability.jobType"
+                  [options]="jobTypeOptions"
+                  placeholder="Select job type"
+                ></app-custom-select>
               </div>
               <div>
                 <label class="input-label">Preferred Location</label>
-                <select [(ngModel)]="profile().availability.location" class="input-field">
-                  <option value="">Select location</option>
-                  <option value="remote">Remote</option>
-                  <option value="delhi">Delhi</option>
-                  <option value="mumbai">Mumbai</option>
-                  <option value="bangalore">Bangalore</option>
-                  <option value="himachal">Himachal Pradesh</option>
-                  <option value="any">Any Location</option>
-                </select>
+                <app-custom-select
+                  [(ngModel)]="profile().availability.location"
+                  [options]="locationOptions"
+                  placeholder="Select location"
+                ></app-custom-select>
               </div>
             </div>
           </div>
@@ -261,6 +254,23 @@ export class ResumeBuilderComponent implements OnInit {
   saveIcon = Save;
 
   newSkill = '';
+
+  jobTypeOptions: SelectOption[] = [
+    { label: 'Full Time', value: 'full-time' },
+    { label: 'Part Time', value: 'part-time' },
+    { label: 'Contract', value: 'contract' },
+    { label: 'Internship', value: 'internship' },
+    { label: 'Freelance', value: 'freelance' }
+  ];
+
+  locationOptions: SelectOption[] = [
+    { label: 'Remote', value: 'remote' },
+    { label: 'Delhi', value: 'delhi' },
+    { label: 'Mumbai', value: 'mumbai' },
+    { label: 'Bangalore', value: 'bangalore' },
+    { label: 'Himachal Pradesh', value: 'himachal' },
+    { label: 'Any Location', value: 'any' }
+  ];
 
   // Profile data
   profile = signal({

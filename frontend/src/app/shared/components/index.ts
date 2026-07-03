@@ -3,3 +3,7 @@ export { FooterComponent } from './footer/footer.component';
 export { TagPillComponent } from './tag-pill/tag-pill.component';
 export { StatCardComponent } from './stat-card/stat-card.component';
 export { SidebarWidgetComponent } from './sidebar-widget/sidebar-widget.component';
+export { CustomSelectComponent } from './custom-select/custom-select.component';
+export type { SelectOption } from './custom-select/custom-select.component';
+export { ConfirmationModalComponent } from './confirmation-modal/confirmation-modal.component';
+

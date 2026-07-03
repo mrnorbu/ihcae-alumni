@@ -155,7 +155,9 @@ import {
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           
           <!-- News & Events Card -->
-          <a routerLink="/admin/content" class="relative group flex flex-col p-4 border rounded-lg transition-all"
+          <a [routerLink]="pendingNewsCount() + pendingEventsCount() > 0 ? '/admin/content-review' : '/admin/content'"
+            [queryParams]="pendingNewsCount() + pendingEventsCount() > 0 ? { tab: pendingEventsCount() > 0 ? 'events' : 'articles' } : null"
+            class="relative group flex flex-col p-4 border rounded-lg transition-all"
             [class.border-neutral-200/60]="pendingNewsCount() + pendingEventsCount() === 0"
             [class.bg-neutral-50/40]="pendingNewsCount() + pendingEventsCount() === 0"
             [class.hover:bg-neutral-100/50]="pendingNewsCount() + pendingEventsCount() === 0"
@@ -174,7 +176,8 @@ import {
           </a>
 
           <!-- Story Review Card -->
-          <a routerLink="/admin/content-review" class="relative group flex flex-col p-4 border rounded-lg transition-all"
+          <a routerLink="/admin/content-review" [queryParams]="{ tab: 'articles', categorySlug: 'success-story' }"
+            class="relative group flex flex-col p-4 border rounded-lg transition-all"
             [class.border-neutral-200/60]="pendingStoriesCount() === 0"
             [class.bg-neutral-50/40]="pendingStoriesCount() === 0"
             [class.hover:bg-neutral-100/50]="pendingStoriesCount() === 0"

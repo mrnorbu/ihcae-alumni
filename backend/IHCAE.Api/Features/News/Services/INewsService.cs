@@ -12,7 +12,7 @@ public interface INewsService
     Task<PaginatedResult<NewsArticleSummaryDto>> GetPublishedArticlesAsync(
         int page, int pageSize, Guid? categoryId = null, string? search = null);
     
-    Task<NewsArticleDto> GetArticleByIdAsync(Guid id);
+    Task<NewsArticleDto> GetArticleByIdAsync(Guid id, Guid? currentUserId = null, bool isAdmin = false);
     
     Task<PaginatedResult<NewsArticleSummaryDto>> GetSuccessStoriesAsync(int page, int pageSize);
     
@@ -30,8 +30,12 @@ public interface INewsService
     
     Task<bool> RejectArticleAsync(Guid id, Guid adminId, string reason);
     
-    // Success story submission (Alumni)
-    Task<NewsArticleDto> SubmitSuccessStoryAsync(Guid alumniId, CreateSuccessStoryRequest request);
+    // Content submission (Alumni)
+    Task<NewsArticleDto> SubmitContentAsync(Guid alumniId, SubmitContentRequest request);
+    
+    // User own articles
+    Task<List<NewsArticleSummaryDto>> GetMyArticlesAsync(Guid userId);
+    Task<List<NewsArticleSummaryDto>> GetManagementArticlesAsync(Guid userId, bool isAdmin);
     
     // Categories
     Task<List<NewsCategoryDto>> GetCategoriesAsync();

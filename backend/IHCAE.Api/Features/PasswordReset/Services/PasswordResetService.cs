@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using IHCAE.Api.Features.Auth.Models.Entities;
 using IHCAE.Api.Features.PasswordReset.Models.Entities;
 using IHCAE.Api.Shared.Data;
@@ -21,15 +22,18 @@ public class PasswordResetService : IPasswordResetService
     private readonly AppDbContext _context;
     private readonly IEmailService _emailService;
     private readonly ILogger<PasswordResetService> _logger;
+    private readonly IConfiguration _configuration;
 
     public PasswordResetService(
         AppDbContext context,
         IEmailService emailService,
-        ILogger<PasswordResetService> logger)
+        ILogger<PasswordResetService> logger,
+        IConfiguration configuration)
     {
         _context = context;
         _emailService = emailService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -234,12 +238,9 @@ public class PasswordResetService : IPasswordResetService
     /// </summary>
     /// <param name="token">The reset token</param>
     /// <returns>The complete reset URL</returns>
-    private static string GenerateResetUrl(string token)
+    private string GenerateResetUrl(string token)
     {
-        // In production, this should come from configuration
-        var baseUrl = "http://localhost:4200"; // Frontend URL
+        var baseUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
         return $"{baseUrl}/reset-password?token={Uri.EscapeDataString(token)}";
     }
-
-
 }

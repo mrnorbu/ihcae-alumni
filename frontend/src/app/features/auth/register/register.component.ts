@@ -5,300 +5,216 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LucideAngularModule, Mail, Lock, User, CheckCircle, ArrowRight, Mountain, Globe, Shield } from 'lucide-angular';
-import { HeaderComponent, FooterComponent } from '../../../shared/components';
+import { HeaderComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent, FooterComponent],
+  imports: [ReactiveFormsModule, RouterModule, LucideAngularModule, HeaderComponent],
   template: `
-    <div class="min-h-screen bg-white flex flex-col">
+    <div class="h-screen bg-white flex flex-col overflow-hidden">
       <app-header></app-header>
     
-      <div class="flex flex-1 pt-16">
-        <!-- Left Side - Brand Section -->
-        <div class="hidden lg:flex lg:w-2/5 bg-gradient-brand relative overflow-hidden">
-          <div class="absolute inset-0 bg-black bg-opacity-10"></div>
-          <div class="relative z-10 flex flex-col justify-between p-12 text-white">
-            <!-- Logo & Brand -->
+      <div class="flex-1 flex pt-16 overflow-hidden">
+        <!-- Left Side - Flat Premium Brand Panel -->
+        <div class="hidden lg:flex lg:w-2/5 bg-primary-950 relative overflow-hidden">
+          <!-- Subtle decorative radial background overlay for depth -->
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(26,107,184,0.15)_0%,transparent_70%)]"></div>
+          
+          <div class="relative z-10 flex flex-col justify-between p-12 text-white w-full h-full">
             <div>
-              <div class="flex items-center gap-3 mb-8">
-                <img src="images/logo.png" alt="IHCAE Logo" class="h-12 w-auto">
-                <div>
-                  <h1 class="text-xl font-bold">IHCAE Alumni</h1>
-                  <p class="text-sm text-white/80">Sikkim, India</p>
-                </div>
-              </div>
-              <h2 class="text-3xl font-display font-bold mb-4">
+
+              <!-- Tagline -->
+              <h2 class="text-3xl font-bold mb-4 leading-tight">
                 Join Our Global<br/>Alumni Community
               </h2>
-              <p class="text-lg text-white/90 leading-relaxed">
+              <p class="text-sm text-primary-200/90 leading-relaxed max-w-sm font-normal">
                 Connect with mountaineers, eco-tourism professionals, and conservation leaders across the Himalayas.
               </p>
             </div>
     
-            <!-- Features -->
+            <!-- Sleek Minimalist Feature Grid (Cardless) -->
             <div class="space-y-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="mountainIcon" [size]="20" class="text-white"></lucide-icon>
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="mountainIcon" [size]="18" class="text-primary-300"></lucide-icon>
                 </div>
                 <div>
-                  <p class="font-semibold">Expert Training</p>
-                  <p class="text-sm text-white/80">World-class mountaineering programs</p>
+                  <p class="text-sm font-semibold">Expert Training</p>
+                  <p class="text-xs text-primary-300/80">World-class mountaineering programs</p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="globeIcon" [size]="20" class="text-white"></lucide-icon>
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="globeIcon" [size]="18" class="text-secondary-300"></lucide-icon>
                 </div>
                 <div>
-                  <p class="font-semibold">Global Network</p>
-                  <p class="text-sm text-white/80">Connect across continents</p>
+                  <p class="text-sm font-semibold">Global Network</p>
+                  <p class="text-xs text-primary-300/80">Connect across continents</p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="shieldIcon" [size]="20" class="text-white"></lucide-icon>
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/10 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="shieldIcon" [size]="18" class="text-primary-300"></lucide-icon>
                 </div>
                 <div>
-                  <p class="font-semibold">Verified Members</p>
-                  <p class="text-sm text-white/80">Secure and trusted community</p>
+                  <p class="text-sm font-semibold">Verified Members</p>
+                  <p class="text-xs text-primary-300/80">Secure and trusted community</p>
                 </div>
               </div>
-            </div>
-    
-            <!-- Footer -->
-            <div class="text-sm text-white/70">
-              © 2024 IHCAE Sikkim. All rights reserved.
             </div>
           </div>
         </div>
     
-        <!-- Right Side - Register Form -->
-        <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 bg-neutral-50">
-          <div class="w-full max-w-md">
+        <!-- Right Side - Flat Register Form -->
+        <div class="flex-1 flex items-center justify-center px-6 sm:px-8 lg:px-12 py-8 overflow-y-auto bg-white">
+          <div class="w-full max-w-sm">
             <!-- Mobile Logo -->
             <div class="lg:hidden text-center mb-8">
-              <img src="images/logo.png" alt="IHCAE Logo" class="h-16 w-auto mx-auto mb-3">
-              <h1 class="text-2xl font-bold text-neutral-900">IHCAE Alumni</h1>
+              <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">IHCAE Alumni</h1>
+              <p class="text-xs text-neutral-500 font-medium">Sikkim, India</p>
             </div>
     
             <!-- Form Container -->
-            <div class="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
+            <div class="py-2">
               <div class="mb-6">
-                <h2 class="text-2xl font-bold text-neutral-900 mb-2">
-                  Create Account
-                </h2>
-                <p class="text-sm text-neutral-600">
-                  Join the IHCAE alumni network today
-                </p>
+                <h2 class="text-3xl font-bold text-neutral-900 mb-2">Create Account</h2>
+                <p class="text-sm text-neutral-500 font-normal">Join the IHCAE alumni network today</p>
               </div>
     
-              <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-3">
+              <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
                 <!-- Name Fields -->
                 <div class="grid grid-cols-2 gap-3">
-                  <div class="form-group">
-                    <label for="firstName" class="input-label">
-                      <div class="flex items-center gap-1.5">
-                        <lucide-icon [img]="userIcon" [size]="14" class="text-neutral-500"></lucide-icon>
-                        <span>First Name</span>
-                      </div>
+                  <div>
+                    <label for="firstName" class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
+                      <span class="inline-flex items-center gap-1.5">
+                        <lucide-icon [img]="userIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                        First Name
+                      </span>
                     </label>
-                    <input
-                      id="firstName"
-                      type="text"
-                      formControlName="firstName"
-                      class="input-field"
-                      [class.input-error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
-                      placeholder="First name"
-                      />
+                    <input id="firstName" type="text" formControlName="firstName"
+                      class="w-full px-4 py-2.5 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
+                      [class.border-red-300]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+                      placeholder="First name" />
                     @if (registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched) {
-                      <div class="form-error">
-                        @if (registerForm.get('firstName')?.errors?.['required']) {
-                          <p>Required</p>
-                        }
-                        @if (registerForm.get('firstName')?.errors?.['maxlength']) {
-                          <p>Too long</p>
-                        }
-                      </div>
+                      <p class="mt-1 text-[11px] text-red-500 font-medium">
+                        @if (registerForm.get('firstName')?.errors?.['required']) { First name required }
+                      </p>
                     }
                   </div>
     
-                  <div class="form-group">
-                    <label for="lastName" class="input-label">
-                      Last Name
-                    </label>
-                    <input
-                      id="lastName"
-                      type="text"
-                      formControlName="lastName"
-                      class="input-field"
-                      [class.input-error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
-                      placeholder="Last name"
-                      />
+                  <div>
+                    <label for="lastName" class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">Last Name</label>
+                    <input id="lastName" type="text" formControlName="lastName"
+                      class="w-full px-4 py-2.5 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
+                      [class.border-red-300]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+                      placeholder="Last name" />
                     @if (registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched) {
-                      <div class="form-error">
-                        @if (registerForm.get('lastName')?.errors?.['required']) {
-                          <p>Required</p>
-                        }
-                        @if (registerForm.get('lastName')?.errors?.['maxlength']) {
-                          <p>Too long</p>
-                        }
-                      </div>
+                      <p class="mt-1 text-[11px] text-red-500 font-medium">
+                        @if (registerForm.get('lastName')?.errors?.['required']) { Last name required }
+                      </p>
                     }
                   </div>
                 </div>
     
                 <!-- Email Field -->
-                <div class="form-group">
-                  <label for="email" class="input-label">
-                    <div class="flex items-center gap-1.5">
-                      <lucide-icon [img]="mailIcon" [size]="14" class="text-neutral-500"></lucide-icon>
-                      <span>Email Address</span>
-                    </div>
+                <div>
+                  <label for="email" class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
+                    <span class="inline-flex items-center gap-1.5">
+                      <lucide-icon [img]="mailIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                      Email Address
+                    </span>
                   </label>
-                  <input
-                    id="email"
-                    type="email"
-                    formControlName="email"
-                    class="input-field-lg"
-                    [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-                    placeholder="your@email.com"
-                    />
-                  <p class="text-xs text-neutral-400 mt-1">If you completed a course at IHCAE, use the email you registered with us to get instant access.</p>
+                  <input id="email" type="email" formControlName="email"
+                    class="w-full px-4 py-2.5 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
+                    [class.border-red-300]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+                    placeholder="your@email.com" />
+                  <p class="text-[10px] text-neutral-400 mt-1 leading-normal">If you completed a course at IHCAE, use the email you registered with us to get instant access.</p>
                   @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
-                    <div class="form-error">
-                      @if (registerForm.get('email')?.errors?.['required']) {
-                        <p>Email is required</p>
-                      }
-                      @if (registerForm.get('email')?.errors?.['email']) {
-                        <p>Please enter a valid email</p>
-                      }
-                    </div>
+                    <p class="mt-1 text-[11px] text-red-500 font-medium">
+                      @if (registerForm.get('email')?.errors?.['required']) { Email is required }
+                      @if (registerForm.get('email')?.errors?.['email']) { Please enter a valid email }
+                    </p>
                   }
                 </div>
     
                 <!-- Password Field -->
-                <div class="form-group">
-                  <label for="password" class="input-label">
-                    <div class="flex items-center gap-1.5">
-                      <lucide-icon [img]="lockIcon" [size]="14" class="text-neutral-500"></lucide-icon>
-                      <span>Password</span>
-                    </div>
+                <div>
+                  <label for="password" class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
+                    <span class="inline-flex items-center gap-1.5">
+                      <lucide-icon [img]="lockIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                      Password
+                    </span>
                   </label>
-                  <input
-                    id="password"
-                    type="password"
-                    formControlName="password"
-                    class="input-field-lg"
-                    [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-                    placeholder="Create a password (min. 8 characters)"
-                    />
+                  <input id="password" type="password" formControlName="password"
+                    class="w-full px-4 py-2.5 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
+                    [class.border-red-300]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                    placeholder="Create a password (min. 8 characters)" />
                   @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
-                    <div class="form-error">
-                      @if (registerForm.get('password')?.errors?.['required']) {
-                        <p>Password is required</p>
-                      }
-                      @if (registerForm.get('password')?.errors?.['minlength']) {
-                        <p>Must be at least 8 characters</p>
-                      }
-                    </div>
+                    <p class="mt-1 text-[11px] text-red-500 font-medium">
+                      @if (registerForm.get('password')?.errors?.['required']) { Password is required }
+                      @if (registerForm.get('password')?.errors?.['minlength']) { Must be at least 8 characters }
+                    </p>
                   }
                 </div>
     
                 <!-- Confirm Password Field -->
-                <div class="form-group">
-                  <label for="confirmPassword" class="input-label">
-                    <div class="flex items-center gap-1.5">
-                      <lucide-icon [img]="checkIcon" [size]="14" class="text-neutral-500"></lucide-icon>
-                      <span>Confirm Password</span>
-                    </div>
+                <div>
+                  <label for="confirmPassword" class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
+                    <span class="inline-flex items-center gap-1.5">
+                      <lucide-icon [img]="checkIcon" [size]="12" class="text-neutral-400"></lucide-icon>
+                      Confirm Password
+                    </span>
                   </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    formControlName="confirmPassword"
-                    class="input-field-lg"
-                    [class.input-error]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
-                    placeholder="Confirm your password"
-                    />
+                  <input id="confirmPassword" type="password" formControlName="confirmPassword"
+                    class="w-full px-4 py-2.5 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
+                    [class.border-red-300]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+                    placeholder="Confirm your password" />
                   @if (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) {
-                    <div class="form-error">
-                      @if (registerForm.get('confirmPassword')?.errors?.['required']) {
-                        <p>Please confirm password</p>
-                      }
-                      @if (registerForm.get('confirmPassword')?.errors?.['mismatch']) {
-                        <p>Passwords do not match</p>
-                      }
-                    </div>
+                    <p class="mt-1 text-[11px] text-red-500 font-medium">
+                      @if (registerForm.get('confirmPassword')?.errors?.['required']) { Please confirm password }
+                      @if (registerForm.get('confirmPassword')?.errors?.['mismatch']) { Passwords do not match }
+                    </p>
                   }
                 </div>
     
-                <!-- Terms Checkbox -->
-                <div class="flex items-start gap-2 pt-2">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    formControlName="acceptTerms"
-                    class="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
-                    />
-                  <label for="terms" class="text-xs text-neutral-600 leading-relaxed">
-                    I agree to the
-                    <a href="#" class="text-primary-600 hover:text-primary-700 font-medium">Terms of Service</a>
-                    and
-                    <a href="#" class="text-primary-600 hover:text-primary-700 font-medium">Privacy Policy</a>
-                  </label>
-                </div>
-                @if (registerForm.get('acceptTerms')?.invalid && registerForm.get('acceptTerms')?.touched) {
-                  <div class="form-error">
-                    <p>You must accept the terms to continue</p>
-                  </div>
-                }
+
     
                 <!-- Submit Button -->
-                <button
-                  type="submit"
-                  [disabled]="registerForm.invalid || isLoading"
-                  class="btn-primary btn-lg w-full flex items-center justify-center gap-2 mt-4"
-                  >
+                <button type="submit" [disabled]="registerForm.invalid || isLoading"
+                  class="w-full flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-40 shadow-sm hover:shadow-md transition-all duration-200 mt-6 cursor-pointer">
                   @if (isLoading) {
-                    <span>
-                      <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </span>
+                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
                   }
                   <span>{{ isLoading ? 'Creating Account...' : 'Create Account' }}</span>
                   @if (!isLoading) {
-                    <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
+                    <lucide-icon [img]="arrowIcon" [size]="14"></lucide-icon>
                   }
                 </button>
               </form>
             </div>
     
             <!-- Sign In Link -->
-            <div class="mt-6 text-center">
-              <p class="text-sm text-neutral-600">
+            <div class="mt-8 text-center border-t border-neutral-100 pt-6">
+              <p class="text-sm text-neutral-500 font-normal">
                 Already have an account?
-                <a routerLink="/login" class="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
-                  Sign in
-                </a>
+                <a routerLink="/login" class="font-bold text-primary-600 hover:text-primary-700 hover:underline">Sign in</a>
               </p>
             </div>
     
             <!-- Back to Home -->
             <div class="mt-4 text-center">
-              <a routerLink="/" class="text-sm text-neutral-500 hover:text-neutral-700 transition-colors">
-                ← Back to home
+              <a routerLink="/" class="text-xs font-semibold text-neutral-450 hover:text-neutral-600 transition-colors">
+                Back to home
               </a>
             </div>
+
+            <p class="mt-8 text-center text-[11px] text-neutral-400 font-medium tracking-wide">
+              © 2026 IHCAE Sikkim. All rights reserved.
+            </p>
           </div>
         </div>
       </div>
-    
-      <app-footer></app-footer>
     </div>
     `,
   styles: []
@@ -328,8 +244,7 @@ export class RegisterComponent {
       lastName: ['', [Validators.required, Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]],
-      acceptTerms: [false, [Validators.requiredTrue]]
+      confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
 
@@ -365,13 +280,11 @@ export class RegisterComponent {
             this.isLoading = false;
           },
           error: (error) => {
-            this.notificationService.showError('Registration failed', 'An unexpected error occurred');
             console.error('Registration error:', error);
             this.isLoading = false;
           }
         });
       } catch (error) {
-        this.notificationService.showError('Registration failed', 'An unexpected error occurred');
         console.error('Registration error:', error);
         this.isLoading = false;
       }
