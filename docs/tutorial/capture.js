@@ -7,64 +7,118 @@ const { chromium } = require('@playwright/test');
   });
   const page = await context.newPage();
 
-  console.log('Capturing Homepage...');
+  console.log('--- STARTING GUEST FLOW ---');
   await page.goto('http://localhost:4200/');
   await page.waitForLoadState('networkidle');
   await page.screenshot({ path: 'screenshots/1-homepage.png' });
 
-  console.log('Capturing News & Events Page...');
   await page.goto('http://localhost:4200/news-events');
   await page.waitForLoadState('networkidle');
-  await page.screenshot({ path: 'screenshots/3-news-events.png' });
+  await page.screenshot({ path: 'screenshots/2-news-events.png' });
 
-  console.log('Registering a test user...');
+  await page.goto('http://localhost:4200/contact');
+  await page.waitForLoadState('networkidle');
+  await page.screenshot({ path: 'screenshots/3-contact.png' });
+
   await page.goto('http://localhost:4200/register');
   await page.waitForLoadState('networkidle');
-  
-  try {
-      await page.fill('input[type="email"], input[id="email"]', 'test.alumni@example.com');
-      await page.fill('input[type="password"], input[id="password"]', 'Password@123');
-      
-      const firstNameInputs = await page.$$('input[id*="first"], input[name*="first"]');
-      if(firstNameInputs.length) await firstNameInputs[0].fill('John');
-      
-      const lastNameInputs = await page.$$('input[id*="last"], input[name*="last"]');
-      if(lastNameInputs.length) await lastNameInputs[0].fill('Doe');
+  await page.screenshot({ path: 'screenshots/4-registration.png' });
 
-      await page.screenshot({ path: 'screenshots/2-registration-filled.png' });
-  } catch (e) {
-      console.log('Selectors failed, taking normal screenshot.', e.message);
-      await page.screenshot({ path: 'screenshots/2-registration-filled.png' });
-  }
 
-  console.log('Logging in as Admin...');
+  console.log('--- STARTING NORMAL ALUMNI FLOW ---');
   await page.goto('http://localhost:4200/login');
   await page.waitForLoadState('networkidle');
+  await page.screenshot({ path: 'screenshots/5-login.png' });
   
+  // Log in as normal user
+  await page.fill('input[type="email"]', 'mrnorbu@gmail.com');
+  await page.fill('input[type="password"]', '12345678');
+  await page.click('button[type="submit"]');
+  await page.waitForTimeout(3000); 
+
+  await page.goto('http://localhost:4200/dashboard');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/6-alumni-dashboard.png' });
+
+  await page.goto('http://localhost:4200/profile');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/7-profile.png' });
+
+  await page.goto('http://localhost:4200/directory');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/8-directory.png' });
+
+  await page.goto('http://localhost:4200/forums');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/9-forums.png' });
+
+  await page.goto('http://localhost:4200/success-stories');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/10-success-stories.png' });
+
+  await page.goto('http://localhost:4200/submit-content');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/11-submit-content.png' });
+  
+  // Logout normal user
+  await context.clearCookies();
+
+
+  console.log('--- STARTING ADMIN FLOW ---');
+  await page.goto('http://localhost:4200/login');
+  await page.waitForLoadState('networkidle');
   await page.fill('input[type="email"]', 'admin@ihcae.edu');
   await page.fill('input[type="password"]', 'Admin@123');
   await page.click('button[type="submit"]');
-  
   await page.waitForTimeout(3000); 
-  
-  console.log('Capturing Admin Dashboard...');
+
   await page.goto('http://localhost:4200/admin');
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'screenshots/5-admin-dashboard.png' });
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/12-admin-dashboard.png' });
 
-  console.log('Capturing Admin Directory/Hub...');
   await page.goto('http://localhost:4200/admin/alumni-hub');
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'screenshots/4-admin-directory.png' });
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/13-admin-alumni-hub.png' });
   
-  console.log('Capturing Admin Content Management...');
+  // Try to open CSV import modal if possible (it's in the alumni-hub component)
+  try {
+      const importBtn = await page.$('button:has-text("Import CSV")');
+      if (importBtn) {
+          await importBtn.click();
+          await page.waitForTimeout(1000);
+          await page.screenshot({ path: 'screenshots/14-admin-csv-import.png' });
+          // Close modal by clicking outside or close button (if we want)
+          const closeBtn = await page.$('button:has-text("Cancel")');
+          if (closeBtn) await closeBtn.click();
+          await page.waitForTimeout(500);
+      }
+  } catch(e) {
+      console.log('Could not open CSV modal');
+  }
+
   await page.goto('http://localhost:4200/admin/content');
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'screenshots/6-admin-content.png' });
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/15-admin-content-management.png' });
+
+  await page.goto('http://localhost:4200/admin/content-review');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/16-admin-content-review.png' });
+
+  await page.goto('http://localhost:4200/admin/forums');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'screenshots/17-admin-forums.png' });
 
   await browser.close();
-  console.log('Playwright screenshots captured successfully.');
+  console.log('Playwright successfully captured all screens!');
 })();

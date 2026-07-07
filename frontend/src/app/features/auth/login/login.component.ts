@@ -70,8 +70,8 @@ import { HeaderComponent } from '../../../shared/components';
           <div class="w-full max-w-sm">
             <!-- Mobile Logo -->
             <div class="lg:hidden text-center mb-10">
-              <div class="w-14 h-14 rounded-2xl bg-primary-950 border border-primary-900 flex items-center justify-center mx-auto mb-3 shadow-sm">
-                <img src="images/logo.png" alt="IHCAE" class="w-8 h-8 object-contain brightness-200">
+              <div class="flex items-center justify-center mx-auto mb-3">
+                <img src="images/logo.png" alt="IHCAE" class="h-16 w-auto object-contain">
               </div>
               <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">IHCAE Alumni</h1>
               <p class="text-xs text-neutral-500 font-medium">Sikkim, India</p>

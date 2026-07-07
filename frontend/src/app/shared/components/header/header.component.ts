@@ -112,7 +112,7 @@ import { Subscription } from 'rxjs';
                     class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-neutral-200 py-1 z-50">
                     <div class="px-3 py-2 border-b border-neutral-100 min-w-0">
                       <p class="text-sm font-medium text-neutral-900 truncate" [title]="(authState.user?.firstName || '') + ' ' + (authState.user?.lastName || '')">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
-                      <p class="text-xs text-neutral-500 truncate" [title]="authState.user?.email || ''">{{ authState.user?.email }}</p>
+                      <p class="text-xs text-neutral-500 break-all" [title]="authState.user?.email || ''">{{ authState.user?.email }}</p>
                     </div>
                     @if (isAlumni()) {
                       <a routerLink="/profile" (click)="closeUserMenu()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
@@ -165,7 +165,7 @@ import { Subscription } from 'rxjs';
             @if (authState.isAuthenticated) {
               <div class="px-3 py-2 border-b border-neutral-100 mb-2 min-w-0">
                 <p class="text-sm font-medium text-neutral-900 truncate" [title]="(authState.user?.firstName || '') + ' ' + (authState.user?.lastName || '')">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
-                <p class="text-xs text-neutral-500 truncate" [title]="authState.user?.email || ''">{{ authState.user?.email }}</p>
+                <p class="text-xs text-neutral-500 break-all" [title]="authState.user?.email || ''">{{ authState.user?.email }}</p>
                 <p class="text-xs text-primary-600 font-medium">{{ getUserRole() }}</p>
               </div>
               <!-- Common features for all authenticated users -->
@@ -219,6 +219,42 @@ import { Subscription } from 'rxjs';
         </div>
       }
     </nav>
+
+    <!-- Mobile Bottom Navigation (Alumni only) -->
+    @if (authState.isAuthenticated && isAlumni()) {
+      <div class="fixed bottom-0 left-0 right-0 z-50 h-16 bg-white border-t border-neutral-200 flex items-center overflow-x-auto whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden px-2 gap-1 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <!-- Dashboard Link -->
+        <a routerLink="/dashboard" routerLinkActive="text-primary-600 font-semibold" [routerLinkActiveOptions]="{exact: true}"
+          class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          <lucide-icon [img]="settingsIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+          <span class="text-[10px] tracking-tight">Dashboard</span>
+        </a>
+        <!-- News & Events Link -->
+        <a routerLink="/news-events" routerLinkActive="text-primary-600 font-semibold"
+          class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          <lucide-icon [img]="newspaperIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+          <span class="text-[10px] tracking-tight">News</span>
+        </a>
+        <!-- Alumni Directory Link -->
+        <a routerLink="/directory" routerLinkActive="text-primary-600 font-semibold"
+          class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          <lucide-icon [img]="usersIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+          <span class="text-[10px] tracking-tight">Directory</span>
+        </a>
+        <!-- Forums Link -->
+        <a routerLink="/forums" routerLinkActive="text-primary-600 font-semibold"
+          class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          <lucide-icon [img]="forumIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+          <span class="text-[10px] tracking-tight">Forums</span>
+        </a>
+        <!-- My Profile Link -->
+        <a routerLink="/profile" routerLinkActive="text-primary-600 font-semibold"
+          class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          <lucide-icon [img]="userIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
+          <span class="text-[10px] tracking-tight">Profile</span>
+        </a>
+      </div>
+    }
     `,
   styles: []
 })

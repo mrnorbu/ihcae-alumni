@@ -166,12 +166,12 @@ import {
       </div>
 
       <!-- Mobile Bottom Navigation Bar (hidden on desktop) -->
-      <nav class="fixed bottom-0 left-0 right-0 z-50 h-16 bg-white border-t border-neutral-200 flex items-center justify-around lg:hidden px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <nav class="fixed bottom-0 left-0 right-0 z-50 h-16 bg-white border-t border-neutral-200 flex items-center overflow-x-auto whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden px-2 gap-1 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         
         <!-- Dashboard Link -->
         @if (isAdmin()) {
           <a routerLink="/admin" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="text-primary-600 font-semibold"
-            class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+            class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
             <lucide-icon [img]="dashboardIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
             <span class="text-[10px] tracking-tight">Dashboard</span>
           </a>
@@ -180,7 +180,7 @@ import {
         <!-- Alumni/User Management Link -->
         @if (isAdmin()) {
           <a routerLink="/admin/users" [queryParams]="{tab: 'all'}" routerLinkActive="text-primary-600 font-semibold"
-            class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+            class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
             <lucide-icon [img]="usersIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
             <span class="text-[10px] tracking-tight text-center truncate w-full max-w-[70px]">Users</span>
           </a>
@@ -188,14 +188,14 @@ import {
 
         <!-- News & Events Link -->
         <a routerLink="/admin/content" routerLinkActive="text-primary-600 font-semibold"
-          class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
           <lucide-icon [img]="newspaperIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
           <span class="text-[10px] tracking-tight">News</span>
         </a>
 
         <!-- Content Review Link -->
         <a routerLink="/admin/content-review" routerLinkActive="text-primary-600 font-semibold"
-          class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
+          class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors">
           <lucide-icon [img]="bookOpenIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
           <span class="text-[10px] tracking-tight">Review</span>
         </a>
@@ -203,7 +203,7 @@ import {
         <!-- Forum Moderation Link -->
         @if (isAdmin()) {
           <a routerLink="/admin/forums" routerLinkActive="text-primary-600 font-semibold"
-            class="flex flex-col items-center justify-center flex-1 py-1 text-neutral-500 hover:text-neutral-900 transition-colors relative">
+            class="flex flex-col items-center justify-center flex-1 shrink-0 min-w-[70px] py-1 text-neutral-500 hover:text-neutral-900 transition-colors relative">
             <lucide-icon [img]="messageSquareIcon" [size]="20" [strokeWidth]="2" class="mb-0.5"></lucide-icon>
             <span class="text-[10px] tracking-tight">Forums</span>
             @if (pendingFlagsCount() > 0) {

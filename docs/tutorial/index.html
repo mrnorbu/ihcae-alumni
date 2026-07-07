@@ -3,229 +3,692 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IHCAE Alumni App - Comprehensive Tutorial</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>IHCAE Alumni Network - Official User Guide</title>
     <style>
-        body {
+        :root {
+            --primary: #0f172a;
+            --sidebar-bg: #f8fafc;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --accent: #2563eb;
+            --highlight: #eff6ff;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: #ffffff;
-            color: #333333;
-            line-height: 1.8;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eaeaea;
+        /* SIDEBAR STYLES */
+        .sidebar {
+            width: 320px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
         }
 
-        header h1 {
-            font-size: 2.5rem;
-            color: #1a1a1a;
-            margin-bottom: 10px;
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        header p {
-            font-size: 1.2rem;
-            color: #666666;
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            color: var(--primary);
+            line-height: 1.3;
         }
 
-        .section {
-            margin-bottom: 60px;
+        .sidebar-header p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
         }
 
-        .section h2 {
-            font-size: 2rem;
-            color: #0056b3;
-            border-bottom: 1px solid #eaeaea;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+        .nav-group {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
         }
 
-        .section h3 {
-            font-size: 1.5rem;
-            color: #2c3e50;
-            margin-top: 40px;
-            margin-bottom: 15px;
+        .nav-group-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            font-weight: 700;
+            padding: 0 24px;
+            margin-bottom: 8px;
         }
 
-        p {
-            font-size: 1.05rem;
-            margin-bottom: 15px;
+        .nav-item {
+            display: block;
+            padding: 8px 24px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
         }
 
-        ul {
-            font-size: 1.05rem;
-            margin-bottom: 20px;
+        .nav-item:hover {
+            background-color: var(--border);
+        }
+
+        .nav-item.active {
+            background-color: var(--highlight);
+            color: var(--accent);
+            font-weight: 600;
+            border-left: 4px solid var(--accent);
             padding-left: 20px;
         }
 
-        li {
-            margin-bottom: 10px;
+        /* CONTENT STYLES */
+        .content {
+            flex-grow: 1;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 48px;
+            background-color: white;
+            scroll-behavior: smooth;
+        }
+
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .chapter {
+            margin-bottom: 80px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chapter h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .chapter > p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 32px;
+        }
+
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section h2 {
+            font-size: 1.75rem;
+            color: var(--primary);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section h3 {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+
+        .section p {
+            margin-bottom: 16px;
+        }
+
+        .section ul, .section ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .section li {
+            margin-bottom: 8px;
+        }
+
+        .callout {
+            background-color: var(--highlight);
+            border-left: 4px solid var(--accent);
+            padding: 16px 24px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .callout h4 {
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 1rem;
         }
 
         .screenshot-container {
-            margin: 30px 0;
-            border: 1px solid #dddddd;
-            border-radius: 8px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin: 32px 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-color: var(--sidebar-bg);
         }
 
         .screenshot-container img {
+            display: block;
             max-width: 100%;
             height: auto;
-            display: block;
-            border-radius: 4px;
-            border: 1px solid #eeeeee;
+            margin: 0 auto;
         }
 
-        .caption {
+        .screenshot-caption {
+            padding: 12px 16px;
+            background-color: white;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--text-light);
             text-align: center;
-            font-size: 0.9rem;
-            color: #777777;
-            margin-top: 10px;
-            font-style: italic;
         }
 
-        .highlight-box {
-            background-color: #e8f4fd;
-            border-left: 5px solid #0056b3;
-            padding: 15px 20px;
-            margin: 20px 0;
-            border-radius: 0 4px 4px 0;
-        }
-
-        .highlight-box h4 {
-            margin-top: 0;
-            color: #0056b3;
-            margin-bottom: 10px;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 80px;
-            padding-top: 20px;
-            border-top: 1px solid #eaeaea;
-            color: #888888;
-            font-size: 0.9rem;
+        .placeholder-image {
+            width: 100%;
+            height: 400px;
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>IHCAE Alumni Application Tutorial</h1>
-        <p>A step-by-step guide for basic users, registration, and administrators.</p>
-    </header>
-
-    <!-- SECTION 1: THE UNAUTHENTICATED USER -->
-    <div class="section" id="normal-user">
-        <h2>1. The Guest Experience (Without Logging In)</h2>
-        <p>Before you even create an account, the IHCAE Alumni App offers valuable information to the public. When you navigate to the main website, you land on the <strong>Homepage</strong>.</p>
-        
-        <h3>The Homepage</h3>
-        <p>As a guest visiting the site, you will see a public landing page. Here, you have options to join the community or sign in. The navigation bar provides access to public sections.</p>
-        <div class="screenshot-container">
-            <img src="screenshots/1-homepage.png" alt="IHCAE Alumni Homepage">
-            <div class="caption">Figure 1: The main homepage displaying the login area and public navigation.</div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>IHCAE Alumni Guide</h1>
+            <p>Official User & Admin Documentation</p>
         </div>
 
-        <h3>News & Events</h3>
-        <p>Clicking on "News & Events" in the navigation bar takes you to the public notice board. You can see upcoming events, such as reunions and training programs, as well as the latest success stories without needing an account.</p>
-        <div class="screenshot-container">
-            <img src="screenshots/3-news-events.png" alt="News and Events Page">
-            <div class="caption">Figure 2: The public News & Events page.</div>
-        </div>
-    </div>
-
-
-    <!-- SECTION 2: REGISTRATION PROCESS -->
-    <div class="section" id="registration">
-        <h2>2. Registration: Joining the Network</h2>
-        <p>To view other alumni and access the Directory, you must become a registered member.</p>
-
-        <h3>How to Register</h3>
-        <ul>
-            <li>On the top right of the Homepage, click the <strong>Join Network</strong> or <strong>Register</strong> button.</li>
-            <li>You will be presented with a registration form. You must fill in all required fields:
-                <ul>
-                    <li><strong>Personal Information:</strong> First Name, Last Name.</li>
-                    <li><strong>Contact Details:</strong> A valid Email Address and a secure Password.</li>
-                </ul>
-            </li>
-            <li>Once filled out, click the submit button.</li>
-        </ul>
-
-        <div class="screenshot-container">
-            <img src="screenshots/2-registration-filled.png" alt="Registration Form Filled">
-            <div class="caption">Figure 3: The registration form where new alumni provide their details.</div>
+        <div class="nav-group">
+            <div class="nav-group-title">Getting Started</div>
+            <a href="#chapter-1" class="nav-item active">1. Introduction & Roles</a>
+            <a href="#chapter-2" class="nav-item">2. The Guest Experience</a>
+            <a href="#chapter-3" class="nav-item">3. Registration & Verification</a>
         </div>
 
-        <div class="highlight-box">
-            <h4>What happens after I register?</h4>
-            <p>For security and verification purposes, your account goes into a <strong>"Pending Approval"</strong> state. An administrator must manually review your details and approve your account. You will be able to log in and view the Directory only after this approval is granted.</p>
+        <div class="nav-group">
+            <div class="nav-group-title">The Alumni Portal</div>
+            <a href="#chapter-4" class="nav-item">4. Dashboard & Profile</a>
+            <a href="#chapter-5" class="nav-item">5. Directory Search</a>
+            <a href="#chapter-6" class="nav-item">6. Forums & Moderation</a>
+            <a href="#chapter-7" class="nav-item">7. Submitting Content</a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-title">Administrator Manual</div>
+            <a href="#chapter-8" class="nav-item">8. Dashboard Overview</a>
+            
+            <a href="#chapter-9" class="nav-item">9. User Management</a>
+            <a href="#chapter-9-1" class="nav-item" style="padding-left: 32px; font-size: 0.85rem;">9.1 All Users Table</a>
+            <a href="#chapter-9-2" class="nav-item" style="padding-left: 32px; font-size: 0.85rem;">9.2 Alumni Directory</a>
+            <a href="#chapter-9-3" class="nav-item" style="padding-left: 32px; font-size: 0.85rem;">9.3 Pending Approvals</a>
+            <a href="#chapter-9-4" class="nav-item" style="padding-left: 32px; font-size: 0.85rem;">9.4 IHCAE Records (CSV)</a>
+            
+            <a href="#chapter-10" class="nav-item">10. Content & Events</a>
+            <a href="#chapter-11" class="nav-item">11. Forum Moderation</a>
         </div>
     </div>
 
+    <!-- MAIN CONTENT -->
+    <div class="content">
+        <div class="content-container">
 
-    <!-- SECTION 3: ADMINISTRATOR GUIDE -->
-    <div class="section" id="admin-guide">
-        <h2>3. The Administrator Experience</h2>
-        <p>Administrators have special privileges to manage users and content. This section details the various admin dashboards.</p>
+            <!-- CHAPTER 1 -->
+            <div class="chapter" id="chapter-1">
+                <h1>Chapter 1: Introduction & Roles</h1>
+                <p>Welcome to the official documentation for the IHCAE Alumni App. This guide is designed to help you understand exactly how the platform operates, whether you are browsing as a guest, connecting as an alumnus, or managing the system as an administrator.</p>
 
-        <h3>The Admin Dashboard</h3>
-        <p>After logging in with admin credentials, click on the <strong>Admin</strong> link in the navigation bar. This takes you to the central console overview.</p>
-        <ul>
-            <li><strong>Overview Panel:</strong> View total registered alumni, pending accounts, and active users.</li>
-            <li><strong>Quick Actions:</strong> Easily jump to user management or content creation.</li>
-        </ul>
+                <div class="section">
+                    <h2>What is this platform?</h2>
+                    <p>The IHCAE Alumni App is a centralized digital hub designed to connect graduates from across the world. It provides a secure directory, private discussion forums, and a space to share success stories and upcoming events.</p>
+                </div>
 
-        <div class="screenshot-container">
-            <img src="screenshots/5-admin-dashboard.png" alt="Admin Dashboard">
-            <div class="caption">Figure 4: The Admin Dashboard showing user statistics and quick actions.</div>
-        </div>
+                <div class="section">
+                    <h2>Understanding User Roles</h2>
+                    <p>To ensure security and data privacy, the platform operates on three distinct levels of access:</p>
+                    
+                    <div class="callout">
+                        <h4>1. The Guest (Unauthenticated)</h4>
+                        <p>Anyone who visits the website without logging in is considered a Guest. They can view public announcements, read success stories on the homepage, and see upcoming events. However, they cannot view the private directory or post in the forums.</p>
+                    </div>
 
-        <h3>Managing the Directory (Alumni Hub)</h3>
-        <p>By clicking on <strong>Alumni & User Management</strong> (or the Alumni Hub), admins can oversee the entire directory and manage approvals.</p>
-        <ul>
-            <li><strong>Pending Approvals:</strong> View a list of new users who have recently registered. You can verify their identity and click Approve.</li>
-            <li><strong>Directory:</strong> Search for specific alumni and view their full profiles.</li>
-        </ul>
+                    <div class="callout" style="border-left-color: #10b981; background-color: #ecfdf5;">
+                        <h4 style="color: #059669;">2. The Normal User (Verified Alumni)</h4>
+                        <p>Alumni who have registered and been <strong>manually verified</strong> by an administrator gain full access to the network. They can search the directory, update their professional profiles, register for private events, and participate in forum discussions.</p>
+                    </div>
 
-        <div class="screenshot-container">
-            <img src="screenshots/4-admin-directory.png" alt="Admin Alumni Hub">
-            <div class="caption">Figure 5: The Alumni Hub for managing user approvals and the directory.</div>
-        </div>
-        
-        <h3>Content Management (News & Events)</h3>
-        <p>Administrators also have the ability to create, edit, or delete the News and Events that are displayed to the public.</p>
-        <ul>
-            <li>Navigate to the <strong>News & Events</strong> section inside the Admin Console.</li>
-            <li>You can add new success stories or schedule upcoming events from this screen.</li>
-        </ul>
-        
-        <div class="screenshot-container">
-            <img src="screenshots/6-admin-content.png" alt="Admin Content Management">
-            <div class="caption">Figure 6: The Content Management page for publishing news and events.</div>
+                    <div class="callout" style="border-left-color: #8b5cf6; background-color: #f5f3ff;">
+                        <h4 style="color: #6d28d9;">3. The Administrator</h4>
+                        <p>Administrators are trusted staff members who manage the ecosystem. They are responsible for reviewing registrations, importing legacy CSV databases, moderating the forums, and creating official news and events.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 2 -->
+            <div class="chapter" id="chapter-2">
+                <h1>Chapter 2: The Guest Experience</h1>
+                <p>Before you ever create an account, the platform provides valuable information to the public. Let's explore what you can do as a Guest.</p>
+
+                <div class="section">
+                    <h2>The Homepage</h2>
+                    <p>When you first arrive at the web address, you will land on the Homepage. This is the digital front door of the IHCAE community.</p>
+                    <p>From here, you will find a welcoming banner, links to recent public success stories, and the main navigation bar at the top of the screen. If you ever get lost, clicking the IHCAE logo in the top left will always bring you back here.</p>
+                    
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-1-homepage.png" alt="Homepage" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 2.1: The main homepage for guests, showcasing the login area and public navigation.</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>News & Events</h2>
+                    <p>Staying informed is easy, even without an account. By clicking the <strong>News & Events</strong> link in the top navigation bar, you are taken to the public notice board.</p>
+                    <p>Here, you can browse through a chronological feed of important announcements, upcoming reunions, and training programs. If an event is marked as "Public", you may even see details on how to attend.</p>
+
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-2-news-events.png" alt="News & Events" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 2.2: The public News & Events page.</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Contact Us</h2>
+                    <p>If you have questions about the association or need help with a lost account, you can use the public Contact page. Clicking <strong>Contact</strong> in the navigation bar brings up a simple form that sends an email directly to the IHCAE support staff.</p>
+
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-2-contact.png" alt="Contact Form" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 2.3: The public Contact Us form.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 3 -->
+            <div class="chapter" id="chapter-3">
+                <h1>Chapter 3: Registration & Joining the Network</h1>
+                <p>Because the IHCAE Alumni App contains private information and a secure directory, you must have an approved account to access the network. There are <strong>two different ways</strong> you can get an account on the platform.</p>
+
+                <div class="section">
+                    <h2>Method 1: The Automatic Link (Pre-Approved)</h2>
+                    <p>If you have already done a course with IHCAE and your previous details are in the physical alumni register, the administration team may have already added you to the system!</p>
+                    <p>In this scenario, you don't need to fill out any forms. The Admin simply uploads the old records from the back-end. The system will then send you an <strong>automatic email invitation</strong>.</p>
+                    <ul>
+                        <li>Check your inbox for an email from the IHCAE Alumni Network.</li>
+                        <li>Click the secure link inside the email.</li>
+                        <li>You will be asked to create your own private password. Once saved, you are instantly logged in!</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h2>Method 2: Self-Registration</h2>
+                    <p>If you haven't received an automatic link, you can manually register yourself. To begin, navigate to the Homepage and click the <strong>Register</strong> button in the top right corner.</p>
+                    <p>You will need to input your details, such as which course you did, the dates you attended, and your contact information. <strong>It is crucial that you provide accurate information</strong>, as the admin team will use this to verify who you are.</p>
+                    
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-3-registration-modal.png" alt="Registration Form" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 3.1: The registration form where you provide your course details.</div>
+                    </div>
+
+                    <div class="callout" style="border-left-color: #f59e0b; background-color: #fffbeb;">
+                        <h4 style="color: #d97706;">The Waiting Period (Pending Approval)</h4>
+                        <p>After you submit the form, your account is placed into a <strong>"Pending Approval"</strong> state. Because the admin team needs to double-check their records to confirm you actually took the course, you cannot log in immediately.</p>
+                        <p>Once the admin verifies your details and approves your account from their dashboard, you will receive a welcome email letting you know you can now log in!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 4 -->
+            <div class="chapter" id="chapter-4">
+                <h1>Chapter 4: Dashboard & Profile</h1>
+                <p>Once an administrator has approved your account, or if you received an email invitation, you are ready to explore the private Alumni Portal.</p>
+
+                <div class="section">
+                    <h2>Logging In & The Dashboard</h2>
+                    <p>Click <strong>Login</strong> from the Homepage and enter your email and password. Upon successful authentication, you are greeted by your personalized <strong>Alumni Dashboard</strong>.</p>
+                    <p>The dashboard acts as your central command center. It provides a snapshot of recent activity, quick links to the directory, and tailored content based on your profile.</p>
+                    
+                    <div class="callout">
+                        <h4>Dashboard Features</h4>
+                        <ul>
+                            <li><strong>Live Statistics:</strong> See the total number of alumni, events, and active discussions at a glance.</li>
+                            <li><strong>Quick Feeds:</strong> View upcoming events (with dates and locations) and the latest active forum discussions.</li>
+                            <li><strong>My Submissions Tracking:</strong> Track any content you have submitted. You can see if it is <em>Draft</em>, <em>Pending Review</em>, <em>Approved</em>, or <em>Rejected</em> (including the admin's feedback so you can Edit and resubmit it).</li>
+                        </ul>
+                    </div>
+
+                    <div class="callout" style="border-left-color: #3b82f6; background-color: #eff6ff;">
+                        <h4 style="color: #2563eb;">Email Notifications</h4>
+                        <p>The IHCAE platform keeps you connected even when you are logged out via automated email notifications. You will receive an email when:</p>
+                        <ul>
+                            <li>Your initial registration is approved by an administrator.</li>
+                            <li>Your submitted news or success stories are approved or rejected.</li>
+                            <li>You request a password reset.</li>
+                        </ul>
+                        <p>Make sure to check your spam folder and mark IHCAE emails as "Not Spam" to ensure you never miss an update!</p>
+                    </div>
+
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-4-dashboard.png" alt="Alumni Dashboard" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 4.1: The personalized Alumni Dashboard showing live feeds and submission tracking.</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Managing Your Profile</h2>
+                    <p>Before connecting with others, it's highly recommended to fill out your profile. Click on <strong>Profile</strong> in the navigation bar.</p>
+                    <p>By default, you are in <strong>View Mode</strong>. Click the <strong>Edit Profile</strong> button to enter Edit Mode. Here, you can upload a profile picture, update your personal information, add your current professional Location, and specify your Course and Batch. This data is critical because it allows other alumni to filter and find you in the directory.</p>
+
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-4-profile-edit.png" alt="User Profile" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 4.2: The profile management screen showing the Edit Mode toggle.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 5 -->
+            <div class="chapter" id="chapter-5">
+                <h1>Chapter 5: Directory Search</h1>
+                <p>The Directory is the core networking tool of the application. It allows you to search through the entire database of verified alumni.</p>
+
+                <div class="section">
+                    <h2>Filtering the Network</h2>
+                    <p>You have powerful tools at your disposal to find peers and mentors:</p>
+                    <ul>
+                        <li><strong>Search Bar:</strong> Free text search to find specific names.</li>
+                        <li><strong>Filters:</strong> Dropdowns to narrow down peers by a specific <strong>Course</strong> or <strong>Graduation Year (Batch)</strong>.</li>
+                    </ul>
+
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-5-directory-filters.png" alt="Directory" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 5.1: The searchable Alumni Directory with active filters.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 6 -->
+            <div class="chapter" id="chapter-6">
+                <h1>Chapter 6: Forums & Moderation</h1>
+                <p>The Forums provide a private discussion board where you can ask questions, post job opportunities, or discuss industry trends.</p>
+                
+                <div class="section">
+                    <h2>Creating and Participating in Topics</h2>
+                    <p>To start a new discussion, click the <strong>New Thread</strong> button in the sidebar. This opens a modal where you can write your topic and optionally add tags to categorize it.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-6-create-topic.png" alt="Create Forum Topic" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 6.1: Creating a new discussion topic in the forums.</div>
+                    </div>
+
+                    <p>You can also participate in ongoing discussions by clicking into any topic and writing a reply to share your thoughts with the community.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-6-comment.png" alt="Reply to Topic" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 6.2: Replying to an existing thread.</div>
+                    </div>
+
+                    <h2>Community Safety: The Flag Button</h2>
+                    <p>To keep the community safe, every user has the power to moderate content.</p>
+                    
+                    <div class="callout" style="border-left-color: #ef4444; background-color: #fef2f2;">
+                        <h4 style="color: #b91c1c;">How to Report Posts</h4>
+                        <p>If you see an inappropriate post or spam in the forums, click the small <strong>Flag</strong> icon on that post. This opens a modal where you can select a reason. The flagged post is immediately sent to the Administrators for review and potential removal.</p>
+                    </div>
+
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-6-forum-flag.png" alt="Flag Content Modal" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 6.3: Reporting a post for administrative review.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 7 -->
+            <div class="chapter" id="chapter-7">
+                <h1>Chapter 7: Submitting Content</h1>
+                <p>The platform relies on user-generated content! If you have a success story to share or an announcement for the community, you can submit it directly through the portal.</p>
+
+                <div class="section">
+                    <h2>The Submission Process</h2>
+                    <p>Navigate to <strong>Submit Content</strong>. Fill out the title and description of your story. Note that your submission will not go live instantly. It is sent to an administrator for review.</p>
+                    <p>You can track its status back on your Dashboard. <strong>Once the Admin reviews it, you will receive an automated email notification letting you know if it was approved and published, or if it requires edits.</strong></p>
+
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-7-submit-content.png" alt="Submit Content" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div class="screenshot-caption">Figure 7.1: The content submission form for alumni.</div>
+                </div>
+
+                <h2>Viewing Success Stories</h2>
+                <p>Once a success story is approved, it appears in the public Success Stories feed, where other alumni can read about your achievements.</p>
+                <div class="screenshot-container">
+                    <img src="./images/chapter-7-success-stories.png" alt="Success Stories Feed" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div class="screenshot-caption">Figure 7.2: The published Success Stories feed.</div>
+                </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 8 -->
+            <div class="chapter" id="chapter-8">
+                <h1>Chapter 8: The Admin Console & Dashboard</h1>
+                <p>Welcome to the <strong>IHCAE Console</strong>. As an Administrator, you have access to powerful tools to moderate the network. Let's first look at your primary navigation tool: the Admin Sidebar located on the left.</p>
+
+                <div class="section">
+                    <h2>Navigating the Console</h2>
+                    <p>The sidebar is divided into logical groups that dictate your workflow:</p>
+                    <ul>
+                        <li><strong>Dashboard</strong>: Your high-level overview of the entire system's health.</li>
+                        <li><strong>Users</strong>: Manage platform accounts, security roles, alumni approvals, and view the IHCAE master roster.</li>
+                        <li><strong>Content</strong>: Create news announcements and review user-submitted success stories.</li>
+                        <li><strong>Forums</strong>: Moderate discussion boards and handle flagged posts.</li>
+                    </ul>
+
+                    <h2>The Dashboard Overview</h2>
+                    <p>When you first log in, you land on the Dashboard. It provides four critical live statistics: <strong>Total Users</strong>, <strong>Pending</strong>, <strong>Approved</strong>, and <strong>Active Today</strong>. Below the statistics is a quick-access overview of the system.</p>
+                    
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-8-dashboard-overview.png" alt="Admin Dashboard Overview" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 8.1: The Admin Console showing the sidebar on the left and the Dashboard overview.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 9 -->
+            <div class="chapter" id="chapter-9">
+                <h1>Chapter 9: User Management</h1>
+                <p>The <strong>Alumni & User Management</strong> section is the core of your administrative duties. Inside this section, you will find four horizontal sub-tabs: All Users, Alumni Directory, Pending Approvals, and IHCAE Records.</p>
+
+                <div class="section" id="chapter-9-1">
+                    <h2>9.1 All Users Table</h2>
+                    <p>The first tab provides a comprehensive table of every registered account. You can filter users by their Role or search by name. Each row displays the user's status, whether their email is verified, and their assigned roles.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-1-all-users.png" alt="All Users Table" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.1: The master user management table.</div>
+                    </div>
+                    
+                    <div class="callout" style="border-left-color: #ef4444; background-color: #fef2f2;">
+                        <h4 style="color: #b91c1c;">Blocking Users</h4>
+                        <p>If an account is compromised, click the red <strong>Block (Ban)</strong> icon. A modal will prompt you to provide an optional reason.</p>
+                    </div>
+
+                    <p>When you choose to block a user, they will immediately be unable to log in to their account.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-1-ban-modal.png" alt="Ban Modal" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.2: The Block User modal asking for a reason.</div>
+                    </div>
+
+                    <h3>Editing & Passwords</h3>
+                    <p>Clicking the <strong>Edit Details</strong> icon on any user opens a powerful 3-tab modal. The first tab allows you to edit the user's First/Last name and assign administrative Roles.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-2-edit-details-modal.png" alt="Edit Details Modal - General Info" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.3: Modifying a user's name and roles.</div>
+                    </div>
+                    
+                    <p>The third tab, <strong>Security & Password</strong>, allows you to force a password reset. You can either Send a Reset Link Email to the user, or manually Change Password Directly by typing a new one inline.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-2-edit-security-tab.png" alt="Edit Details Modal - Security" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.4: Manually overriding a user's password inline.</div>
+                    </div>
+                </div>
+
+                <div class="section" id="chapter-9-2">
+                    <h2>9.2 Alumni Directory</h2>
+                    <p>The second sub-tab provides Admins with a master view of the searchable Alumni Directory. This is identical to what normal users see, but with the added ability to globally export all records as a CSV.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-2-admin-alumni-directory.png" alt="Admin Alumni Directory" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.5: The Alumni Directory view within the Admin panel.</div>
+                    </div>
+                </div>
+
+                <div class="section" id="chapter-9-3">
+                    <h2>9.3 Pending Approvals</h2>
+                    <p>The third sub-tab is a dedicated queue strictly for reviewing self-registered accounts. When new users sign up, their accounts are placed in a holding state until an admin verifies them.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-4-pending-approvals.png" alt="Pending Approvals" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.6: The Pending Approvals queue.</div>
+                    </div>
+
+                    <h3>Reviewing User Details</h3>
+                    <p>To make an informed decision, click anywhere on a pending user's row. This expands an inline detail panel showing their submitted Course, Batch, Location, and Bio.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-4-pending-details.png" alt="Pending Approvals Details" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.7: Clicking a row expands the user's submitted registration details.</div>
+                    </div>
+
+                    <h3>Approving or Rejecting</h3>
+                    <p>Once you have reviewed the details, you can click Approve to instantly grant them access, or click Reject. Clicking Reject opens a confirmation modal where you can optionally provide a reason that will be emailed to the applicant.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-8-approval-modal.png" alt="Reject Confirmation Modal" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.8: The confirmation modal when an admin chooses to Reject an application.</div>
+                    </div>
+                </div>
+
+                <div class="section" id="chapter-9-4">
+                    <h2>9.4 IHCAE Records & CSV Import</h2>
+                    <p>The final sub-tab is the <strong>IHCAE Records</strong> page. This acts as the authoritative database of valid alumni. Users who pre-exist in this database are automatically approved upon registration, bypassing the Pending queue. The table below shows the master roster before any records have been imported.</p>
+                    
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-5-ihcae-records-empty.png" alt="IHCAE Records Empty Table" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.9: The IHCAE Records table before importing data.</div>
+                    </div>
+
+                    <h3>Importing Legacy Records</h3>
+                    <p>You can quickly populate the database by uploading a CSV file containing past graduates. Click the <strong>Upload</strong> icon to select your CSV file. The system will parse it and present a <strong>Preview Modal</strong> where you can resolve any duplicate emails or formatting errors inline before finalizing.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-5-import-preview.png" alt="CSV Import Preview Modal" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.10: The Import Preview modal showing the parsed CSV rows before committing to the database.</div>
+                    </div>
+
+                    <p>Once imported, the records populate the master roster table. They are marked as "Unclaimed" until the actual user registers or you manually generate an account for them.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-5-ihcae-records.png" alt="IHCAE Records Populated" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.11: The populated IHCAE master roster showing the newly imported records.</div>
+                    </div>
+
+                    <h3>Bulk Account Generation</h3>
+                    <p>Instead of waiting for legacy alumni to find the portal, you can proactively create their accounts. Select multiple unclaimed rows and click <strong>Generate Accounts</strong>. This creates digital profiles for them and sends a secure setup link via email so they can claim their account.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-9-5-generate-accounts.png" alt="Generate Accounts Confirmation" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 9.11: The confirmation modal for bulk-generating digital accounts for imported records.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 10 -->
+            <div class="chapter" id="chapter-10">
+                <h1>Chapter 10: Content & Events</h1>
+                <p>The <strong>Content</strong> section allows you to manage the public-facing news feed and review community submissions.</p>
+                
+                <div class="section">
+                    <h2>Official Announcements</h2>
+                    <p>Use the <strong>News & Events</strong> tab to publish official announcements or schedule upcoming alumni gatherings. Content created here is immediately pushed to the user Dashboard.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-10-admin-content-management.png" alt="Admin Content Management" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 10.1: Managing official news and events from the admin panel.</div>
+                    </div>
+
+                    <h2>Reviewing Success Stories</h2>
+                    <p>As covered in Chapter 7, normal alumni can submit success stories. These do not go live instantly. Instead, they appear in the <strong>Content Review</strong> tab.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-10-admin-content-review.png" alt="Admin Content Review" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 10.2: The queue for reviewing user-submitted content.</div>
+                    </div>
+                    
+                    <p>Click the <strong>Review</strong> button on any pending submission to open the detailed review modal. Here you can read their entire draft, optionally attach an admin note, and choose to Approve or Reject the story.</p>
+                    <div class="screenshot-container">
+                        <img src="./images/chapter-10-admin-content-review-modal.png" alt="Admin Content Review Modal" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div class="screenshot-caption">Figure 10.3: The content review modal displaying a user's success story.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAPTER 11 -->
+            <div class="chapter" id="chapter-11">
+                <h1>Chapter 11: Forum Moderation</h1>
+                <p>When an alumni flags a post, it arrives in the <strong>Forum Moderation</strong> queue. To view these reports, navigate to the <strong>Flagged Content</strong> tab.</p>
+
+                <div class="screenshot-container">
+                    <img src="./images/chapter-11-forum-moderation.png" alt="Forum Moderation Queue" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div class="screenshot-caption">Figure 11.1: The Flagged Content tab listing all reported forum posts.</div>
+                </div>
+
+                <h2>Taking Moderation Actions</h2>
+                <p>Click the <strong>Take Action</strong> button on any pending report to open the moderation console. Here, you can review the reporter's exact notes, read the offensive message, and apply disciplinary actions—such as formally warning the user, permanently deleting the post, or dismissing the flag as a false alarm.</p>
+                <div class="screenshot-container">
+                    <img src="./images/chapter-11-forum-moderation-modal.png" alt="Forum Moderation Action" style="max-width: 100%; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div class="screenshot-caption">Figure 11.2: The administration modal used to enforce community guidelines on flagged content.</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2026 IHCAE Alumni Association. Tutorial Guide.</p>
-    </footer>
-</div>
+    <script>
+        // Simple scroll spy to highlight the active sidebar link
+        const chapters = document.querySelectorAll('.chapter');
+        const navItems = document.querySelectorAll('.nav-item');
 
+        const observerOptions = {
+            root: document.querySelector('.content'),
+            rootMargin: '0px 0px -80% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navItems.forEach(item => {
+                        item.classList.remove('active');
+                        if (item.getAttribute('href') === '#' + entry.target.id) {
+                            item.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        chapters.forEach(chapter => observer.observe(chapter));
+    </script>
 </body>
 </html>

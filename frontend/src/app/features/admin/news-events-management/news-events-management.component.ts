@@ -34,7 +34,7 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
       <!-- Tabs -->
       <div class="bg-white border border-neutral-200 rounded-xl">
         <div class="border-b border-neutral-200">
-          <nav class="flex gap-6 px-4">
+          <nav class="flex gap-6 px-4 overflow-x-auto whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button (click)="activeTab.set('news')"
               class="py-3 border-b-2 text-sm font-medium inline-flex items-center gap-1.5 transition-colors"
               [class.border-neutral-900]="activeTab() === 'news'"
@@ -395,7 +395,7 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
                 <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">Capacity</label>
                 <input type="number" [(ngModel)]="eventForm.capacity" 
                   class="w-full px-3.5 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all placeholder-neutral-400" 
-                  placeholder="0 = unlimited" />
+                  placeholder="Optional" />
               </div>
             </div>
 
@@ -816,8 +816,9 @@ export class NewsEventsManagementComponent implements OnInit {
   saveEvent() {
     if (!this.eventForm.title.trim() || !this.eventForm.description.trim() || !this.eventForm.location.trim() || !this.eventForm.eventDate) return;
 
-    const eventDateTime = new Date(`${this.eventForm.eventDate}T${this.eventForm.eventTime || '00:00'}`);
-    const eventEndDateTime = this.eventForm.eventEndDate ? new Date(`${this.eventForm.eventEndDate}T${this.eventForm.eventEndTime || '00:00'}`) : undefined;
+    // eventDate from datetime-local input is already in YYYY-MM-DDTHH:mm format
+    const eventDateTime = new Date(this.eventForm.eventDate);
+    const eventEndDateTime = this.eventForm.eventEndDate ? new Date(this.eventForm.eventEndDate) : undefined;
 
     this.isSaving.set(true);
     const request: CreateEventRequest = {
@@ -829,7 +830,7 @@ export class NewsEventsManagementComponent implements OnInit {
       eventEndDate: eventEndDateTime,
       capacity: this.eventForm.capacity || undefined,
       registrationDeadline: this.eventForm.registrationDeadline ? new Date(this.eventForm.registrationDeadline) : undefined,
-      imageUrl: this.eventForm.imageUrl.trim() || undefined,
+      imageUrl: this.eventForm.imageUrl?.trim() || undefined,
       thumbnailUrl: this.eventForm.thumbnailUrl?.trim() || undefined,
       publish: this.eventForm.publish
     };

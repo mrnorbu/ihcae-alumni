@@ -48,35 +48,37 @@ import {
 
             <!-- Profile header — flat white card, no gradient -->
             <div class="bg-white border border-slate-100 rounded-xl p-5">
-              <div class="flex items-start gap-4">
-                <!-- Avatar -->
-                <div class="w-16 h-16 rounded-full border-2 border-slate-100 bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
-                  @if (alumni()?.profileImageUrl && !isLucideIconUrl(alumni()!.profileImageUrl)) {
-                    <img [src]="alumni()!.profileImageUrl" [alt]="alumni()!.firstName + ' ' + alumni()!.lastName" class="w-full h-full object-cover" />
-                  }
-                  @if (!alumni()?.profileImageUrl || isLucideIconUrl(alumni()!.profileImageUrl)) {
-                    <lucide-icon [img]="userIcon" [size]="28" class="text-slate-400"></lucide-icon>
-                  }
-                </div>
-
-                <!-- Name + info -->
-                <div class="flex-1 min-w-0">
-                  <h1 class="text-xl font-bold text-slate-900 truncate">
-                    {{ alumni()?.firstName }} {{ alumni()?.lastName }}
-                  </h1>
-                  @if (alumni()?.jobTitle) {
-                    <p class="text-base text-slate-500 mt-0.5">{{ alumni()!.jobTitle }}</p>
-                  }
-                  @if (alumni()?.location) {
-                    <p class="text-sm text-slate-400 mt-1 flex items-center gap-1">
-                      <lucide-icon [img]="locationIcon" [size]="12"></lucide-icon>
-                      {{ alumni()!.location }}
-                    </p>
-                  }
+              <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div class="flex items-center sm:items-start gap-4 flex-1 min-w-0">
+                  <!-- Avatar -->
+                  <div class="w-16 h-16 rounded-full border-2 border-slate-100 bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                    @if (alumni()?.profileImageUrl && !isLucideIconUrl(alumni()!.profileImageUrl)) {
+                      <img [src]="alumni()!.profileImageUrl" [alt]="alumni()!.firstName + ' ' + alumni()!.lastName" class="w-full h-full object-cover" />
+                    }
+                    @if (!alumni()?.profileImageUrl || isLucideIconUrl(alumni()!.profileImageUrl)) {
+                      <lucide-icon [img]="userIcon" [size]="28" class="text-slate-400"></lucide-icon>
+                    }
+                  </div>
+  
+                  <!-- Name + info -->
+                  <div class="flex-1 min-w-0">
+                    <h1 class="text-xl font-bold text-slate-900 truncate">
+                      {{ alumni()?.firstName }} {{ alumni()?.lastName }}
+                    </h1>
+                    @if (alumni()?.jobTitle) {
+                      <p class="text-base text-slate-500 mt-0.5">{{ alumni()!.jobTitle }}</p>
+                    }
+                    @if (alumni()?.location) {
+                      <p class="text-sm text-slate-400 mt-1 flex items-center gap-1">
+                        <lucide-icon [img]="locationIcon" [size]="12"></lucide-icon>
+                        {{ alumni()!.location }}
+                      </p>
+                    }
+                  </div>
                 </div>
 
                 <!-- Contact actions -->
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap overflow-x-auto pb-1 sm:pb-0 whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   @if (alumni()?.email) {
                     <a [href]="'mailto:' + alumni()!.email"
                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-slate-200 rounded-lg text-slate-600 hover:border-slate-400 hover:text-slate-800 transition-colors">

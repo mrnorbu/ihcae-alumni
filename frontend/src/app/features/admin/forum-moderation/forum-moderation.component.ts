@@ -49,8 +49,8 @@ import {
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-white border border-neutral-200 rounded-xl p-4">
+      <div class="flex gap-3 overflow-x-auto pb-1 whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div class="bg-white border border-neutral-200 rounded-xl p-4 shrink-0 min-w-[150px] sm:flex-1">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
               <lucide-icon [img]="messageSquareIcon" [size]="18" class="text-blue-600"></lucide-icon>
@@ -61,7 +61,7 @@ import {
             </div>
           </div>
         </div>
-        <div class="bg-white border border-neutral-200 rounded-xl p-4">
+        <div class="bg-white border border-neutral-200 rounded-xl p-4 shrink-0 min-w-[150px] sm:flex-1">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center">
               <lucide-icon [img]="messageCircleIcon" [size]="18" class="text-green-600"></lucide-icon>
@@ -72,7 +72,7 @@ import {
             </div>
           </div>
         </div>
-        <div class="bg-white border border-neutral-200 rounded-xl p-4">
+        <div class="bg-white border border-neutral-200 rounded-xl p-4 shrink-0 min-w-[150px] sm:flex-1">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
               <lucide-icon [img]="usersIcon" [size]="18" class="text-purple-600"></lucide-icon>
@@ -83,7 +83,7 @@ import {
             </div>
           </div>
         </div>
-        <div class="bg-white border border-neutral-200 rounded-xl p-4">
+        <div class="bg-white border border-neutral-200 rounded-xl p-4 shrink-0 min-w-[150px] sm:flex-1">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center">
               <lucide-icon [img]="trendingIcon" [size]="18" class="text-orange-600"></lucide-icon>
@@ -97,7 +97,7 @@ import {
       </div>
 
       <!-- Tabs -->
-      <div class="flex items-center gap-1 border-b border-neutral-200">
+      <div class="flex items-center gap-1 border-b border-neutral-200 overflow-x-auto whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <button (click)="activeTab.set('topics')" class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
           [class]="activeTab() === 'topics' ? 'border-neutral-900 text-neutral-900' : 'border-transparent text-neutral-500 hover:text-neutral-700'">
           Topics
@@ -153,7 +153,7 @@ import {
           @if (getFilteredTopics().length > 0) {
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b border-neutral-100">
+                <tr class="border-b border-neutral-100 whitespace-nowrap">
                   <th class="text-left py-2.5 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Topic</th>
                   <th class="text-left py-2.5 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden md:table-cell">Author</th>
                   <th class="text-center py-2.5 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Posts</th>
@@ -164,7 +164,7 @@ import {
               </thead>
               <tbody class="divide-y divide-neutral-50">
                 @for (topic of getFilteredTopics(); track topic.id) {
-                  <tr class="hover:bg-neutral-50 transition-colors">
+                  <tr class="hover:bg-neutral-50 transition-colors whitespace-nowrap">
                     <td class="py-3 px-4">
                       <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 bg-neutral-100 rounded-full flex items-center justify-center shrink-0">

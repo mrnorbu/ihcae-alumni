@@ -81,7 +81,7 @@ interface UserStats {
       </div>
 
       <!-- Horizontal Elegant Tab Bar -->
-      <div class="flex border-b border-neutral-200 overflow-x-auto">
+      <div class="flex border-b border-neutral-200 flex-wrap sm:flex-nowrap sm:overflow-x-auto hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <button (click)="setActiveTab('all')"
           class="flex items-center gap-1.5 px-4 py-3 border-b-2 font-semibold text-sm transition-all duration-200 whitespace-nowrap"
           [class]="activeTab() === 'all' ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-primary-900'">
@@ -116,10 +116,10 @@ interface UserStats {
         @if (activeTab() === 'all') {
           <div class="space-y-4">
             <!-- Stats row -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pb-1">
               @for (stat of statsCards(); track stat.label) {
                 <button (click)="setFilter(stat.filter)"
-                  class="text-left px-4 py-3 rounded-lg border transition-colors focus:outline-none"
+                  class="text-left px-4 py-3 rounded-lg border transition-colors focus:outline-none w-full"
                   [class]="currentFilter() === stat.filter ? 'bg-primary-50 border-primary-300 text-primary-950 shadow-sm' : 'bg-white border-neutral-200 hover:border-neutral-300'">
                   <p class="text-lg font-extrabold transition-colors" [class]="currentFilter() === stat.filter ? 'text-primary-700' : 'text-neutral-900'">{{ stat.value }}</p>
                   <p class="text-xs font-semibold mt-0.5 transition-colors" [class]="currentFilter() === stat.filter ? 'text-primary-600' : 'text-neutral-500'">{{ stat.label }}</p>
@@ -135,7 +135,7 @@ interface UserStats {
             placeholder="Search by name or email..."
             class="w-full pl-11 pr-4 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors">
         </div>
-        <div class="w-[180px]">
+        <div class="w-full sm:w-[180px]">
           <app-custom-select
             [options]="roleFilterOptions"
             [ngModel]="selectedRoleFilter()"
@@ -143,7 +143,7 @@ interface UserStats {
             customClass="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700 font-normal"
           ></app-custom-select>
         </div>
-        <button (click)="loadUsers()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-600 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors shrink-0">
+        <button (click)="loadUsers()" class="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 text-sm text-neutral-600 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors shrink-0">
           <lucide-icon [img]="refreshIcon" [size]="14"></lucide-icon>
           Refresh
         </button>
@@ -165,7 +165,7 @@ interface UserStats {
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
-                <tr class="border-b border-neutral-200 bg-neutral-50">
+                <tr class="border-b border-neutral-200 bg-neutral-50 whitespace-nowrap">
                   <th class="text-left px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">User</th>
                   <th class="text-left px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
                   <th class="text-left px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email Verified</th>
@@ -176,7 +176,7 @@ interface UserStats {
               </thead>
               <tbody class="divide-y divide-neutral-100">
                 @for (user of paginatedUsers(); track user.id) {
-                  <tr class="hover:bg-neutral-50 transition-colors">
+                  <tr class="hover:bg-neutral-50 transition-colors whitespace-nowrap">
                     <!-- User info -->
                     <td class="px-4 py-3">
                       <div class="flex items-center gap-3">

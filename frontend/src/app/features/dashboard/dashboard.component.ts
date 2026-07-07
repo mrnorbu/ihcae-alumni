@@ -27,7 +27,7 @@ import {
     <div class="min-h-screen bg-white">
       <app-header></app-header>
 
-      <div class="max-w-4xl mx-auto px-4 sm:px-5 pt-20 pb-8 space-y-4">
+      <div class="max-w-4xl mx-auto px-2 sm:px-5 pt-20 pb-8 space-y-4">
 
         <!-- Profile strip with premium layered background and high contrast readable text -->
         <div class="bg-neutral-50/45 border border-neutral-200/50 rounded-lg p-4 flex items-center gap-4 flex-wrap sm:flex-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
@@ -67,8 +67,8 @@ import {
         </div>
 
         <!-- Stats row inside premium cardless layered containers -->
-        <div class="bg-neutral-50/45 border border-neutral-200/50 rounded-lg p-2.5 grid grid-cols-3 gap-3">
-          <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+        <div class="bg-neutral-50/45 border border-neutral-200/50 rounded-lg p-2.5 flex gap-3 overflow-x-auto whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)] shrink-0 min-w-[140px] sm:flex-1">
             <div class="w-9 h-9 bg-secondary-50 text-secondary-700 rounded flex items-center justify-center shrink-0 border border-secondary-200/40">
               <lucide-icon [img]="usersIcon" [size]="15"></lucide-icon>
             </div>
@@ -77,7 +77,7 @@ import {
               <p class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider">Alumni</p>
             </div>
           </div>
-          <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+          <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)] shrink-0 min-w-[140px] sm:flex-1">
             <div class="w-9 h-9 bg-primary-50 text-primary-700 rounded flex items-center justify-center shrink-0 border border-primary-200/40">
               <lucide-icon [img]="calendarIcon" [size]="15"></lucide-icon>
             </div>
@@ -86,7 +86,7 @@ import {
               <p class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider">Events</p>
             </div>
           </div>
-          <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+          <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)] shrink-0 min-w-[140px] sm:flex-1">
             <div class="w-9 h-9 bg-purple-50 text-purple-700 rounded flex items-center justify-center shrink-0 border border-purple-200/40">
               <lucide-icon [img]="forumIcon" [size]="15"></lucide-icon>
             </div>

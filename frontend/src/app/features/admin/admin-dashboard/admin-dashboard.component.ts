@@ -50,8 +50,8 @@ import {
       </div>
 
       <!-- Summary stats with layered off-white background and premium white stat blocks -->
-      <div class="bg-neutral-50/45 border border-neutral-100 rounded-lg p-2.5 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+      <div class="bg-neutral-50/45 border border-neutral-100 rounded-lg p-2.5 flex gap-2.5 overflow-x-auto whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shrink-0 min-w-[150px] sm:flex-1">
           <span class="w-9 h-9 rounded bg-secondary-50 text-secondary-700 flex items-center justify-center shrink-0 border border-secondary-200/30">
             <lucide-icon [img]="usersIcon" [size]="15"></lucide-icon>
           </span>
@@ -60,7 +60,7 @@ import {
             <span class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider block">Total Users</span>
           </div>
         </div>
-        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shrink-0 min-w-[150px] sm:flex-1">
           <span class="w-9 h-9 rounded bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200/30">
             <lucide-icon [img]="clockIcon" [size]="15"></lucide-icon>
           </span>
@@ -69,7 +69,7 @@ import {
             <span class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider block">Pending</span>
           </div>
         </div>
-        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shrink-0 min-w-[150px] sm:flex-1">
           <span class="w-9 h-9 rounded bg-primary-50 text-primary-700 flex items-center justify-center shrink-0 border border-primary-200/30">
             <lucide-icon [img]="checkIcon" [size]="15"></lucide-icon>
           </span>
@@ -78,7 +78,7 @@ import {
             <span class="text-[10px] font-bold text-neutral-400 mt-1 uppercase tracking-wider block">Approved</span>
           </div>
         </div>
-        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all">
+        <div class="flex items-center gap-3 p-3 bg-white border border-neutral-200/30 rounded hover:border-neutral-350 transition-all shrink-0 min-w-[150px] sm:flex-1">
           <span class="w-9 h-9 rounded bg-secondary-50 text-secondary-700 flex items-center justify-center shrink-0 border border-secondary-200/30">
             <lucide-icon [img]="trendingIcon" [size]="15"></lucide-icon>
           </span>

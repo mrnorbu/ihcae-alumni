@@ -32,37 +32,29 @@ import {
     <div class="min-h-screen bg-white page-fade-in">
       <app-header></app-header>
 
-      <!-- Hero Section - Compact -->
-      <section class="relative py-12 md:py-16 flex items-center justify-center overflow-hidden">
+      <!-- Hero Section - Left Aligned -->
+      <section class="relative min-h-[480px] md:min-h-[560px] flex items-center justify-start overflow-hidden">
         <!-- Background -->
         <div class="absolute inset-0">
-          <img src="images/home.jpg" alt="Mountain Climbing Expedition" class="w-full h-full object-cover">
-          <div class="absolute inset-0 bg-black/45"></div>
+          <img src="images/homepage.webp" alt="Mountain Climbing Expedition" class="w-full h-full object-cover object-center">
         </div>
 
         <!-- Hero Content -->
-        <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-4">
-          <div class="max-w-3xl mx-auto">
-            <h1 class="text-3xl md:text-5xl text-white font-bold mb-3 leading-tight tracking-tight">
+        <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+          <div class="max-w-2xl text-left">
+            <h1 class="text-3xl md:text-5xl lg:text-6xl text-white font-bold mb-4 leading-tight tracking-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
               IHCAE Alumni Network
             </h1>
-            <p class="text-base md:text-lg text-white/90 mb-5 leading-relaxed font-light">
-              Where Adventure Meets Purpose. Connect, Explore, and Lead the Future of Sustainable Tourism.
+            <p class="text-base md:text-lg lg:text-xl text-white mb-8 leading-relaxed font-medium drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] max-w-xl">
+              Where Adventure Meets Purpose. Connect, Explore, and Lead the Future of Sustainable & Eco-Tourism.
             </p>
-            <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <div class="flex flex-col sm:flex-row gap-3 justify-start items-center sm:items-start">
               <a 
                 routerLink="/register" 
-                class="btn-primary inline-flex items-center gap-2 hover:bg-primary-700 transition-colors"
+                class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2 hover:bg-primary-700 transition-colors shadow-lg"
               >
                 <span>Join Our Community</span>
                 <lucide-icon [img]="arrowIcon" [size]="16"></lucide-icon>
-              </a>
-              <a 
-                href="#about" 
-                class="btn-outline text-white border-white/30 hover:bg-white/10 hover:border-white/50 backdrop-blur-sm inline-flex items-center gap-2"
-              >
-                <span>Explore Our Mission</span>
-                <lucide-icon [img]="chevronIcon" [size]="16"></lucide-icon>
               </a>
             </div>
           </div>

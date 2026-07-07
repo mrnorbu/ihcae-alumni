@@ -53,9 +53,9 @@ interface UserRecord {
           <lucide-icon [img]="searchIcon" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></lucide-icon>
           <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)"
             placeholder="Search pending registrations by name or email..."
-            class="input-field pl-11">
+            class="input-field pl-11 w-full">
         </div>
-        <button (click)="loadPendingUsers()" class="btn-outline btn-sm flex items-center gap-1.5 shrink-0 h-9">
+        <button (click)="loadPendingUsers()" class="btn-outline btn-sm flex items-center justify-center gap-1.5 shrink-0 h-9 w-full sm:w-auto">
           <lucide-icon [img]="refreshIcon" [size]="14"></lucide-icon>
           Refresh
         </button>

@@ -25,7 +25,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
     <div class="min-h-screen bg-neutral-50 flex flex-col page-fade-in">
       <app-header></app-header>
 
-      <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 pt-20">
+      <div class="flex-1 max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8 py-2 sm:py-6 pt-20">
         <div class="flex gap-5">
 
           <!-- ═══ LEFT SIDEBAR ═══ -->
@@ -102,7 +102,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
           <div class="flex-1 min-w-0">
 
             <!-- ── PERSISTENT TOP BAR (always visible) ── -->
-            <div class="sticky top-24 z-20 bg-white rounded-lg border border-neutral-200 mb-3 px-4 py-3 flex items-center gap-3">
+            <div class="sticky top-24 z-20 bg-white sm:rounded-lg border-y sm:border-x border-neutral-200 mb-3 px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3">
               @if (view === 'detail') {
                 <button (click)="backToList()"
                   class="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0 mr-1">
@@ -146,7 +146,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
 
               <!-- Loading -->
               @if (loading) {
-                <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                <div class="bg-white sm:rounded-lg border-y sm:border-x border-neutral-200 overflow-hidden">
                   @for (i of [1,2,3,4,5]; track i) {
                     <div class="p-4 border-b border-neutral-100 last:border-b-0 animate-pulse">
                       <div class="flex gap-3">
@@ -169,7 +169,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
 
               <!-- Empty -->
               @if (!loading && !error && topics.length === 0) {
-                <div class="bg-white rounded-lg border border-neutral-200 text-center py-16">
+                <div class="bg-white sm:rounded-lg border-y sm:border-x border-neutral-200 text-center py-16">
                   <lucide-icon [img]="messageIcon" [size]="40" class="text-neutral-300 mb-4 mx-auto"></lucide-icon>
                   <h3 class="text-base font-semibold text-neutral-700 mb-1">No threads yet</h3>
                   <p class="text-sm text-neutral-400 mb-4">Be the first to start a discussion</p>
@@ -181,7 +181,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
 
               <!-- Thread list -->
               @if (!loading && !error && topics.length > 0) {
-                <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                <div class="bg-white sm:rounded-lg border-y sm:border-x border-neutral-200 overflow-hidden">
                   @for (topic of topics; track topic.id) {
                     <div class="flex items-start gap-3 px-4 py-4 border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors cursor-pointer group"
                       (click)="openThread(topic.id)">

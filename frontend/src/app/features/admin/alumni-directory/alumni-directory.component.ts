@@ -14,7 +14,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components'
   template: `
     <div class="p-1 sm:p-2 space-y-3">
       <!-- Stats -->
-      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div class="bg-white border border-neutral-200 rounded-xl p-3">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-secondary-50 flex items-center justify-center shrink-0">
@@ -37,7 +37,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components'
             </div>
           </div>
         </div>
-        <div class="bg-white border border-neutral-200 rounded-xl p-3">
+        <div class="bg-white border border-neutral-200 rounded-xl p-3 col-span-2 sm:col-span-1">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-secondary-50 flex items-center justify-center shrink-0">
               <lucide-icon [img]="mapPinIcon" [size]="16" class="text-secondary-600"></lucide-icon>
@@ -58,7 +58,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components'
               placeholder="Search by name..."
               class="w-full pl-11 pr-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
           </div>
-          <div class="w-[180px]">
+          <div class="w-full sm:w-[180px]">
             <app-custom-select
               [options]="courseOptions()"
               [(ngModel)]="selectedCourse"
@@ -66,7 +66,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components'
               customClass="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700 font-normal"
             ></app-custom-select>
           </div>
-          <div class="w-[150px]">
+          <div class="w-full sm:w-[150px]">
             <app-custom-select
               [options]="batchOptions()"
               [(ngModel)]="selectedBatch"
@@ -74,13 +74,15 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components'
               customClass="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer flex items-center justify-between gap-1.5 text-left text-neutral-700 font-normal"
             ></app-custom-select>
           </div>
-          <button (click)="exportToExcel()" class="flex items-center justify-center gap-2 px-4 py-2 text-sm text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors shrink-0 font-medium">
-            <lucide-icon [img]="downloadIcon" [size]="14"></lucide-icon>
-            Export CSV
-          </button>
-          <button (click)="loadAlumni()" [disabled]="isLoading()" class="flex items-center justify-center px-3 py-2 text-neutral-500 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-40 transition-colors shrink-0">
-            <lucide-icon [img]="refreshIcon" [size]="14" [class.animate-spin]="isLoading()"></lucide-icon>
-          </button>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button (click)="exportToExcel()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors shrink-0 font-medium">
+              <lucide-icon [img]="downloadIcon" [size]="14"></lucide-icon>
+              Export CSV
+            </button>
+            <button (click)="loadAlumni()" [disabled]="isLoading()" class="flex-1 sm:flex-none flex items-center justify-center px-3 py-2 text-neutral-500 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-40 transition-colors shrink-0">
+              <lucide-icon [img]="refreshIcon" [size]="14" [class.animate-spin]="isLoading()"></lucide-icon>
+            </button>
+          </div>
         </div>
       </div>
       <!-- Alumni Table -->

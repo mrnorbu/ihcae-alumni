@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Mail, Phone, Globe, Instagram, Facebook } from 'lucide-angular';
 
 @Component({
   selector: 'app-footer',
@@ -26,13 +26,13 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
               Building a sustainable future through education and conservation.
             </p>
             <div class="flex gap-3">
-              <a href="#" class="w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-md flex items-center justify-center transition-colors">
-                <lucide-icon [img]="twitterIcon" [size]="16" class="text-neutral-300"></lucide-icon>
+              <a href="https://ihcaesikkim.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-md flex items-center justify-center transition-colors" title="Official Website">
+                <lucide-icon [img]="globeIcon" [size]="16" class="text-neutral-300"></lucide-icon>
               </a>
-              <a href="#" class="w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-md flex items-center justify-center transition-colors">
-                <lucide-icon [img]="linkedinIcon" [size]="16" class="text-neutral-300"></lucide-icon>
+              <a href="https://www.instagram.com/ihcae__sikkim/" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-md flex items-center justify-center transition-colors" title="Instagram">
+                <lucide-icon [img]="instagramIcon" [size]="16" class="text-neutral-300"></lucide-icon>
               </a>
-              <a href="#" class="w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-md flex items-center justify-center transition-colors">
+              <a href="https://www.facebook.com/ihcaesikkimofficial" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-md flex items-center justify-center transition-colors" title="Facebook">
                 <lucide-icon [img]="facebookIcon" [size]="16" class="text-neutral-300"></lucide-icon>
               </a>
             </div>
@@ -42,8 +42,8 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
           <div>
             <h4 class="text-sm font-semibold mb-3 text-white">Quick Links</h4>
             <ul class="space-y-2">
-              <li><a href="#about" class="text-sm text-neutral-400 hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#news" class="text-sm text-neutral-400 hover:text-white transition-colors">News & Stories</a></li>
+              <li><a routerLink="/contact" class="text-sm text-neutral-400 hover:text-white transition-colors">Contact Us</a></li>
+              <li><a routerLink="/news-events" class="text-sm text-neutral-400 hover:text-white transition-colors">News & Events</a></li>
               <li><a routerLink="/register" class="text-sm text-neutral-400 hover:text-white transition-colors">Join Network</a></li>
             </ul>
           </div>
@@ -54,15 +54,15 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
             <ul class="space-y-2">
               <li class="flex items-start gap-2 text-sm text-neutral-400">
                 <lucide-icon [img]="mapIcon" [size]="16" class="text-neutral-500 flex-shrink-0 mt-0.5"></lucide-icon>
-                <span>Gangtok, Sikkim, India</span>
+                <span>Chemchey, Namchi, Sikkim</span>
               </li>
               <li class="flex items-center gap-2 text-sm text-neutral-400">
                 <lucide-icon [img]="mailIcon" [size]="16" class="text-neutral-500 flex-shrink-0"></lucide-icon>
-                <a href="mailto:info@ihcae-alumni.com" class="hover:text-white transition-colors">info@ihcae-alumni.com</a>
+                <a href="mailto:sikkimihcae@gmail.com" class="hover:text-white transition-colors">sikkimihcae&#64;gmail.com</a>
               </li>
               <li class="flex items-center gap-2 text-sm text-neutral-400">
                 <lucide-icon [img]="phoneIcon" [size]="16" class="text-neutral-500 flex-shrink-0"></lucide-icon>
-                <span>+91-XXXX-XXXXXX</span>
+                <span>+91 93392 56495</span>
               </li>
             </ul>
           </div>
@@ -71,16 +71,9 @@ import { LucideAngularModule, MapPin, Mail, Phone, Twitter, Linkedin, Facebook }
         <!-- Bottom Bar -->
         <div class="pt-5 border-t border-neutral-800">
           <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p class="text-xs text-neutral-500">
-              © 2024 IHCAE Alumni Network. All rights reserved.
+            <p class="text-xs text-neutral-500 mx-auto sm:mx-0">
+              © 2026 IHCAE Alumni Network. All rights reserved.
             </p>
-            <div class="flex gap-4 text-xs text-neutral-500">
-              <a href="#" class="hover:text-neutral-300 transition-colors">Privacy Policy</a>
-              <span>•</span>
-              <a href="#" class="hover:text-neutral-300 transition-colors">Terms of Service</a>
-              <span>•</span>
-              <a href="#" class="hover:text-neutral-300 transition-colors">Cookie Policy</a>
-            </div>
           </div>
         </div>
       </div>
@@ -93,7 +86,7 @@ export class FooterComponent {
   readonly mapIcon = MapPin;
   readonly mailIcon = Mail;
   readonly phoneIcon = Phone;
-  readonly twitterIcon = Twitter;
-  readonly linkedinIcon = Linkedin;
+  readonly globeIcon = Globe;
+  readonly instagramIcon = Instagram;
   readonly facebookIcon = Facebook;
 }

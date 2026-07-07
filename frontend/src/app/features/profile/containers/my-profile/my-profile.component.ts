@@ -66,9 +66,9 @@ import {
       <!-- Main Content Container -->
       <!-- max-w-4xl: Constrains content width for readability -->
       <!-- pt-24: Top padding to account for fixed header -->
-      <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
+      <div class="max-w-4xl mx-auto py-6 px-2 sm:px-6 lg:px-8 pt-24">
         <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 px-2 sm:px-0 flex items-center justify-between">
           <h1 class="text-3xl font-bold text-neutral-900">My Profile</h1>
           @if (!isEditMode()) {
             <button
@@ -94,9 +94,9 @@ import {
           <div class="space-y-6">
             <!-- Profile Image Card -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
-              <div class="relative h-32 bg-gradient-to-r from-primary-600 to-secondary-600"></div>
-              <div class="relative px-6 pb-6">
-                <div class="flex items-end -mt-16 mb-4">
+              <div class="relative h-20 bg-neutral-100 border-b border-neutral-200"></div>
+              <div class="relative px-3 sm:px-6 pb-6">
+                <div class="flex items-end -mt-10 mb-4">
                   <!-- Profile Image -->
                   <div class="relative">
                     <div class="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-neutral-200 flex items-center justify-center">
@@ -134,11 +134,11 @@ import {
                       />
                   </div>
                   <!-- Name -->
-                  <div class="ml-6 flex-1">
-                    <h2 class="text-2xl font-bold text-neutral-900 truncate" [title]="(profile()?.firstName || '') + ' ' + (profile()?.lastName || '')">
+                  <div class="ml-4 sm:ml-6 flex-1 min-w-0">
+                    <h2 class="text-xl sm:text-2xl font-bold text-neutral-900 truncate" [title]="(profile()?.firstName || '') + ' ' + (profile()?.lastName || '')">
                       {{ profile()?.firstName }} {{ profile()?.lastName }}
                     </h2>
-                    <p class="text-neutral-600 truncate" [title]="profile()?.email || ''">{{ profile()?.email }}</p>
+                    <p class="text-sm text-neutral-500 break-all leading-tight mt-0.5" [title]="profile()?.email || ''">{{ profile()?.email }}</p>
                   </div>
                 </div>
               </div>
@@ -170,7 +170,7 @@ import {
               </div>
             }
             <!-- Profile Information Card -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-3 sm:p-6">
               <h3 class="text-lg font-semibold text-neutral-900 mb-4">Profile Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Job Title -->

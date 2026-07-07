@@ -68,9 +68,9 @@ import {
       <!-- Main Content -->
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="flex gap-4 overflow-x-auto pb-2 mb-6 whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <!-- Total Articles -->
-          <div class="stat-card">
+          <div class="stat-card shrink-0 min-w-[200px] sm:flex-1">
             <div class="stat-card-horizontal">
               <div class="stat-icon bg-secondary-50 text-secondary-700 border border-secondary-200/30">
                 <lucide-icon [img]="fileTextIcon" [size]="20"></lucide-icon>
@@ -83,7 +83,7 @@ import {
           </div>
     
           <!-- Published Articles -->
-          <div class="stat-card">
+          <div class="stat-card shrink-0 min-w-[200px] sm:flex-1">
             <div class="stat-card-horizontal">
               <div class="stat-icon bg-primary-50 text-primary-700 border border-primary-200/30">
                 <lucide-icon [img]="eyeIcon" [size]="20"></lucide-icon>
@@ -96,7 +96,7 @@ import {
           </div>
     
           <!-- Draft Articles -->
-          <div class="stat-card">
+          <div class="stat-card shrink-0 min-w-[200px] sm:flex-1">
             <div class="stat-card-horizontal">
               <div class="stat-icon bg-amber-50 text-amber-700 border border-amber-200/30">
                 <lucide-icon [img]="eyeOffIcon" [size]="20"></lucide-icon>
@@ -109,7 +109,7 @@ import {
           </div>
     
           <!-- Total Events -->
-          <div class="stat-card">
+          <div class="stat-card shrink-0 min-w-[200px] sm:flex-1">
             <div class="stat-card-horizontal">
               <div class="stat-icon bg-secondary-50 text-secondary-700 border border-secondary-200/30">
                 <lucide-icon [img]="calendarIcon" [size]="20"></lucide-icon>
@@ -124,7 +124,7 @@ import {
     
         <!-- Action Bar -->
         <div class="card mb-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 class="text-lg font-semibold text-neutral-900">Content Library</h2>
               <p class="text-sm text-neutral-600">Manage news articles and events</p>
@@ -149,7 +149,7 @@ import {
         </div>
     
         <!-- Tab Navigation -->
-        <div class="tab-nav mb-6">
+        <div class="tab-nav mb-6 overflow-x-auto whitespace-nowrap hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <button
             (click)="setActiveTab('articles')"
             [class.tab-item]="activeTab() !== 'articles'"
