@@ -28,7 +28,7 @@ public class UserRepository : IUserRepository
     /// </summary>
     /// <param name="id">The user's unique identifier</param>
     /// <returns>The user if found, null otherwise</returns>
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(int id)
     {
         return await _context.Users
             .Include(u => u.UserRoles)
@@ -146,7 +146,7 @@ public class UserRepository : IUserRepository
     /// </summary>
     /// <param name="id">The user's unique identifier</param>
     /// <returns>The user with roles if found, null otherwise</returns>
-    public async Task<User?> GetWithRolesAsync(Guid id)
+    public async Task<User?> GetWithRolesAsync(int id)
     {
         return await _context.Users
             .Include(u => u.UserRoles)
@@ -215,7 +215,7 @@ public class UserRepository : IUserRepository
     /// <summary>
     /// Gets a user by ID with AlumniProfile included.
     /// </summary>
-    public async Task<User?> GetWithProfileAsync(Guid id)
+    public async Task<User?> GetWithProfileAsync(int id)
     {
         return await _context.Users
             .Include(u => u.AlumniProfile)
@@ -230,7 +230,7 @@ public class UserRepository : IUserRepository
     /// <param name="userId">The user's unique identifier</param>
     /// <param name="roleName">The name of the role to assign</param>
     /// <returns>True if role was assigned successfully, false if user or role not found</returns>
-    public async Task<bool> AssignRoleAsync(Guid userId, string roleName)
+    public async Task<bool> AssignRoleAsync(int userId, string roleName)
     {
         // Get the user
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -266,7 +266,7 @@ public class UserRepository : IUserRepository
     /// <param name="userId">The user's unique identifier</param>
     /// <param name="roleName">The name of the role to remove</param>
     /// <returns>True if role was removed successfully, false if user or role not found</returns>
-    public async Task<bool> RemoveRoleAsync(Guid userId, string roleName)
+    public async Task<bool> RemoveRoleAsync(int userId, string roleName)
     {
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
         if (role == null) return false;

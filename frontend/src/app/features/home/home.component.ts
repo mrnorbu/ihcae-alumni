@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { UserAuthStore } from '../../core/state/user-auth.store';
 import { HeaderComponent, FooterComponent } from '../../shared/components';
+import { AppImageUrlPipe } from '../../shared/pipes/app-image-url.pipe';
 import { NewsService } from '../news-events/services/news.service';
 import { EventsService } from '../news-events/services/events.service';
 import type { NewsArticleSummary, EventSummary } from '../news-events/models';
@@ -26,7 +27,7 @@ import {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-white page-fade-in">
       <app-header></app-header>
@@ -94,11 +95,11 @@ import {
           } @else {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
               @for (article of latestNews(); track article.id) {
-                <article class="group cursor-pointer p-1.5 rounded-lg hover:bg-neutral-50/50 transition-colors" [routerLink]="['/news', article.id]">
-                  <div class="aspect-video w-full rounded overflow-hidden mb-2 relative bg-neutral-100 flex items-center justify-center">
+                <article class="group cursor-pointer p-1.5 rounded-lg hover:bg-neutral-50/50 transition-colors" [routerLink]="['/news', article.slug]">
+                  <div class="h-48 w-full relative bg-neutral-100 overflow-hidden rounded mb-2">
                     @if (article.thumbnailUrl) {
                       <img 
-                        [src]="article.thumbnailUrl" 
+                        [src]="article.thumbnailUrl | appImageUrl" 
                         [alt]="article.title" 
                         class="w-full h-full object-cover"
                         (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'"
@@ -169,7 +170,7 @@ import {
           } @else {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               @for (event of upcomingEvents(); track event.id) {
-                <div class="group cursor-pointer py-2.5 border-b border-neutral-200/60 hover:bg-neutral-50/50 px-2 rounded-lg transition-colors" [routerLink]="['/events', event.id]">
+                <div class="group cursor-pointer py-2.5 border-b border-neutral-200/60 hover:bg-neutral-50/50 px-2 rounded-lg transition-colors" [routerLink]="['/events', event.slug]">
                   <div class="flex items-start gap-3">
                     <div class="w-10 h-10 bg-secondary-50 text-secondary-700 rounded flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-secondary-100">
                       <lucide-icon [img]="calendarIcon" [size]="18"></lucide-icon>
@@ -243,12 +244,12 @@ import {
           } @else {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3.5">
               @for (story of successStories(); track story.id) {
-                <div class="group cursor-pointer py-2.5 border-b border-neutral-200/60 hover:bg-neutral-50/50 px-2 rounded-lg transition-colors" [routerLink]="['/news', story.id]">
+                <div class="group cursor-pointer py-2.5 border-b border-neutral-200/60 hover:bg-neutral-50/50 px-2 rounded-lg transition-colors" [routerLink]="['/news', story.slug]">
                   <div class="flex items-start gap-4">
                     <div class="w-16 h-16 bg-primary-50 text-primary-700 rounded overflow-hidden flex items-center justify-center flex-shrink-0 relative transition-colors group-hover:bg-primary-100">
                       @if (story.thumbnailUrl) {
                         <img 
-                          [src]="story.thumbnailUrl" 
+                          [src]="story.thumbnailUrl | appImageUrl" 
                           [alt]="story.title" 
                           class="w-full h-full object-cover"
                           (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'"

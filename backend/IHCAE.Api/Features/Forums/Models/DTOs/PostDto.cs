@@ -10,7 +10,7 @@ public class PostDto
     /// <summary>
     /// Unique identifier for the post
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Content of the post (plain text with auto-linked URLs)
@@ -25,7 +25,7 @@ public class PostDto
     /// <summary>
     /// ID of the parent post (null for top-level posts)
     /// </summary>
-    public Guid? ParentPostId { get; set; }
+    public int? ParentPostId { get; set; }
 
     /// <summary>
     /// Information about the parent post author (for "replying to" context)

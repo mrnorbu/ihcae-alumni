@@ -743,7 +743,7 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
 
   // Edit modal
   showEditModal = signal(false);
-  editPostId = '';
+  editPostId: number | null = null;
   editContent = '';
 
   // Interactive Moderation Actions Modal
@@ -1081,7 +1081,7 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
 
   closeEditModal() {
     this.showEditModal.set(false);
-    this.editPostId = '';
+    this.editPostId = null;
     this.editContent = '';
   }
 
@@ -1112,7 +1112,7 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
     );
   }
 
-  private reloadTopicDetail(topicId: string) {
+  private reloadTopicDetail(topicId: number) {
     this.forumService.getTopicById(topicId).pipe(
       takeUntil(this.destroy$)
     ).subscribe({ next: (detail) => this.selectedTopic.set(detail) });

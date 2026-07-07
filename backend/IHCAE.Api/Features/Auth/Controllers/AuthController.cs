@@ -155,7 +155,7 @@ public class AuthController : ControllerBase
                     EmailVerified = result.User.EmailVerified,
                     CreatedAt = result.User.CreatedAt,
                     LastLoginAt = result.User.LastLoginAt,
-                    Roles = result.User.UserRoles.Select(ur => ur.Role.Name).ToList()
+                    Roles = result.User.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role.Name).ToList()
                 }
             });
         }
@@ -227,7 +227,7 @@ public class AuthController : ControllerBase
                     EmailVerified = result.User.EmailVerified,
                     CreatedAt = result.User.CreatedAt,
                     LastLoginAt = result.User.LastLoginAt,
-                    Roles = result.User.UserRoles.Select(ur => ur.Role.Name).ToList()
+                    Roles = result.User.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role.Name).ToList()
                 }
             });
         }

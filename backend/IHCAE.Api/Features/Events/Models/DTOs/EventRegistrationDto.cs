@@ -7,9 +7,9 @@ namespace IHCAE.Api.Features.Events.Models.DTOs;
 /// </summary>
 public class EventRegistrationDto
 {
-    public Guid Id { get; set; }
-    public Guid EventId { get; set; }
-    public Guid? UserId { get; set; }
+    public int Id { get; set; }
+    public int EventId { get; set; }
+    public int? UserId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }

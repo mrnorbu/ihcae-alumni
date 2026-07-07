@@ -308,8 +308,8 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components'
                       class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
                   </div>
                   <div>
-                    <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Graduation Year / Batch</label>
-                    <input type="text" [(ngModel)]="editGraduationYear" placeholder="Graduation Year (e.g. 2024)"
+                    <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Batch (e.g. May 2025)</label>
+                    <input type="text" [(ngModel)]="editGraduationYear" placeholder="e.g. May 2025"
                       class="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" />
                   </div>
                   <div>
@@ -550,7 +550,7 @@ export class AlumniDirectoryComponent implements OnInit {
 
     this.editPhone = detail.phone || '';
     this.editCourse = detail.course || '';
-    this.editGraduationYear = detail.graduationYear?.toString() || '';
+    this.editGraduationYear = detail.batch || (detail as any).graduationYear?.toString() || '';
     this.editJobTitle = detail.jobTitle || '';
     this.editLocation = detail.location || '';
     this.editBio = detail.bio || '';
@@ -607,9 +607,17 @@ export class AlumniDirectoryComponent implements OnInit {
     return !url || url.includes('placeholder') || url.includes('default');
   }
 
-  formatDate(date: string | Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric'
-    });
+  formatDate(date: any): string {
+    if (!date) return '';
+    let d = typeof date === 'string' ? new Date(date.endsWith('Z') ? date : date + 'Z') : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    }).format(d);
   }
 }

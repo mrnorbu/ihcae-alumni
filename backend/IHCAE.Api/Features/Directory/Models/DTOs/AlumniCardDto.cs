@@ -12,7 +12,7 @@ public class AlumniCardDto
     /// Unique identifier for the alumnus
     /// Used for navigation to detailed profile page and API calls
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// First name of the alumnus

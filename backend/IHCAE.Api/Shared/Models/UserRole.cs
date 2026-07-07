@@ -13,7 +13,7 @@ public class UserRole
     /// Foreign key to the User entity
     /// </summary>
     [Key, Column(Order = 0)]
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// Foreign key to the Role entity
@@ -29,7 +29,7 @@ public class UserRole
     /// <summary>
     /// Who assigned this role to the user (Admin user ID)
     /// </summary>
-    public Guid? AssignedBy { get; set; }
+    public int? AssignedBy { get; set; }
 
     // Navigation properties
     /// <summary>

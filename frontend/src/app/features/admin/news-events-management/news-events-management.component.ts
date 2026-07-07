@@ -113,7 +113,7 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
                       </div>
                     </div>
                     <div class="flex items-center gap-1 shrink-0 ml-3">
-                      <button (click)="viewArticle(article.id)" title="View" class="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
+                      <button (click)="viewArticle(article.slug)" title="View" class="p-1.5 rounded-md hover:bg-neutral-100 text-neutral-600 transition-colors">
                         <lucide-icon [img]="eyeIcon" [size]="15"></lucide-icon>
                       </button>
                       <button (click)="openEditArticleModal(article)" title="Edit" class="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
@@ -188,7 +188,7 @@ import type { EventSummary, EventCategory, CreateEventRequest, UpdateEventReques
                           <lucide-icon [img]="usersIcon" [size]="15"></lucide-icon>
                         </button>
                       }
-                      <button (click)="viewEvent(event.id)" title="View" class="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
+                      <button (click)="viewEvent(event.slug)" title="View" class="p-1.5 rounded-md hover:bg-neutral-100 text-neutral-600 transition-colors">
                         <lucide-icon [img]="eyeIcon" [size]="15"></lucide-icon>
                       </button>
                       <button (click)="openEditEventModal(event)" title="Edit" class="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
@@ -609,18 +609,18 @@ export class NewsEventsManagementComponent implements OnInit {
 
   // Article modal
   showArticleModal = signal(false);
-  editingArticleId = '';
-  articleForm = { title: '', content: '', categoryId: '', imageUrl: '', publish: true };
+  editingArticleId: number | null = null;
+  articleForm = { title: '', content: '', categoryId: 0, imageUrl: '', publish: true };
 
   // Event modal
   showEventModal = signal(false);
-  editingEventId = '';
-  eventForm = { title: '', description: '', location: '', eventDate: '', eventEndDate: '', categoryId: '', capacity: 0, imageUrl: '', publish: true };
+  editingEventId: number | null = null;
+  eventForm = { title: '', description: '', location: '', eventDate: '', eventEndDate: '', categoryId: 0, capacity: 0, imageUrl: '', publish: true };
 
   // Registrations modal
   showRegistrationsModal = signal(false);
   registrations = signal<EventRegistration[]>([]);
-  registrationEventId = '';
+  registrationEventId: number | null = null;
 
   ngOnInit() {
     this.loadArticles();
@@ -675,8 +675,8 @@ export class NewsEventsManagementComponent implements OnInit {
   // === Article CRUD ===
 
   openArticleModal() {
-    this.editingArticleId = '';
-    this.articleForm = { title: '', content: '', categoryId: '', imageUrl: '', publish: true };
+    this.editingArticleId = null;
+    this.articleForm = { title: '', content: '', categoryId: 0, imageUrl: '', publish: true };
     this.showArticleModal.set(true);
   }
 
@@ -687,7 +687,7 @@ export class NewsEventsManagementComponent implements OnInit {
         this.articleForm = {
           title: full.title,
           content: full.content,
-          categoryId: full.category?.id || '',
+          categoryId: full.category?.id || 0,
           imageUrl: full.imageUrl || '',
           publish: full.status === 'Published'
         };
@@ -699,7 +699,7 @@ export class NewsEventsManagementComponent implements OnInit {
 
   closeArticleModal() {
     this.showArticleModal.set(false);
-    this.editingArticleId = '';
+    this.editingArticleId = null;
   }
 
   saveArticle() {
@@ -743,8 +743,8 @@ export class NewsEventsManagementComponent implements OnInit {
     }
   }
 
-  viewArticle(id: string) {
-    this.router.navigate([`/news/${id}`]);
+  viewArticle(slug: string) {
+    this.router.navigate([`/news/${slug}`]);
   }
 
   deleteArticle(article: NewsArticleSummary) {
@@ -762,8 +762,8 @@ export class NewsEventsManagementComponent implements OnInit {
   // === Event CRUD ===
 
   openEventModal() {
-    this.editingEventId = '';
-    this.eventForm = { title: '', description: '', location: '', eventDate: '', eventEndDate: '', categoryId: '', capacity: 0, imageUrl: '', publish: true };
+    this.editingEventId = null;
+    this.eventForm = { title: '', description: '', location: '', eventDate: '', eventEndDate: '', categoryId: 0, capacity: 0, imageUrl: '', publish: true };
     this.showEventModal.set(true);
   }
 
@@ -777,7 +777,7 @@ export class NewsEventsManagementComponent implements OnInit {
           location: full.location,
           eventDate: this.toDatetimeLocal(full.eventDate),
           eventEndDate: full.eventEndDate ? this.toDatetimeLocal(full.eventEndDate) : '',
-          categoryId: full.category?.id || '',
+          categoryId: full.category?.id || 0,
           capacity: full.capacity || 0,
           imageUrl: full.imageUrl || '',
           publish: full.status === 'Published'
@@ -790,7 +790,7 @@ export class NewsEventsManagementComponent implements OnInit {
 
   closeEventModal() {
     this.showEventModal.set(false);
-    this.editingEventId = '';
+    this.editingEventId = null;
   }
 
   saveEvent() {
@@ -838,8 +838,8 @@ export class NewsEventsManagementComponent implements OnInit {
     }
   }
 
-  viewEvent(id: string) {
-    this.router.navigate([`/events/${id}`]);
+  viewEvent(slug: string) {
+    this.router.navigate([`/events/${slug}`]);
   }
 
   deleteEvent(event: EventSummary) {
@@ -873,7 +873,7 @@ export class NewsEventsManagementComponent implements OnInit {
   }
 
   exportRegistrations() {
-    this.eventsService.exportRegistrationsCsv(this.registrationEventId).subscribe({
+    this.eventsService.exportRegistrationsCsv(this.registrationEventId!).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

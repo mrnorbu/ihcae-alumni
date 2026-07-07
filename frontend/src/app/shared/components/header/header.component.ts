@@ -109,10 +109,10 @@ import { Subscription } from 'rxjs';
                 <!-- Dropdown Menu -->
                 @if (userMenuOpen) {
                   <div
-                    class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 py-1 z-50">
-                    <div class="px-3 py-2 border-b border-neutral-100">
-                      <p class="text-sm font-medium text-neutral-900">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
-                      <p class="text-xs text-neutral-500">{{ authState.user?.email }}</p>
+                    class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-neutral-200 py-1 z-50">
+                    <div class="px-3 py-2 border-b border-neutral-100 min-w-0">
+                      <p class="text-sm font-medium text-neutral-900 truncate" [title]="(authState.user?.firstName || '') + ' ' + (authState.user?.lastName || '')">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
+                      <p class="text-xs text-neutral-500 truncate" [title]="authState.user?.email || ''">{{ authState.user?.email }}</p>
                     </div>
                     @if (isAlumni()) {
                       <a routerLink="/profile" (click)="closeUserMenu()" class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
@@ -163,9 +163,9 @@ import { Subscription } from 'rxjs';
             }
             <!-- Authenticated Mobile Menu -->
             @if (authState.isAuthenticated) {
-              <div class="px-3 py-2 border-b border-neutral-100 mb-2">
-                <p class="text-sm font-medium text-neutral-900">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
-                <p class="text-xs text-neutral-500">{{ authState.user?.email }}</p>
+              <div class="px-3 py-2 border-b border-neutral-100 mb-2 min-w-0">
+                <p class="text-sm font-medium text-neutral-900 truncate" [title]="(authState.user?.firstName || '') + ' ' + (authState.user?.lastName || '')">{{ authState.user?.firstName }} {{ authState.user?.lastName }}</p>
+                <p class="text-xs text-neutral-500 truncate" [title]="authState.user?.email || ''">{{ authState.user?.email }}</p>
                 <p class="text-xs text-primary-600 font-medium">{{ getUserRole() }}</p>
               </div>
               <!-- Common features for all authenticated users -->

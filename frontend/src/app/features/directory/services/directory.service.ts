@@ -10,7 +10,7 @@ import { environment } from '../../../../environments/environment';
  */
 export interface AlumniCard {
   /** Unique identifier for the alumnus */
-  id: string;
+  id: number;
   /** First name of the alumnus */
   firstName: string;
   /** Last name of the alumnus */
@@ -38,7 +38,7 @@ export interface AlumniCard {
  */
 export interface AlumniDetail {
   /** Unique identifier for the alumnus */
-  id: string;
+  id: number;
   /** First name of the alumnus */
   firstName: string;
   /** Last name of the alumnus */
@@ -163,7 +163,7 @@ export class DirectoryService {
    * @param userId The unique identifier of the alumnus
    * @returns Observable of detailed alumni information
    */
-  getAlumniDetail(userId: string): Observable<AlumniDetail> {
+  getAlumniDetail(userId: number): Observable<AlumniDetail> {
     return this.http.get<AlumniDetail>(`${this.apiUrl}/${userId}`);
   }
 

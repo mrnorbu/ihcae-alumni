@@ -9,7 +9,7 @@ public class AuthorDto
     /// <summary>
     /// Unique identifier for the author.
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// First name of the author.

@@ -4,6 +4,7 @@ using IHCAE.Api.Features.News.Models.DTOs;
 using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.DTOs;
 using IHCAE.Api.Shared.Services;
+using IHCAE.Api.Shared.Helpers;
 using AuthorDto = IHCAE.Api.Shared.DTOs.AuthorDto;
 
 namespace IHCAE.Api.Features.News.Services;
@@ -27,7 +28,7 @@ public class NewsService : INewsService
     }
 
     public async Task<PaginatedResult<NewsArticleSummaryDto>> GetPublishedArticlesAsync(
-        int page, int pageSize, Guid? categoryId = null, string? search = null)
+        int page, int pageSize, int? categoryId = null, string? search = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 50) pageSize = 10;
@@ -66,6 +67,7 @@ public class NewsService : INewsService
         {
             Id = a.Id,
             Title = a.Title,
+            Slug = a.Slug,
             Excerpt = a.Excerpt,
             Category = new NewsCategoryDto
             {
@@ -97,7 +99,39 @@ public class NewsService : INewsService
         };
     }
 
-    public async Task<NewsArticleDto> GetArticleByIdAsync(Guid id, Guid? currentUserId = null, bool isAdmin = false)
+    public async Task<NewsArticleDto> GetArticleBySlugAsync(string slug, int? currentUserId = null, bool isAdmin = false)
+    {
+        var article = await _context.NewsArticles
+            .Include(a => a.Category)
+            .Include(a => a.Author)
+                .ThenInclude(u => u.AlumniProfile)
+            .FirstOrDefaultAsync(a => a.Slug == slug);
+
+        if (article == null)
+        {
+            throw new KeyNotFoundException($"Article with slug {slug} not found");
+        }
+
+        // If not published, only allow author or admin to view
+        if (article.Status != ContentStatus.Published)
+        {
+            if (!isAdmin && article.AuthorId != currentUserId)
+            {
+                throw new KeyNotFoundException($"Article with slug {slug} not found");
+            }
+        }
+
+        // Increment view count (only for published articles or if view count should be incremented)
+        if (article.Status == ContentStatus.Published)
+        {
+            article.ViewCount++;
+            await _context.SaveChangesAsync();
+        }
+
+        return MapToDto(article);
+    }
+
+    public async Task<NewsArticleDto> GetArticleByIdAsync(int id, int? currentUserId = null, bool isAdmin = false)
     {
         var article = await _context.NewsArticles
             .Include(a => a.Category)
@@ -152,7 +186,7 @@ public class NewsService : INewsService
         return await GetPublishedArticlesAsync(page, pageSize, successStoryCategory.Id);
     }
 
-    public async Task<NewsArticleDto> CreateArticleAsync(Guid authorId, CreateNewsArticleRequest request, bool isAdmin)
+    public async Task<NewsArticleDto> CreateArticleAsync(int authorId, CreateNewsArticleRequest request, bool isAdmin)
     {
         // Verify category exists
         var categoryExists = await _context.NewsCategories.AnyAsync(c => c.Id == request.CategoryId);
@@ -161,10 +195,18 @@ public class NewsService : INewsService
             throw new ArgumentException("Invalid category ID");
         }
 
+        var slug = IHCAE.Api.Shared.Helpers.SlugHelper.GenerateSlug(request.Title);
+        var baseSlug = slug;
+        int count = 1;
+        while (await _context.NewsArticles.AnyAsync(a => a.Slug == slug))
+        {
+            slug = $"{baseSlug}-{count++}";
+        }
+
         var article = new NewsArticle
         {
-            Id = Guid.NewGuid(),
             Title = request.Title,
+            Slug = slug,
             Content = request.Content,
             Excerpt = request.Content.Length > 200 ? request.Content.Substring(0, 200) + "..." : request.Content,
             CategoryId = request.CategoryId,
@@ -193,7 +235,7 @@ public class NewsService : INewsService
         return await GetArticleByIdForManagement(article.Id);
     }
 
-    public async Task<NewsArticleDto> UpdateArticleAsync(Guid id, Guid userId, UpdateNewsArticleRequest request, bool isAdmin)
+    public async Task<NewsArticleDto> UpdateArticleAsync(int id, int userId, UpdateNewsArticleRequest request, bool isAdmin)
     {
         var article = await _context.NewsArticles
             .Include(a => a.Category)
@@ -255,7 +297,7 @@ public class NewsService : INewsService
         return await GetArticleByIdForManagement(id);
     }
 
-    public async Task<bool> DeleteArticleAsync(Guid id, Guid userId, bool isAdmin)
+    public async Task<bool> DeleteArticleAsync(int id, int userId, bool isAdmin)
     {
         var article = await _context.NewsArticles.FirstOrDefaultAsync(a => a.Id == id);
 
@@ -301,6 +343,7 @@ public class NewsService : INewsService
         {
             Id = a.Id,
             Title = a.Title,
+            Slug = a.Slug,
             Excerpt = a.Excerpt,
             Category = new NewsCategoryDto
             {
@@ -332,7 +375,7 @@ public class NewsService : INewsService
         };
     }
 
-    public async Task<NewsArticleDto> ApproveArticleAsync(Guid id, Guid adminId)
+    public async Task<NewsArticleDto> ApproveArticleAsync(int id, int adminId)
     {
         var article = await _context.NewsArticles
             .Include(a => a.Author)
@@ -362,7 +405,7 @@ public class NewsService : INewsService
         return await GetArticleByIdForManagement(id);
     }
 
-    public async Task<bool> RejectArticleAsync(Guid id, Guid adminId, string reason)
+    public async Task<bool> RejectArticleAsync(int id, int adminId, string reason)
     {
         var article = await _context.NewsArticles
             .Include(a => a.Author)
@@ -397,7 +440,7 @@ public class NewsService : INewsService
         return true;
     }
 
-    public async Task<List<NewsArticleSummaryDto>> GetMyArticlesAsync(Guid userId)
+    public async Task<List<NewsArticleSummaryDto>> GetMyArticlesAsync(int userId)
     {
         var articles = await _context.NewsArticles
             .Include(a => a.Category)
@@ -410,7 +453,7 @@ public class NewsService : INewsService
         return articles.Select(MapToSummaryDto).ToList();
     }
 
-    public async Task<List<NewsArticleSummaryDto>> GetManagementArticlesAsync(Guid userId, bool isAdmin)
+    public async Task<List<NewsArticleSummaryDto>> GetManagementArticlesAsync(int userId, bool isAdmin)
     {
         var query = _context.NewsArticles
             .Include(a => a.Category)
@@ -430,7 +473,7 @@ public class NewsService : INewsService
         return articles.Select(MapToSummaryDto).ToList();
     }
 
-    public async Task<NewsArticleDto> SubmitContentAsync(Guid alumniId, SubmitContentRequest request)
+    public async Task<NewsArticleDto> SubmitContentAsync(int alumniId, SubmitContentRequest request)
     {
         var categorySlug = string.IsNullOrEmpty(request.CategorySlug) ? "success-story" : request.CategorySlug.ToLower();
         var category = await _context.NewsCategories
@@ -446,10 +489,18 @@ public class NewsService : INewsService
             throw new ArgumentException("Image is required for success stories");
         }
 
+        var slug = IHCAE.Api.Shared.Helpers.SlugHelper.GenerateSlug(request.Title);
+        var baseSlug = slug;
+        int count = 1;
+        while (await _context.NewsArticles.AnyAsync(a => a.Slug == slug))
+        {
+            slug = $"{baseSlug}-{count++}";
+        }
+
         var article = new NewsArticle
         {
-            Id = Guid.NewGuid(),
             Title = request.Title,
+            Slug = slug,
             Content = request.Content,
             Excerpt = request.Content.Length > 200 ? request.Content.Substring(0, 200) + "..." : request.Content,
             CategoryId = category.Id,
@@ -489,7 +540,7 @@ public class NewsService : INewsService
 
     // Helper methods
 
-    private async Task<NewsArticleDto> GetArticleByIdForManagement(Guid id)
+    private async Task<NewsArticleDto> GetArticleByIdForManagement(int id)
     {
         var article = await _context.NewsArticles
             .Include(a => a.Category)
@@ -511,6 +562,7 @@ public class NewsService : INewsService
         {
             Id = article.Id,
             Title = article.Title,
+            Slug = article.Slug,
             Content = article.Content,
             Excerpt = article.Excerpt,
             Category = new NewsCategoryDto
@@ -544,6 +596,7 @@ public class NewsService : INewsService
         {
             Id = article.Id,
             Title = article.Title,
+            Slug = article.Slug,
             Excerpt = article.Excerpt,
             Category = new NewsCategoryDto
             {
@@ -568,7 +621,7 @@ public class NewsService : INewsService
         };
     }
 
-    private async Task SendContentSubmittedNotificationAsync(Guid articleId)
+    private async Task SendContentSubmittedNotificationAsync(int articleId)
     {
         try
         {
@@ -597,7 +650,7 @@ public class NewsService : INewsService
         }
     }
 
-    private async Task SendContentApprovedNotificationAsync(Guid articleId, Guid authorId)
+    private async Task SendContentApprovedNotificationAsync(int articleId, int authorId)
     {
         try
         {

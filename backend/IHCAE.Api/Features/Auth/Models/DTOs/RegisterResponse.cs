@@ -19,7 +19,7 @@ public class RegisterResponse
     /// <summary>
     /// The ID of the created user.
     /// </summary>
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// The status of the user account.

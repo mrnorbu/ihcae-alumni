@@ -18,7 +18,7 @@ export enum RegistrationStatus {
  * Event category model.
  */
 export interface EventCategory {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   description?: string;
@@ -28,8 +28,9 @@ export interface EventCategory {
  * Event summary for list views.
  */
 export interface EventSummary {
-  id: string;
+  id: number;
   title: string;
+  slug: string;
   category?: EventCategory;
   location: string;
   eventDate: Date;
@@ -46,8 +47,9 @@ export interface EventSummary {
  * Full event details.
  */
 export interface Event {
-  id: string;
+  id: number;
   title: string;
+  slug: string;
   description: string;
   category?: EventCategory;
   location: string;
@@ -72,7 +74,7 @@ export interface Event {
 export interface CreateEventRequest {
   title: string;
   description: string;
-  categoryId?: string;
+  categoryId?: number;
   location: string;
   eventDate: Date;
   eventEndDate?: Date;
@@ -89,7 +91,7 @@ export interface CreateEventRequest {
 export interface UpdateEventRequest {
   title: string;
   description: string;
-  categoryId?: string;
+  categoryId?: number;
   location: string;
   eventDate: Date;
   eventEndDate?: Date;
@@ -104,9 +106,9 @@ export interface UpdateEventRequest {
  * Event registration model.
  */
 export interface EventRegistration {
-  id: string;
+  id: number;
   eventId: string;
-  userId?: string;
+  userId?: number;
   name: string;
   email: string;
   phone?: string;

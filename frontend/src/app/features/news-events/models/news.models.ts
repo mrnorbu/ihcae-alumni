@@ -17,7 +17,7 @@ export enum ContentStatus {
  * News category model.
  */
 export interface NewsCategory {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   description?: string;
@@ -27,8 +27,9 @@ export interface NewsCategory {
  * News article summary for list views.
  */
 export interface NewsArticleSummary {
-  id: string;
+  id: number;
   title: string;
+  slug: string;
   excerpt?: string;
   category: NewsCategory;
   author: AuthorDto;
@@ -44,8 +45,9 @@ export interface NewsArticleSummary {
  * Full news article details.
  */
 export interface NewsArticle {
-  id: string;
+  id: number;
   title: string;
+  slug: string;
   content: string;
   excerpt?: string;
   category: NewsCategory;
@@ -66,7 +68,7 @@ export interface NewsArticle {
 export interface CreateNewsArticleRequest {
   title: string;
   content: string;
-  categoryId: string;
+  categoryId: number;
   imageUrl?: string;
   thumbnailUrl?: string;
   publish: boolean;
@@ -78,7 +80,7 @@ export interface CreateNewsArticleRequest {
 export interface UpdateNewsArticleRequest {
   title: string;
   content: string;
-  categoryId: string;
+  categoryId: number;
   imageUrl?: string;
   thumbnailUrl?: string;
   publish: boolean;

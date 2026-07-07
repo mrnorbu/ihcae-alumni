@@ -30,7 +30,7 @@ public class ProfileTests : IntegrationTestBase
     public async Task GetMyProfile_WithValidToken_ReturnsProfileData()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var email = "profile@example.com";
         var password = "Password123!";
 
@@ -83,7 +83,7 @@ public class ProfileTests : IntegrationTestBase
     public async Task UpdateMyProfile_WithValidData_UpdatesProfile()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var email = "updateprofile@example.com";
         var password = "Password123!";
 

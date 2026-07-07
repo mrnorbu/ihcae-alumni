@@ -7,13 +7,13 @@ import { environment } from '../../../../environments/environment';
  * Data model for user profile
  */
 export interface ProfileData {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
   profileImageUrl?: string;
-  graduationYear?: number;
+  batch?: string;
   course?: string;
   bio?: string;
   jobTitle?: string;
@@ -32,7 +32,7 @@ export interface UpdateProfileRequest {
   jobTitle?: string;
   location?: string;
   course?: string;
-  graduationYear?: number;
+  batch?: string;
   phone?: string;
 }
 
@@ -49,7 +49,9 @@ export interface UpdateProfileResponse {
  */
 export interface UploadImageResponse {
   message: string;
-  profileImageUrl: string;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  success?: boolean;
 }
 
 /**

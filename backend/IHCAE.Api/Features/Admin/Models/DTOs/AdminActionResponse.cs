@@ -19,6 +19,6 @@ public class AdminActionResponse
     /// <summary>
     /// The ID of the user affected by the action.
     /// </summary>
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 }
 

@@ -27,7 +27,7 @@ public class LoginTests : IntegrationTestBase
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             context.Users.Add(new User
             {
-                Id = Guid.NewGuid(),
+                Id = Random.Shared.Next(1, 1000000),
                 FirstName = "Approved",
                 LastName = "User",
                 Email = email,
@@ -93,7 +93,7 @@ public class LoginTests : IntegrationTestBase
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             context.Users.Add(new User
             {
-                Id = Guid.NewGuid(),
+                Id = Random.Shared.Next(1, 1000000),
                 FirstName = "Pending",
                 LastName = "User",
                 Email = email,
@@ -132,7 +132,7 @@ public class LoginTests : IntegrationTestBase
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             context.Users.Add(new User
             {
-                Id = Guid.NewGuid(),
+                Id = Random.Shared.Next(1, 1000000),
                 FirstName = "Banned",
                 LastName = "User",
                 Email = email,

@@ -32,7 +32,7 @@ export class NewsService {
   getPublishedArticles(
     page: number = 1,
     pageSize: number = 10,
-    categoryId?: string,
+    categoryId?: number,
     search?: string
   ): Observable<PaginatedResult<NewsArticleSummary>> {
     let params = new HttpParams()
@@ -51,10 +51,17 @@ export class NewsService {
   }
 
   /**
-   * Gets a single published news article by ID.
+   * Gets a single published news article by slug.
    * Increments view count.
    */
-  getArticleById(id: string): Observable<NewsArticle> {
+  getArticleBySlug(slug: string): Observable<NewsArticle> {
+    return this.http.get<NewsArticle>(`${this.apiUrl}/slug/${slug}`);
+  }
+
+  /**
+   * Gets a single news article by ID (useful for editing).
+   */
+  getArticleById(id: number): Observable<NewsArticle> {
     return this.http.get<NewsArticle>(`${this.apiUrl}/${id}`);
   }
 
@@ -91,7 +98,7 @@ export class NewsService {
    * Updates an existing news article (Admin/ContentCreator only).
    * Must be the owner or admin.
    */
-  updateArticle(id: string, request: UpdateNewsArticleRequest): Observable<NewsArticle> {
+  updateArticle(id: number, request: UpdateNewsArticleRequest): Observable<NewsArticle> {
     return this.http.put<NewsArticle>(`${this.managementApiUrl}/${id}`, request);
   }
 
@@ -99,7 +106,7 @@ export class NewsService {
    * Deletes a news article (Admin/ContentCreator only).
    * Must be the owner or admin.
    */
-  deleteArticle(id: string): Observable<void> {
+  deleteArticle(id: number): Observable<void> {
     return this.http.delete<void>(`${this.managementApiUrl}/${id}`);
   }
 
@@ -129,7 +136,7 @@ export class NewsService {
    * Approves a pending article (Admin only).
    * Changes status to published.
    */
-  approveArticle(id: string): Observable<void> {
+  approveArticle(id: number): Observable<void> {
     return this.http.post<void>(`${this.managementApiUrl}/${id}/approve`, {});
   }
 
@@ -137,7 +144,7 @@ export class NewsService {
    * Rejects a pending article (Admin only).
    * Sends email notification with reason.
    */
-  rejectArticle(id: string, reason: string): Observable<void> {
+  rejectArticle(id: number, reason: string): Observable<void> {
     return this.http.post<void>(`${this.managementApiUrl}/${id}/reject`, { reason });
   }
 

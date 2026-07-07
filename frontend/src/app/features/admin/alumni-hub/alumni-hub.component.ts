@@ -54,7 +54,7 @@ import { AlumniManagementComponent } from '../alumni-management/alumni-managemen
           class="flex items-center gap-1.5 px-4 py-2 border-b-2 font-semibold text-xs transition-all duration-200"
           [class]="activeTab() === 'roster' ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-primary-900'">
           <lucide-icon [img]="databaseIcon" [size]="14" [strokeWidth]="activeTab() === 'roster' ? 2.5 : 2"></lucide-icon>
-          Legacy Roster
+          IHCAE Records
         </button>
       </div>
 

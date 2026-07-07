@@ -11,12 +11,17 @@ public class NewsArticle
     /// <summary>
     /// Unique identifier for the article
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     
     /// <summary>
     /// Title of the article
     /// </summary>
     public string Title { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// URL-friendly slug
+    /// </summary>
+    public string Slug { get; set; } = string.Empty;
     
     /// <summary>
     /// Full content/body of the article
@@ -31,12 +36,12 @@ public class NewsArticle
     /// <summary>
     /// Foreign key to the category
     /// </summary>
-    public Guid CategoryId { get; set; }
+    public int CategoryId { get; set; }
     
     /// <summary>
     /// Foreign key to the author (user who created the article)
     /// </summary>
-    public Guid AuthorId { get; set; }
+    public int AuthorId { get; set; }
     
     /// <summary>
     /// URL to the full-size image

@@ -780,14 +780,17 @@ export class ContentManagementComponent implements OnInit {
     this.editingEvent.set(null);
   }
 
-  formatDate(date: string | Date): string {
-    const d = new Date(date);
-    return d.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
+  formatDate(date: any): string {
+    if (!date) return '';
+    let d = typeof date === 'string' ? new Date(date.endsWith('Z') ? date : date + 'Z') : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-IN', {
       year: 'numeric',
+      month: 'short',
+      day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
-    });
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    }).format(d);
   }
 }

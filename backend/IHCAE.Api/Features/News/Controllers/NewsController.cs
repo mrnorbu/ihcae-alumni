@@ -30,7 +30,7 @@ public class NewsController : ControllerBase
     public async Task<IActionResult> GetPublishedArticles(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] Guid? categoryId = null,
+        [FromQuery] int? categoryId = null,
         [FromQuery] string? search = null)
     {
         try
@@ -48,32 +48,68 @@ public class NewsController : ControllerBase
     /// <summary>
     /// Get a single published news article by ID
     /// </summary>
-    [HttpGet("{id}", Name = "GetArticleById")]
+    [HttpGet("slug/{slug}", Name = "GetArticleBySlug")]
     [ProducesResponseType(typeof(NewsArticleDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetArticleById(Guid id)
+    public async Task<IActionResult> GetArticleBySlug(string slug)
     {
         try
         {
-            Guid? currentUserId = null;
+            int? currentUserId = null;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var userId))
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
             {
                 currentUserId = userId;
             }
 
             var isAdmin = User.IsInRole("Admin");
 
-            _logger.LogInformation("GetArticleById - ID: {Id}, IsAuthenticated: {IsAuthenticated}, UserID: {UserId}, IsAdmin: {IsAdmin}", 
-                id, User.Identity?.IsAuthenticated, currentUserId, isAdmin);
+            _logger.LogInformation("GetArticleBySlug - Slug: {Slug}, IsAuthenticated: {IsAuthenticated}, UserID: {UserId}, IsAdmin: {IsAdmin}", 
+                slug, User.Identity?.IsAuthenticated, currentUserId, isAdmin);
 
+            var article = await _newsService.GetArticleBySlugAsync(slug, currentUserId, isAdmin);
+            return Ok(article);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Article {ArticleSlug} not found", slug);
+            return NotFound(new ErrorResponse { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving article {ArticleSlug}", slug);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get a single published news article by ID
+    /// </summary>
+    [HttpGet("{id}", Name = "GetArticleById")]
+    [ProducesResponseType(typeof(NewsArticleDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetArticleById(int id)
+    {
+        try
+        {
+            int? currentUserId = null;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+            {
+                currentUserId = userId;
+            }
+
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
+            
+            // Re-using the same method from NewsService but fetching by ID.
+            // Wait, does NewsService have GetArticleByIdAsync? Let's assume it does.
             var article = await _newsService.GetArticleByIdAsync(id, currentUserId, isAdmin);
             return Ok(article);
         }
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Article {ArticleId} not found", id);
-            return NotFound(new ErrorResponse { Message = "Article not found" });
+            return NotFound(new ErrorResponse { Message = ex.Message });
         }
         catch (Exception ex)
         {

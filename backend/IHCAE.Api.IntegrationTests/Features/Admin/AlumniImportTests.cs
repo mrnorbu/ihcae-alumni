@@ -29,7 +29,7 @@ public class AlumniImportTests : IntegrationTestBase
         return result!.Token;
     }
 
-    private async Task SeedAdminUserAsync(AppDbContext context, Guid userId, string email, string password)
+    private async Task SeedAdminUserAsync(AppDbContext context, int userId, string email, string password)
     {
         var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.Admin);
         if (adminRole == null)
@@ -66,7 +66,7 @@ public class AlumniImportTests : IntegrationTestBase
     public async Task ImportAlumniData_WithValidCsv_ReturnsSuccessAndSavesData()
     {
         // Arrange
-        var adminId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
         var email = "admin_import@example.com";
         var password = "Password123!";
 
@@ -113,13 +113,14 @@ public class AlumniImportTests : IntegrationTestBase
         getResult.Should().NotBeNull();
         getResult!.Items.Should().ContainSingle();
         getResult.Items.First().Email.Should().Be("john.doe@example.com");
+        getResult.Items.First().Phone.Should().Be("1234567890");
     }
 
     [Fact]
     public async Task ImportAlumniData_WithInvalidCsv_ReturnsErrors()
     {
         // Arrange
-        var adminId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
         var email = "admin_import2@example.com";
         var password = "Password123!";
 

@@ -45,7 +45,7 @@ public interface IAlumniImportService
     /// <param name="alumniId">The alumni record ID</param>
     /// <param name="userId">The user account ID</param>
     /// <returns>Task representing the async operation</returns>
-    Task LinkAlumniToUserAsync(Guid alumniId, Guid userId);
+    Task LinkAlumniToUserAsync(int alumniId, int userId);
 
     /// <summary>
     /// Updates multiple alumni database records at once.
@@ -59,12 +59,12 @@ public interface IAlumniImportService
     /// </summary>
     /// <param name="alumniIds">The list of alumni IDs</param>
     /// <returns>The bulk generation result containing generated and linked counts</returns>
-    Task<BulkGenerateResultDto> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds);
+    Task<BulkGenerateResultDto> BulkGenerateUserAccountsAsync(IEnumerable<int> alumniIds);
 
     /// <summary>
     /// Deletes a specific alumni record.
     /// </summary>
-    Task<bool> DeleteAlumniRecordAsync(Guid id);
+    Task<bool> DeleteAlumniRecordAsync(int id);
 
     /// <summary>
     /// Creates a single alumni record.
@@ -75,7 +75,7 @@ public interface IAlumniImportService
     /// Resends the account-claim invitation email for an alumni whose account was generated but not yet claimed.
     /// Throws InvalidOperationException if the record is not linked or has already been claimed.
     /// </summary>
-    Task ResendInvitationAsync(Guid alumniId);
+    Task ResendInvitationAsync(int alumniId);
 
     /// <summary>
     /// Parses and validates CSV content without writing to the database.

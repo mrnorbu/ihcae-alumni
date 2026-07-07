@@ -12,7 +12,7 @@ public class AlumniDetailDto
     /// Unique identifier for the alumnus
     /// Used for API calls and navigation purposes
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// First name of the alumnus

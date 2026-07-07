@@ -8,7 +8,7 @@ public class EventCategory
     /// <summary>
     /// Unique identifier for the category
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     
     /// <summary>
     /// Display name of the category

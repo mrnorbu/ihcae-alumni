@@ -109,7 +109,7 @@ public class NotificationsController : ControllerBase
     [HttpPut("{id}/read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> MarkAsRead(Guid id)
+    public async Task<IActionResult> MarkAsRead(int id)
     {
         try
         {
@@ -144,7 +144,7 @@ public class NotificationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> MarkAllAsRead()
     {
-        Guid userId = Guid.Empty;
+        int userId = 0;
         try
         {
             userId = GetCurrentUserId();
@@ -170,10 +170,10 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token.");
         }

@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { NotificationService } from '../../../core/services/notification.service';
-import { LucideAngularModule, Lock, CheckCircle, ArrowRight, Key, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, Lock, CheckCircle, ArrowRight, Key, AlertCircle, Eye, EyeOff } from 'lucide-angular';
 import { HeaderComponent } from '../../../shared/components';
 
 interface ResetPasswordResponse {
@@ -197,15 +197,21 @@ interface ResetPasswordResponse {
                         New Password
                       </span>
                     </label>
-                    <input
-                      id="password"
-                      type="password"
-                      formControlName="password"
-                      class="w-full px-4 py-3 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
-                      [class.border-red-300]="resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched"
-                      [class.ring-red-100]="resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched"
-                      placeholder="Enter new password (min. 8 chars)"
-                      />
+                    <div class="relative">
+                      <input
+                        id="password"
+                        [type]="showPassword ? 'text' : 'password'"
+                        formControlName="password"
+                        class="w-full px-4 py-3 pr-10 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
+                        [class.border-red-300]="resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched"
+                        [class.ring-red-100]="resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched"
+                        placeholder="Enter new password (min. 8 chars)"
+                        />
+                      <button type="button" (click)="showPassword = !showPassword"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 focus:outline-none">
+                        <lucide-icon [img]="showPassword ? eyeOffIcon : eyeIcon" [size]="16"></lucide-icon>
+                      </button>
+                    </div>
                     @if (resetPasswordForm.get('password')?.invalid && resetPasswordForm.get('password')?.touched) {
                       <p class="mt-1.5 text-xs text-red-500 font-medium flex flex-col gap-1">
                         @if (resetPasswordForm.get('password')?.errors?.['required']) { <span>• Password is required</span> }
@@ -222,15 +228,21 @@ interface ResetPasswordResponse {
                         Confirm Password
                       </span>
                     </label>
-                    <input
-                      id="confirmPassword"
-                      type="password"
-                      formControlName="confirmPassword"
-                      class="w-full px-4 py-3 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
-                      [class.border-red-300]="resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched"
-                      [class.ring-red-100]="resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched"
-                      placeholder="Confirm your new password"
-                      />
+                    <div class="relative">
+                      <input
+                        id="confirmPassword"
+                        [type]="showConfirmPassword ? 'text' : 'password'"
+                        formControlName="confirmPassword"
+                        class="w-full px-4 py-3 pr-10 text-sm border border-neutral-200 rounded-xl bg-neutral-50/50 hover:bg-neutral-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-200"
+                        [class.border-red-300]="resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched"
+                        [class.ring-red-100]="resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched"
+                        placeholder="Confirm your new password"
+                        />
+                      <button type="button" (click)="showConfirmPassword = !showConfirmPassword"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 focus:outline-none">
+                        <lucide-icon [img]="showConfirmPassword ? eyeOffIcon : eyeIcon" [size]="16"></lucide-icon>
+                      </button>
+                    </div>
                     @if (resetPasswordForm.get('confirmPassword')?.invalid && resetPasswordForm.get('confirmPassword')?.touched) {
                       <p class="mt-1.5 text-xs text-red-500 font-medium flex flex-col gap-1">
                         <span>•</span>
@@ -287,9 +299,13 @@ export class ResetPasswordComponent implements OnInit {
   readonly arrowIcon = ArrowRight;
   readonly keyIcon = Key;
   readonly alertIcon = AlertCircle;
+  readonly eyeIcon = Eye;
+  readonly eyeOffIcon = EyeOff;
 
   resetPasswordForm: FormGroup;
   isLoading = signal(false);
+  showPassword = false;
+  showConfirmPassword = false;
   isTokenInvalid = signal(false);
   isPasswordReset = signal(false);
   isSetupMode = signal(false);

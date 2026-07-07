@@ -61,7 +61,7 @@ export class InAppNotificationService {
   /**
    * Marks a specific notification as read.
    */
-  markAsRead(id: string): Observable<any> {
+  markAsRead(id: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}/read`, {}).pipe(
       tap(() => {
         // Update local state: mark item read and decrement count

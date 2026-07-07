@@ -14,6 +14,12 @@ import type {
   TopUserDto,
 } from '../../../shared/models';
 
+export interface UserSearchDto {
+  id: number;
+  firstName: string;
+  lastName: string;
+}
+
 /**
  * Service for forum operations.
  * Handles topics, posts, and likes.
@@ -37,7 +43,7 @@ export class ForumService {
     pageSize: number = 20, 
     tags?: string[], 
     search?: string, 
-    authorId?: string, 
+    authorId?: number, 
     sortBy: string = 'recent'
   ): Observable<PaginatedResult<TopicSummaryDto>> {
     let params = new HttpParams()
@@ -67,7 +73,7 @@ export class ForumService {
    * Gets a single topic with all its posts.
    * Includes nested replies and like information.
    */
-  getTopicById(topicId: string): Observable<TopicDetailDto> {
+  getTopicById(topicId: number): Observable<TopicDetailDto> {
     return this.http.get<TopicDetailDto>(`${this.apiUrl}/topics/${topicId}`);
   }
 
@@ -83,7 +89,7 @@ export class ForumService {
    * Creates a new post or reply in a topic.
    * Set parentPostId in request to create a nested reply.
    */
-  createPost(topicId: string, request: CreatePostRequest): Observable<PostDto> {
+  createPost(topicId: number, request: CreatePostRequest): Observable<PostDto> {
     return this.http.post<PostDto>(`${this.apiUrl}/topics/${topicId}/posts`, request);
   }
 
@@ -91,7 +97,7 @@ export class ForumService {
    * Likes a post.
    * User can only like a post once.
    */
-  likePost(postId: string): Observable<void> {
+  likePost(postId: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/posts/${postId}/like`, {});
   }
 
@@ -99,7 +105,7 @@ export class ForumService {
    * Unlikes a post.
    * Removes the user's like from the post.
    */
-  unlikePost(postId: string): Observable<void> {
+  unlikePost(postId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/posts/${postId}/like`);
   }
 
@@ -107,7 +113,7 @@ export class ForumService {
    * Deletes a topic (Admin only).
    * Cascades to delete all posts within the topic.
    */
-  deleteTopic(topicId: string): Observable<void> {
+  deleteTopic(topicId: number): Observable<void> {
     return this.http.delete<void>(`${this.adminApiUrl}/topics/${topicId}`);
   }
 
@@ -115,7 +121,7 @@ export class ForumService {
    * Updates a post (Admin only).
    * Used for content moderation.
    */
-  updatePost(postId: string, request: UpdatePostRequest): Observable<PostDto> {
+  updatePost(postId: number, request: UpdatePostRequest): Observable<PostDto> {
     return this.http.put<PostDto>(`${this.adminApiUrl}/posts/${postId}`, request);
   }
 
@@ -129,6 +135,16 @@ export class ForumService {
       .set('limit', limit.toString());
 
     return this.http.get<TagDto[]>(`${this.apiUrl}/tags/search`, { params });
+  }
+
+  /**
+   * Searches for users by name for mentions.
+   */
+  searchUsers(query: string, limit: number = 5): Observable<UserSearchDto[]> {
+    const params = new HttpParams()
+      .set('q', query)
+      .set('limit', limit.toString());
+    return this.http.get<UserSearchDto[]>(`${this.apiUrl}/users/search`, { params });
   }
 
   /**
@@ -153,7 +169,7 @@ export class ForumService {
    * Gets posts for a specific topic.
    * Returns all posts in the topic including replies.
    */
-  getTopicPosts(topicId: string): Observable<PostDto[]> {
+  getTopicPosts(topicId: number): Observable<PostDto[]> {
     return this.getTopicById(topicId).pipe(
       map(topic => topic.posts)
     );
@@ -163,10 +179,11 @@ export class ForumService {
    * Creates a reply to a specific post.
    * Convenience method for creating nested replies.
    */
-  createReply(topicId: string, postId: string, content: string): Observable<PostDto> {
-    const request: CreatePostRequest = {
+  createReply(topicId: number, postId: number, content: string, mentionedUserIds?: string[]): Observable<PostDto> {
+    const request: CreatePostRequest & { mentionedUserIds?: string[] } = {
       content: content,
-      parentPostId: postId
+      parentPostId: postId,
+      mentionedUserIds: mentionedUserIds
     };
     
     return this.createPost(topicId, request);
@@ -176,7 +193,7 @@ export class ForumService {
    * Deletes own post (user can only delete their own posts).
    * Soft deletes the post.
    */
-  deleteOwnPost(postId: string): Observable<void> {
+  deleteOwnPost(postId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/posts/${postId}`);
   }
 
@@ -184,7 +201,7 @@ export class ForumService {
    * Deletes a post (Admin only).
    * Also deletes all nested replies.
    */
-  deletePost(postId: string, reason?: string): Observable<void> {
+  deletePost(postId: number, reason?: string): Observable<void> {
     const options = reason ? { body: { reason } } : {};
     return this.http.delete<void>(`${this.adminApiUrl}/posts/${postId}`, options);
   }
@@ -192,14 +209,14 @@ export class ForumService {
   /**
    * Toggle pin status of a topic (Admin only).
    */
-  togglePinTopic(topicId: string): Observable<any> {
+  togglePinTopic(topicId: number): Observable<any> {
     return this.http.put(`${this.adminApiUrl}/topics/${topicId}/pin`, {});
   }
 
   /**
    * Toggle lock status of a topic (Admin only).
    */
-  toggleLockTopic(topicId: string): Observable<any> {
+  toggleLockTopic(topicId: number): Observable<any> {
     return this.http.put(`${this.adminApiUrl}/topics/${topicId}/lock`, {});
   }
 
@@ -208,7 +225,7 @@ export class ForumService {
   /**
    * Flags a post for admin review.
    */
-  flagPost(postId: string, reason: string, details?: string): Observable<any> {
+  flagPost(postId: number, reason: string, details?: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/posts/${postId}/flag`, { reason, details });
   }
 
@@ -235,14 +252,14 @@ export class ForumService {
   /**
    * Bans a user (admin only).
    */
-  banUser(userId: string, reason?: string): Observable<any> {
+  banUser(userId: number, reason?: string): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/api/v1/admin/users/${userId}/ban`, { reason });
   }
 
   /**
    * Restores a soft-deleted post (admin only).
    */
-  restorePost(postId: string): Observable<any> {
+  restorePost(postId: number): Observable<any> {
     return this.http.put<any>(`${this.adminApiUrl}/posts/${postId}/restore`, {});
   }
 }

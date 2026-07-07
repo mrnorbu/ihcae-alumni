@@ -135,10 +135,10 @@ import {
                   </div>
                   <!-- Name -->
                   <div class="ml-6 flex-1">
-                    <h2 class="text-2xl font-bold text-neutral-900">
+                    <h2 class="text-2xl font-bold text-neutral-900 truncate" [title]="(profile()?.firstName || '') + ' ' + (profile()?.lastName || '')">
                       {{ profile()?.firstName }} {{ profile()?.lastName }}
                     </h2>
-                    <p class="text-neutral-600">{{ profile()?.email }}</p>
+                    <p class="text-neutral-600 truncate" [title]="profile()?.email || ''">{{ profile()?.email }}</p>
                   </div>
                 </div>
               </div>
@@ -233,25 +233,23 @@ import {
                     </p>
                   }
                 </div>
-                <!-- Graduation Year -->
+                <!-- Batch -->
                 <div>
                   <label class="input-label flex items-center gap-2">
                     <lucide-icon [img]="calendarIcon" [size]="16"></lucide-icon>
-                    Graduation Year
+                    Batch (e.g. May 2025)
                   </label>
                   @if (isEditMode()) {
                     <input
-                      [(ngModel)]="editData.graduationYear"
-                      type="number"
-                      min="1950"
-                      max="2100"
+                      [(ngModel)]="editData.batch"
+                      type="text"
                       class="input-field"
-                      placeholder="e.g., 2020"
+                      placeholder="e.g., May 2025"
                       />
                   }
                   @if (!isEditMode()) {
                     <p class="text-neutral-900">
-                      {{ profile()?.graduationYear || 'Not specified' }}
+                      {{ profile()?.batch || 'Not specified' }}
                     </p>
                   }
                 </div>
@@ -281,7 +279,7 @@ import {
                     <lucide-icon [img]="mailIcon" [size]="16"></lucide-icon>
                     Email
                   </label>
-                  <p class="text-neutral-900">{{ profile()?.email }}</p>
+                  <p class="text-neutral-900 truncate" [title]="profile()?.email || ''">{{ profile()?.email }}</p>
                 </div>
               </div>
               <!-- Bio -->
@@ -373,7 +371,7 @@ export class MyProfileComponent implements OnInit {
         jobTitle: currentProfile.jobTitle,
         location: currentProfile.location,
         course: currentProfile.course,
-        graduationYear: currentProfile.graduationYear,
+        batch: currentProfile.batch,
         phone: currentProfile.phone
       };
       this.isEditMode.set(true);
@@ -426,7 +424,7 @@ export class MyProfileComponent implements OnInit {
           if (currentProfile) {
             this.profile.set({
               ...currentProfile,
-              profileImageUrl: response.profileImageUrl
+              profileImageUrl: response.imageUrl
             });
           }
           this.notificationService.showSuccess('Success', 'Profile image updated successfully');
@@ -439,4 +437,3 @@ export class MyProfileComponent implements OnInit {
     }
   }
 }
-

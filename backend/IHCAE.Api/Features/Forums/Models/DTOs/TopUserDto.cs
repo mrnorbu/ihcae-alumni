@@ -10,7 +10,7 @@ public class TopUserDto
     /// <summary>
     /// User ID
     /// </summary>
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// User's first name

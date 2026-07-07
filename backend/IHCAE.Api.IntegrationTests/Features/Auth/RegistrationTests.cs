@@ -66,7 +66,7 @@ public class RegistrationTests : IntegrationTestBase
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             context.Users.Add(new User
             {
-                Id = Guid.NewGuid(),
+                Id = Random.Shared.Next(1, 1000000),
                 FirstName = "Existing",
                 LastName = "User",
                 Email = "duplicate@example.com",

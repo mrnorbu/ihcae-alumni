@@ -9,7 +9,7 @@ public class AlumniDatabaseDto
     /// <summary>
     /// Unique identifier for the alumni record.
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Alumni's first name.
@@ -49,7 +49,7 @@ public class AlumniDatabaseDto
     /// <summary>
     /// ID of the user account this alumni record is linked to (if matched).
     /// </summary>
-    public Guid? MatchedUserId { get; set; }
+    public int? MatchedUserId { get; set; }
 
     /// <summary>
     /// Date when this record was imported.

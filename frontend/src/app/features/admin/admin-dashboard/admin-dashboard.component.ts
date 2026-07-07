@@ -381,7 +381,7 @@ export class AdminDashboardComponent implements OnInit {
   user = signal<User | null>(null);
   sidebarOpen = signal(true);
   isLoading = signal(false);
-  expandedUserId = signal<string | null>(null);
+  expandedUserId = signal<number | null>(null);
   stats = signal({
     totalUsers: 0,
     pendingUsers: 0,
@@ -389,7 +389,7 @@ export class AdminDashboardComponent implements OnInit {
     activeToday: 0
   });
   allUsers = signal<any[]>([]);
-  processingUsers = signal<Set<string>>(new Set());
+  processingUsers = signal<Set<number>>(new Set());
   showApprovalModal = signal(false);
   showRejectionModal = signal(false);
   selectedUser = signal<any>(null);
@@ -500,7 +500,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  toggleExpand(userId: string) {
+  toggleExpand(userId: number) {
     if (this.expandedUserId() === userId) {
       this.expandedUserId.set(null);
     } else {
@@ -588,7 +588,7 @@ export class AdminDashboardComponent implements OnInit {
     this.rejectionReason = '';
   }
 
-  private setProcessingUser(userId: string, isProcessing: boolean) {
+  private setProcessingUser(userId: number, isProcessing: boolean) {
     const current = new Set(this.processingUsers());
     if (isProcessing) {
       current.add(userId);
@@ -598,13 +598,22 @@ export class AdminDashboardComponent implements OnInit {
     this.processingUsers.set(current);
   }
 
-  isProcessingUser(userId: string): boolean {
+  isProcessingUser(userId: number): boolean {
     return this.processingUsers().has(userId);
   }
 
-  formatDate(date: string | Date): string {
-    const d = new Date(date);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  formatDate(date: any): string {
+    if (!date) return '';
+    let d = typeof date === 'string' ? new Date(date.endsWith('Z') ? date : date + 'Z') : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    }).format(d);
   }
 
   logout() {

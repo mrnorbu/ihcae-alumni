@@ -43,7 +43,7 @@ public class UpdateProfileRequest
     /// Used for filtering alumni by graduation year in directory
     /// Range validation ensures reasonable years (1950-2100)
     /// </summary>
-    [Range(1950, 2100, ErrorMessage = "Graduation year must be between 1950 and 2100")]
+    [MaxLength(100, ErrorMessage = "Batch cannot exceed 100 characters")]
     public string? Batch { get; set; }
 
     /// <summary>

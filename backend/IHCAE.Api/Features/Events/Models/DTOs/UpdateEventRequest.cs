@@ -14,7 +14,7 @@ public class UpdateEventRequest
     [Required(ErrorMessage = "Description is required")]
     public string Description { get; set; } = string.Empty;
     
-    public Guid? CategoryId { get; set; }
+    public int? CategoryId { get; set; }
     
     [Required(ErrorMessage = "Location is required")]
     [StringLength(255, ErrorMessage = "Location cannot exceed 255 characters")]

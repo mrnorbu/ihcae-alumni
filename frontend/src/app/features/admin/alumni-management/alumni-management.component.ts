@@ -35,7 +35,7 @@ import {
 import { lastValueFrom } from 'rxjs';
 
 interface AlumniRecord {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -236,7 +236,7 @@ interface AlumniRecord {
                     <td class="py-2 px-3 text-center">
                       <input type="checkbox"
                         [checked]="isSelected(record.id)"
-                        (change)="toggleSelection(record.id)"
+                        (change)="toggleSelection(record.id, $event)"
                         class="w-3.5 h-3.5 text-neutral-900 rounded border-neutral-300 focus:ring-neutral-900">
                     </td>
                     <td class="py-3 px-3 text-sm text-neutral-800 font-medium">
@@ -595,8 +595,8 @@ interface AlumniRecord {
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Batch Year</label>
-                  <input type="text" [(ngModel)]="newRecord.batch" name="batch" placeholder="e.g. 2020"
+                  <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Batch (e.g. May 2025)</label>
+                  <input type="text" [(ngModel)]="newRecord.batch" name="batch" placeholder="e.g. May 2025"
                     class="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900">
                 </div>
                 <div>
@@ -690,10 +690,10 @@ export class AlumniManagementComponent implements OnInit {
   ];
   currentPage = signal(1);
   pageSize = 50;
-  selectedIds = signal<string[]>([]);
+  selectedIds = signal<number[]>([]);
   importResult = signal<string | null>(null);
 
-  resendingId = signal<string | null>(null);
+  resendingId = signal<number | null>(null);
 
   // Confirmation modal
   showConfirmModal = signal(false);
@@ -729,7 +729,7 @@ export class AlumniManagementComponent implements OnInit {
   showAddModal = signal(false);
   isEditing = signal(false);
   newRecord = {
-    id: '',
+    id: 0,
     firstName: '',
     lastName: '',
     email: '',
@@ -1075,11 +1075,11 @@ export class AlumniManagementComponent implements OnInit {
     this.previewRows.set([]);
   }
 
-  isSelected(id: string): boolean {
+  isSelected(id: number): boolean {
     return this.selectedIds().includes(id);
   }
 
-  toggleSelection(id: string) {
+  toggleSelection(id: number, event: Event) {
     const current = [...this.selectedIds()];
     const index = current.indexOf(id);
     if (index === -1) {
@@ -1139,7 +1139,7 @@ export class AlumniManagementComponent implements OnInit {
     );
   }
 
-  private async executeBulkResend(ids: string[]) {
+  private async executeBulkResend(ids: number[]) {
     this.isBulkProcessing.set(true);
     try {
       const response = await lastValueFrom(
@@ -1167,7 +1167,7 @@ export class AlumniManagementComponent implements OnInit {
     }
   }
 
-  private async executeBulkGenerate(ids: string[]) {
+  private async executeBulkGenerate(ids: number[]) {
     this.isBulkProcessing.set(true);
     try {
       const response = await lastValueFrom(
@@ -1208,7 +1208,7 @@ export class AlumniManagementComponent implements OnInit {
   openAddModal() {
     this.isEditing.set(false);
     this.newRecord = {
-      id: '',
+      id: 0,
       firstName: '',
       lastName: '',
       email: '',
@@ -1285,7 +1285,7 @@ export class AlumniManagementComponent implements OnInit {
     this.selectedIds.set(this.unmatchedRecords().map(r => r.id));
   }
 
-  async resendInvitation(id: string, email: string) {
+  async resendInvitation(id: number, email: string) {
     this.resendingId.set(id);
     try {
       await lastValueFrom(
@@ -1363,7 +1363,7 @@ export class AlumniManagementComponent implements OnInit {
     });
   }
 
-  deleteRecord(id: string, name: string) {
+  deleteRecord(id: number, name: string) {
     this.openConfirm(
       'Delete Alumni Record',
       `Delete ${name} from the roster? This cannot be undone.`,
@@ -1372,7 +1372,7 @@ export class AlumniManagementComponent implements OnInit {
     );
   }
 
-  private async executeDelete(id: string) {
+  private async executeDelete(id: number) {
     this.isLoading.set(true);
     try {
       await lastValueFrom(

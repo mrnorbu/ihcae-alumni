@@ -37,6 +37,6 @@ public interface IDirectoryService
     /// <param name="userId">The unique identifier of the alumnus</param>
     /// <returns>Detailed alumni information including contact details</returns>
     /// <exception cref="KeyNotFoundException">Thrown when alumnus is not found or not approved</exception>
-    Task<AlumniDetailDto> GetAlumniDetailAsync(Guid userId);
+    Task<AlumniDetailDto> GetAlumniDetailAsync(int userId);
 }
 

@@ -13,7 +13,7 @@ public class ForumPost
     /// Unique identifier for the post (UUID format)
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Content of the post (plain text with auto-linked URLs)
@@ -25,7 +25,7 @@ public class ForumPost
     /// ID of the topic this post belongs to
     /// </summary>
     [Required]
-    public Guid TopicId { get; set; }
+    public int TopicId { get; set; }
 
     /// <summary>
     /// Navigation property to the parent topic
@@ -36,7 +36,7 @@ public class ForumPost
     /// ID of the user who authored this post
     /// </summary>
     [Required]
-    public Guid AuthorId { get; set; }
+    public int AuthorId { get; set; }
 
     /// <summary>
     /// Navigation property to the post author
@@ -46,7 +46,7 @@ public class ForumPost
     /// <summary>
     /// ID of the parent post (for nested replies, null for top-level posts)
     /// </summary>
-    public Guid? ParentPostId { get; set; }
+    public int? ParentPostId { get; set; }
 
     /// <summary>
     /// Navigation property to the parent post (for nested replies)
@@ -86,7 +86,7 @@ public class ForumPost
     /// <summary>
     /// Who deleted the post (null if deleted by author, UserId if deleted by admin)
     /// </summary>
-    public Guid? DeletedBy { get; set; }
+    public int? DeletedBy { get; set; }
 
     /// <summary>
     /// Reason for deletion (admin only)

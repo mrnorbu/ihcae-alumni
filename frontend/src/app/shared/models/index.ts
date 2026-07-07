@@ -7,7 +7,7 @@
  * User model representing an authenticated user in the system.
  */
 export interface User {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -67,7 +67,7 @@ export interface AuthResponse {
 export interface RegisterResponse {
   success: boolean;
   message: string;
-  userId: string;
+  userId: number;
   status: string;
 }
 
@@ -75,7 +75,7 @@ export interface RegisterResponse {
  * Alumni database record model.
  */
 export interface AlumniRecord {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -122,7 +122,7 @@ export interface ApiConfig {
  * Notification model for toast messages.
  */
 export interface Notification {
-  id: string;
+  id: number;
   type: 'success' | 'error' | 'warning' | 'info';
   title: string;
   message: string;
@@ -146,8 +146,9 @@ export interface SearchFilter {
  * Alumni profile model for detailed alumni information.
  */
 export interface AlumniProfile {
-  userId: string;
+  userId: number;
   course?: string;
+  batch?: string;
   graduationYear?: number;
   currentJob?: string;
   currentCompany?: string;
@@ -185,7 +186,7 @@ export interface TagDto {
  * Top user model for forum engagement.
  */
 export interface TopUserDto {
-  userId: string;
+  userId: number;
   firstName: string;
   lastName: string;
   profileImageUrl?: string;
@@ -197,7 +198,7 @@ export interface TopUserDto {
  * Author information for forum posts and topics.
  */
 export interface AuthorDto {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   profileImageUrl?: string;
@@ -207,10 +208,10 @@ export interface AuthorDto {
  * Forum post model with nested replies.
  */
 export interface PostDto {
-  id: string;
+  id: number;
   content: string;
   author: AuthorDto;
-  parentPostId?: string;
+  parentPostId?: number;
   parentAuthor?: AuthorDto;  // Author of the parent post (for "replying to" context)
   createdAt: Date;
   updatedAt?: Date;
@@ -223,7 +224,7 @@ export interface PostDto {
  * Topic summary for topic list.
  */
 export interface TopicSummaryDto {
-  id: string;
+  id: number;
   title: string;
   createdBy: AuthorDto;
   postCount: number;
@@ -232,7 +233,7 @@ export interface TopicSummaryDto {
   isLocked: boolean;
   createdAt: Date;
   totalLikes: number;
-  mainPostId: string;
+  mainPostId: number;
   isMainPostLikedByCurrentUser: boolean;
   preview?: string;
   tags: TagDto[];
@@ -242,7 +243,7 @@ export interface TopicSummaryDto {
  * Topic detail with all posts.
  */
 export interface TopicDetailDto {
-  id: string;
+  id: number;
   title: string;
   createdBy: AuthorDto;
   isPinned: boolean;
@@ -266,7 +267,7 @@ export interface CreateTopicRequest {
  */
 export interface CreatePostRequest {
   content: string;
-  parentPostId?: string;
+  parentPostId?: number;
 }
 
 /**
@@ -280,7 +281,7 @@ export interface UpdatePostRequest {
  * Job posting model.
  */
 export interface JobPosting {
-  id: string;
+  id: number;
   title: string;
   company: string;
   description: string;
@@ -299,10 +300,10 @@ export interface JobPosting {
  * Success story model.
  */
 export interface SuccessStory {
-  id: string;
+  id: number;
   title: string;
   content: string;
-  authorId: string;
+  authorId: number;
   authorName: string;
   category: string;
   createdAt: Date;
@@ -315,7 +316,7 @@ export interface SuccessStory {
  * In-App Notification model from the database backend.
  */
 export interface InAppNotification {
-  id: string;
+  id: number;
   title: string;
   message: string;
   type: string; // 'Reply' | 'Moderation' | 'System'

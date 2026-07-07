@@ -221,13 +221,13 @@ export class AlumniDetailPageComponent implements OnInit {
   ngOnInit() {
     const userId = this.route.snapshot.paramMap.get('userId');
     if (userId) {
-      this.loadAlumniDetail(userId);
+      this.loadAlumniDetail(Number(userId));
     } else {
       this.isLoading.set(false);
     }
   }
 
-  loadAlumniDetail(userId: string) {
+  loadAlumniDetail(userId: number) {
     this.isLoading.set(true);
     this.directoryService.getAlumniDetail(userId).subscribe({
       next: (alumni) => {
@@ -248,7 +248,17 @@ export class AlumniDetailPageComponent implements OnInit {
     return `https://wa.me/${phone.replace(/\D/g, '')}`;
   }
 
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  formatDate(dateString: any): string {
+    if (!dateString) return '';
+    let d = typeof dateString === 'string' ? new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z') : new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    }).format(d);
   }
 }

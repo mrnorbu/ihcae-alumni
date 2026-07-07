@@ -5,6 +5,7 @@ using IHCAE.Api.Features.News.Models.Entities;
 using IHCAE.Api.Shared.Data;
 using IHCAE.Api.Shared.DTOs;
 using IHCAE.Api.Shared.Services;
+using IHCAE.Api.Shared.Helpers;
 using AuthorDto = IHCAE.Api.Shared.DTOs.AuthorDto;
 
 namespace IHCAE.Api.Features.Events.Services;
@@ -28,7 +29,7 @@ public class EventService : IEventService
     }
 
     public async Task<PaginatedResult<EventSummaryDto>> GetUpcomingEventsAsync(
-        int page, int pageSize, Guid? categoryId = null, string? location = null, 
+        int page, int pageSize, int? categoryId = null, string? location = null, 
         DateTime? startDate = null, DateTime? endDate = null)
     {
         if (page < 1) page = 1;
@@ -84,14 +85,31 @@ public class EventService : IEventService
         };
     }
 
-    public async Task<EventDto> GetEventByIdAsync(Guid id)
+    public async Task<EventDto> GetEventBySlugAsync(string slug)
     {
         var eventEntity = await _context.Events
             .Include(e => e.Category)
             .Include(e => e.CreatedBy)
                 .ThenInclude(u => u.AlumniProfile)
             .Include(e => e.Registrations)
-            .FirstOrDefaultAsync(e => e.Id == id && e.Status == ContentStatus.Published);
+            .FirstOrDefaultAsync(e => e.Slug == slug && e.Status == ContentStatus.Published);
+
+        if (eventEntity == null)
+        {
+            throw new KeyNotFoundException($"Event with slug {slug} not found");
+        }
+
+        return MapToDto(eventEntity);
+    }
+
+    public async Task<EventDto> GetEventByIdAsync(int id)
+    {
+        var eventEntity = await _context.Events
+            .Include(e => e.Category)
+            .Include(e => e.CreatedBy)
+                .ThenInclude(u => u.AlumniProfile)
+            .Include(e => e.Registrations)
+            .FirstOrDefaultAsync(e => e.Id == id);
 
         if (eventEntity == null)
         {
@@ -101,7 +119,7 @@ public class EventService : IEventService
         return MapToDto(eventEntity);
     }
 
-    public async Task<EventDto> CreateEventAsync(Guid creatorId, CreateEventRequest request, bool isAdmin)
+    public async Task<EventDto> CreateEventAsync(int creatorId, CreateEventRequest request, bool isAdmin)
     {
         // Verify category exists if provided
         if (request.CategoryId.HasValue)
@@ -131,8 +149,8 @@ public class EventService : IEventService
 
         var eventEntity = new Event
         {
-            Id = Guid.NewGuid(),
             Title = request.Title,
+            Slug = SlugHelper.GenerateSlug(request.Title) + "-" + Guid.NewGuid().ToString().Substring(0, 4),
             Description = request.Description,
             CategoryId = request.CategoryId,
             Location = request.Location,
@@ -164,7 +182,7 @@ public class EventService : IEventService
         return await GetEventByIdForManagement(eventEntity.Id);
     }
 
-    public async Task<EventDto> UpdateEventAsync(Guid id, Guid userId, UpdateEventRequest request, bool isAdmin)
+    public async Task<EventDto> UpdateEventAsync(int id, int userId, UpdateEventRequest request, bool isAdmin)
     {
         var eventEntity = await _context.Events
             .Include(e => e.Category)
@@ -230,7 +248,7 @@ public class EventService : IEventService
         return await GetEventByIdForManagement(id);
     }
 
-    public async Task<bool> DeleteEventAsync(Guid id, Guid userId, bool isAdmin)
+    public async Task<bool> DeleteEventAsync(int id, int userId, bool isAdmin)
     {
         var eventEntity = await _context.Events
             .Include(e => e.Registrations)
@@ -292,7 +310,7 @@ public class EventService : IEventService
         };
     }
 
-    public async Task<EventDto> ApproveEventAsync(Guid id, Guid adminId)
+    public async Task<EventDto> ApproveEventAsync(int id, int adminId)
     {
         var eventEntity = await _context.Events
             .Include(e => e.CreatedBy)
@@ -322,7 +340,7 @@ public class EventService : IEventService
         return await GetEventByIdForManagement(id);
     }
 
-    public async Task<bool> RejectEventAsync(Guid id, Guid adminId, string reason)
+    public async Task<bool> RejectEventAsync(int id, int adminId, string reason)
     {
         var eventEntity = await _context.Events
             .Include(e => e.CreatedBy)
@@ -370,7 +388,7 @@ public class EventService : IEventService
 
     // Helper methods
 
-    private async Task<EventDto> GetEventByIdForManagement(Guid id)
+    private async Task<EventDto> GetEventByIdForManagement(int id)
     {
         var eventEntity = await _context.Events
             .Include(e => e.Category)
@@ -396,6 +414,7 @@ public class EventService : IEventService
         {
             Id = eventEntity.Id,
             Title = eventEntity.Title,
+            Slug = eventEntity.Slug,
             Description = eventEntity.Description,
             Category = eventEntity.Category != null ? new EventCategoryDto
             {
@@ -436,6 +455,7 @@ public class EventService : IEventService
         {
             Id = eventEntity.Id,
             Title = eventEntity.Title,
+            Slug = eventEntity.Slug,
             Category = eventEntity.Category != null ? new EventCategoryDto
             {
                 Id = eventEntity.Category.Id,
@@ -455,7 +475,7 @@ public class EventService : IEventService
         };
     }
 
-    private async Task SendEventSubmittedNotificationAsync(Guid eventId)
+    private async Task SendEventSubmittedNotificationAsync(int eventId)
     {
         try
         {
@@ -483,7 +503,7 @@ public class EventService : IEventService
         }
     }
 
-    private async Task SendEventApprovedNotificationAsync(Guid eventId, Guid creatorId)
+    private async Task SendEventApprovedNotificationAsync(int eventId, int creatorId)
     {
         try
         {
@@ -504,7 +524,7 @@ public class EventService : IEventService
         }
     }
 
-    public async Task<List<EventSummaryDto>> GetManagementEventsAsync(Guid userId, bool isAdmin)
+    public async Task<List<EventSummaryDto>> GetManagementEventsAsync(int userId, bool isAdmin)
     {
         var query = _context.Events
             .Include(e => e.Category)

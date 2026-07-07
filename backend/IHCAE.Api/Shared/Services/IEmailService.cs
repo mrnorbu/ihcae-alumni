@@ -101,7 +101,7 @@ public interface IEmailService
     /// <summary>
     /// Sends an admin notification that a new event has been submitted.
     /// </summary>
-    Task SendEventSubmittedNotificationAsync(string to, string eventTitle, Guid eventId);
+    Task SendEventSubmittedNotificationAsync(string to, string eventTitle, int eventId);
 
     /// <summary>
     /// Sends a notification to a user regarding the approval or rejection of their event.
@@ -116,7 +116,7 @@ public interface IEmailService
     /// <summary>
     /// Sends an admin notification that a new article has been submitted.
     /// </summary>
-    Task SendNewsSubmittedNotificationAsync(string to, string articleTitle, Guid articleId);
+    Task SendNewsSubmittedNotificationAsync(string to, string articleTitle, int articleId);
 
     /// <summary>
     /// Sends a notification to a user regarding the approval or rejection of their article.

@@ -12,7 +12,7 @@ public class ProfileDto
     /// <summary>
     /// User's unique identifier (UUID)
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// User's first name

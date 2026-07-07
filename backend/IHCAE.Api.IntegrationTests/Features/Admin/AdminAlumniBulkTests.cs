@@ -20,7 +20,7 @@ public class AdminAlumniBulkTests : IntegrationTestBase
     {
     }
 
-    private async Task<string> GetAdminAuthTokenAsync(AppDbContext context, Guid userId, string email, string password)
+    private async Task<string> GetAdminAuthTokenAsync(AppDbContext context, int userId, string email, string password)
     {
         var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.Admin);
         if (adminRole == null)
@@ -62,11 +62,11 @@ public class AdminAlumniBulkTests : IntegrationTestBase
     public async Task BulkUpdateAlumni_AsAdmin_UpdatesRecords()
     {
         // Arrange
-        var adminUserId = Guid.NewGuid();
+        var adminUserId = Random.Shared.Next(1, 1000000);
         var adminEmail = "adminbulk1@example.com";
         var password = "Password123!";
         string token;
-        var alumni1Id = Guid.NewGuid();
+        var alumni1Id = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -124,12 +124,12 @@ public class AdminAlumniBulkTests : IntegrationTestBase
     public async Task BulkGenerateAccounts_AsAdmin_CreatesUsersAndProfiles()
     {
         // Arrange
-        var adminUserId = Guid.NewGuid();
+        var adminUserId = Random.Shared.Next(1, 1000000);
         var adminEmail = "adminbulk2@example.com";
         var password = "Password123!";
         string token;
-        var alumni2Id = Guid.NewGuid();
-        var testEmail = $"gen{Guid.NewGuid()}@test.com";
+        var alumni2Id = Random.Shared.Next(1, 1000000);
+        var testEmail = $"gen{Random.Shared.Next(1, 1000000)}@test.com";
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -144,12 +144,13 @@ public class AdminAlumniBulkTests : IntegrationTestBase
                 Email = testEmail,
                 Course = "BCA",
                 Batch = "2021",
+                Phone = "+919876543210",
                 ImportedAt = DateTime.UtcNow
             });
             await context.SaveChangesAsync();
         }
 
-        var alumniIds = new List<Guid> { alumni2Id };
+        var alumniIds = new List<int> { alumni2Id };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/admin/alumni/bulk-generate-accounts");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -173,6 +174,7 @@ public class AdminAlumniBulkTests : IntegrationTestBase
             generatedUser.Should().NotBeNull();
             generatedUser!.FirstName.Should().Be("GenTest");
             generatedUser.Email.Should().Be(testEmail);
+            generatedUser.Phone.Should().Be("+919876543210");
 
             var profile = await context.Set<AlumniProfile>().FindAsync(alumniRecord.MatchedUserId);
             profile.Should().NotBeNull();

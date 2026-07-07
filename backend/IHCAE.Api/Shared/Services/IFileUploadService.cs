@@ -15,7 +15,7 @@ public interface IFileUploadService
     /// <param name="file">The uploaded file from HTTP form data</param>
     /// <param name="userId">The user ID (used for unique filename generation)</param>
     /// <returns>The URL to access the uploaded file (relative path from wwwroot)</returns>
-    Task<string> UploadProfileImageAsync(IFormFile file, Guid userId);
+    Task<string> UploadProfileImageAsync(IFormFile file, int userId);
 
     /// <summary>
     /// Uploads a content image (for news, events, etc.) and returns the URL.

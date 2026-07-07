@@ -12,6 +12,7 @@ import { ProfileService, ProfileData } from '../profile/services/profile.service
 import { User, TopicSummaryDto } from '../../shared/models';
 import type { EventSummary, NewsArticleSummary } from '../news-events/models';
 import { HeaderComponent, FooterComponent } from '../../shared/components';
+import { AppImageUrlPipe } from '../../shared/pipes/app-image-url.pipe';
 import {
   LucideAngularModule,
   Users, Calendar, MessageSquare, Newspaper,
@@ -21,7 +22,7 @@ import {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-white">
       <app-header></app-header>
@@ -128,7 +129,7 @@ import {
             @if (!isLoading() && upcomingEvents().length > 0) {
               <div class="space-y-2.5">
                 @for (event of upcomingEvents(); track event.id) {
-                  <a [routerLink]="['/events', event.id]" class="flex items-center gap-3.5 p-2.5 bg-white border border-neutral-200/30 rounded hover:border-primary-200 hover:shadow-[0_1px_3px_rgba(0,0,0,0.015)] group transition-all">
+                  <a [routerLink]="['/events', event.slug]" class="flex items-center gap-3.5 p-2.5 bg-white border border-neutral-200/30 rounded hover:border-primary-200 hover:shadow-[0_1px_3px_rgba(0,0,0,0.015)] group transition-all">
                     <div class="w-10 h-10 bg-primary-50 rounded flex flex-col items-center justify-center shrink-0 border border-primary-200/40">
                       <span class="text-[9px] font-bold text-primary-700 uppercase tracking-wider leading-none">{{ formatEventMonth(event.eventDate) }}</span>
                       <span class="text-sm font-bold text-primary-950 leading-none mt-0.5">{{ formatEventDay(event.eventDate) }}</span>
@@ -212,7 +213,7 @@ import {
                     <div class="min-w-0 flex-1">
                       <div class="flex items-center gap-2 mb-1 flex-wrap">
                         @if ($any(item.status) === 2 || item.status === 'Published' || $any(item.status) === 1 || item.status === 'PendingReview') {
-                          <a [routerLink]="['/news', item.id]" class="text-sm font-semibold text-neutral-850 hover:text-primary-700 hover:underline truncate leading-snug">
+                          <a [routerLink]="['/news', item.slug]" class="text-sm font-semibold text-neutral-850 hover:text-primary-700 hover:underline truncate leading-snug">
                             {{ item.title }}
                           </a>
                         } @else {
@@ -286,11 +287,11 @@ import {
           @if (!isLoading() && recentNews().length > 0) {
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               @for (article of recentNews(); track article.id) {
-                <a [routerLink]="['/news', article.id]" class="group bg-white border border-neutral-200/30 hover:border-primary-200 rounded p-3 hover:shadow-[0_1px_3px_rgba(0,0,0,0.015)] transition-all flex flex-col justify-between">
+                <a [routerLink]="['/news', article.slug]" class="group bg-white border border-neutral-200/30 hover:border-primary-200 rounded p-3 hover:shadow-[0_1px_3px_rgba(0,0,0,0.015)] transition-all flex flex-col justify-between">
                   <div>
                     @if (article.thumbnailUrl) {
                       <div class="w-full h-24 rounded overflow-hidden mb-2.5 bg-neutral-50 border border-neutral-100/60 shrink-0">
-                        <img [src]="article.thumbnailUrl" [alt]="article.title" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+                        <img [src]="article.thumbnailUrl | appImageUrl" [alt]="article.title" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
                       </div>
                     }
                     @if (!article.thumbnailUrl) {
@@ -384,7 +385,7 @@ export class DashboardComponent implements OnInit {
   readonly mapPinIcon = MapPin;
   readonly trashIcon = Trash2;
 
-  deleteDraft(id: string): void {
+  deleteDraft(id: number): void {
     if (!confirm('Are you sure you want to delete this draft?')) return;
     this.newsService.deleteArticle(id).subscribe({
       next: () => {
@@ -508,8 +509,18 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+  formatDate(dateString: any): string {
+    if (!dateString) return '';
+    let d = typeof dateString === 'string' ? new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z') : new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    }).format(d);
   }
 
   formatShortDate(date: Date | string | undefined): string {

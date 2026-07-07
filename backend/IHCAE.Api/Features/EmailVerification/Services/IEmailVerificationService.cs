@@ -10,7 +10,7 @@ public interface IEmailVerificationService
     /// </summary>
     /// <param name="userId">The ID of the user to send verification email to</param>
     /// <returns>True if the email was sent successfully, false otherwise</returns>
-    Task<bool> SendVerificationEmailAsync(Guid userId);
+    Task<bool> SendVerificationEmailAsync(int userId);
 
     /// <summary>
     /// Verifies an email using the provided token.
@@ -24,5 +24,5 @@ public interface IEmailVerificationService
     /// </summary>
     /// <param name="userId">The user ID to check</param>
     /// <returns>True if the user's email is verified, false otherwise</returns>
-    Task<bool> IsEmailVerifiedAsync(Guid userId);
+    Task<bool> IsEmailVerifiedAsync(int userId);
 }

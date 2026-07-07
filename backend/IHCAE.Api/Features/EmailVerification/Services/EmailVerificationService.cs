@@ -39,7 +39,7 @@ public class EmailVerificationService : IEmailVerificationService
     /// </summary>
     /// <param name="userId">The ID of the user to send verification email to</param>
     /// <returns>True if the email was sent successfully, false otherwise</returns>
-    public async Task<bool> SendVerificationEmailAsync(Guid userId)
+    public async Task<bool> SendVerificationEmailAsync(int userId)
     {
         try
         {
@@ -59,7 +59,7 @@ public class EmailVerificationService : IEmailVerificationService
 
             var verificationToken = new EmailVerificationToken
             {
-                Id = Guid.NewGuid(),
+                
                 UserId = userId,
                 TokenHash = tokenHash,
                 CreatedAt = DateTime.UtcNow,
@@ -140,7 +140,7 @@ public class EmailVerificationService : IEmailVerificationService
     /// </summary>
     /// <param name="userId">The user ID to check</param>
     /// <returns>True if the user's email is verified, false otherwise</returns>
-    public async Task<bool> IsEmailVerifiedAsync(Guid userId)
+    public async Task<bool> IsEmailVerifiedAsync(int userId)
     {
         var user = await _context.Users.FindAsync(userId);
         return user?.EmailVerified ?? false;
@@ -150,7 +150,7 @@ public class EmailVerificationService : IEmailVerificationService
     /// Invalidates all unused verification tokens for a user.
     /// </summary>
     /// <param name="userId">The user ID</param>
-    private async Task InvalidateExistingTokensAsync(Guid userId)
+    private async Task InvalidateExistingTokensAsync(int userId)
     {
         var existingTokens = await _context.EmailVerificationTokens
             .Where(vt => vt.UserId == userId && !vt.IsUsed)

@@ -28,7 +28,7 @@ public class EmailVerificationController : ControllerBase
     /// <param name="userId">The ID of the user to send verification email to</param>
     /// <returns>Success response if email was sent</returns>
     [HttpPost("send/{userId}")]
-    public async Task<IActionResult> SendVerificationEmail(Guid userId)
+    public async Task<IActionResult> SendVerificationEmail(int userId)
     {
         try
         {
@@ -93,7 +93,7 @@ public class EmailVerificationController : ControllerBase
     /// <param name="userId">The user ID to check</param>
     /// <returns>Email verification status</returns>
     [HttpGet("status/{userId}")]
-    public async Task<IActionResult> GetEmailVerificationStatus(Guid userId)
+    public async Task<IActionResult> GetEmailVerificationStatus(int userId)
     {
         try
         {

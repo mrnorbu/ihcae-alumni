@@ -100,7 +100,7 @@ public class FileUploadService : IFileUploadService
     /// <param name="file">The image file to upload</param>
     /// <param name="userId">The user ID for filename generation</param>
     /// <returns>Relative URL path for accessing the uploaded image</returns>
-    public async Task<string> UploadProfileImageAsync(IFormFile file, Guid userId)
+    public async Task<string> UploadProfileImageAsync(IFormFile file, int userId)
     {
         // Validate the uploaded file
         ValidateImageFile(file);
@@ -113,7 +113,7 @@ public class FileUploadService : IFileUploadService
         }
 
         // Generate unique filename with .webp extension
-        var uniqueFileName = $"{userId}_{Guid.NewGuid()}.webp";
+        var uniqueFileName = $"{userId}_{System.Guid.NewGuid()}.webp";
         var filePath = Path.Combine(profileImagesPath, uniqueFileName);
 
         // Load, process, and save image as WebP
@@ -160,7 +160,7 @@ public class FileUploadService : IFileUploadService
         }
 
         // Generate unique filename with .webp extension
-        var baseFileName = $"{contentType}_{Guid.NewGuid()}";
+        var baseFileName = $"{contentType}_{System.Guid.NewGuid()}";
         var uniqueFileName = $"{baseFileName}.webp";
         var thumbnailFileName = $"{baseFileName}_thumb.webp";
         

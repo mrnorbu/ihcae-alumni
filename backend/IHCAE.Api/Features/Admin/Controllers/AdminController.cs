@@ -94,7 +94,7 @@ public class AdminController : ControllerBase
                     Status = u.Status.ToString(),
                     CreatedAt = u.CreatedAt,
                     LastLoginAt = u.LastLoginAt,
-                    Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList()
+                    Roles = u.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role.Name).ToList()
                 })
                 .ToList();
 
@@ -127,7 +127,7 @@ public class AdminController : ControllerBase
     [HttpPost("users/{userId}/ban")]
     [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> BanUser(Guid userId, [FromBody] BanUserRequest? request = null)
+    public async Task<IActionResult> BanUser(int userId, [FromBody] BanUserRequest? request = null)
     {
         try
         {
@@ -162,7 +162,7 @@ public class AdminController : ControllerBase
     [HttpPost("users/{userId}/unban")]
     [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UnbanUser(Guid userId)
+    public async Task<IActionResult> UnbanUser(int userId)
     {
         try
         {
@@ -198,7 +198,7 @@ public class AdminController : ControllerBase
     [HttpPut("users/{userId}/roles")]
     [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateUserRoles(Guid userId, [FromBody] UpdateRolesRequest request)
+    public async Task<IActionResult> UpdateUserRoles(int userId, [FromBody] UpdateRolesRequest request)
     {
         try
         {
@@ -206,7 +206,7 @@ public class AdminController : ControllerBase
             if (user == null)
                 return NotFound(new ErrorResponse { StatusCode = 404, Message = "User not found." });
 
-            var currentRoles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
+            var currentRoles = user.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role.Name).ToList();
             var desiredRoles = request.Roles ?? new List<string>();
 
             // Remove roles that are no longer desired
@@ -245,7 +245,7 @@ public class AdminController : ControllerBase
     [HttpPost("users/{userId}/trigger-password-reset")]
     [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> TriggerPasswordReset(Guid userId)
+    public async Task<IActionResult> TriggerPasswordReset(int userId)
     {
         try
         {
@@ -290,10 +290,11 @@ public class AdminController : ControllerBase
 
             var user = new User
             {
-                Id = Guid.NewGuid(),
+                
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.Email,
+                Phone = request.Phone,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, 12),
                 Status = UserStatus.Approved,
                 EmailVerified = true, // Admin created users are pre-verified
@@ -315,20 +316,22 @@ public class AdminController : ControllerBase
             // Create Alumni Profile if 'Alumni' role is assigned
             if (request.Roles != null && request.Roles.Contains("Alumni"))
             {
-                // Create a record in AlumniDatabase
-                var alumniRecord = new AlumniDatabaseDto
+                // Create a linked record in AlumniDatabase
+                var alumniRecord = new AlumniDatabase
                 {
                     FirstName = request.FirstName,
                     LastName = request.LastName,
-                    Email = request.Email,
+                    Email = request.Email.ToLower(),
                     Phone = request.Phone,
                     Course = request.Course,
-                    Batch = request.Batch
+                    Batch = request.Batch,
+                    MatchedUserId = user.Id
                 };
                 
                 try
                 {
-                    await _alumniImportService.CreateAlumniRecordAsync(alumniRecord);
+                    _context.AlumniDatabase.Add(alumniRecord);
+                    await _context.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -343,6 +346,8 @@ public class AdminController : ControllerBase
                     Bio = "New Alumni member",
                     Location = request.Location,
                     JobTitle = request.JobTitle,
+                    Course = request.Course,
+                    Batch = request.Batch,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -351,6 +356,16 @@ public class AdminController : ControllerBase
             }
 
             _logger.LogInformation("Admin created user {UserId} ({Email}) with roles: {Roles}", user.Id, user.Email, string.Join(", ", request.Roles ?? new List<string>()));
+            
+            // Send email notification to the user
+            try
+            {
+                await _emailService.SendRegistrationApprovedAsync(user.Email, user.FirstName);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogWarning(emailEx, "User {UserId} was created but failed to send welcome email.", user.Id);
+            }
 
             return Ok(new AdminActionResponse
             {
@@ -374,7 +389,7 @@ public class AdminController : ControllerBase
     [HttpPost("users/{userId}/change-password")]
     [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ChangePassword(Guid userId, [FromBody] ChangePasswordRequest request)
+    public async Task<IActionResult> ChangePassword(int userId, [FromBody] ChangePasswordRequest request)
     {
         try
         {
@@ -413,7 +428,7 @@ public class AdminController : ControllerBase
     [HttpPut("users/{userId}/profile")]
     [ProducesResponseType(typeof(AdminActionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateUserProfile(Guid userId, [FromBody] AdminUpdateProfileRequest request)
+    public async Task<IActionResult> UpdateUserProfile(int userId, [FromBody] AdminUpdateProfileRequest request)
     {
         try
         {
@@ -458,6 +473,19 @@ public class AdminController : ControllerBase
             }
 
             await _userRepository.UpdateAsync(user);
+
+            // Sync to AlumniDatabase if linked
+            var alumniRecord = await _context.AlumniDatabase.FirstOrDefaultAsync(a => a.MatchedUserId == userId);
+            if (alumniRecord != null)
+            {
+                if (request.FirstName != null) alumniRecord.FirstName = request.FirstName;
+                if (request.LastName != null) alumniRecord.LastName = request.LastName;
+                if (request.Phone != null) alumniRecord.Phone = request.Phone;
+                if (request.Location != null) alumniRecord.Location = request.Location;
+                if (request.Course != null) alumniRecord.Course = request.Course;
+                if (request.Batch != null) alumniRecord.Batch = request.Batch;
+                await _context.SaveChangesAsync();
+            }
 
             _logger.LogInformation("Admin updated profile for user {UserId}", userId);
 
@@ -687,7 +715,7 @@ public class AdminController : ControllerBase
     [HttpPost("alumni/bulk-generate-accounts")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> BulkGenerateAccounts([FromBody] List<Guid> alumniIds)
+    public async Task<IActionResult> BulkGenerateAccounts([FromBody] List<int> alumniIds)
     {
         try
         {
@@ -721,7 +749,7 @@ public class AdminController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ResendInvitation(Guid id)
+    public async Task<IActionResult> ResendInvitation(int id)
     {
         try
         {
@@ -749,7 +777,7 @@ public class AdminController : ControllerBase
     [HttpPost("alumni/bulk-resend-invitation")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> BulkResendInvitation([FromBody] List<Guid> alumniIds)
+    public async Task<IActionResult> BulkResendInvitation([FromBody] List<int> alumniIds)
     {
         try
         {
@@ -794,7 +822,7 @@ public class AdminController : ControllerBase
     [HttpDelete("alumni/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAlumni(Guid id)
+    public async Task<IActionResult> DeleteAlumni(int id)
     {
         try
         {

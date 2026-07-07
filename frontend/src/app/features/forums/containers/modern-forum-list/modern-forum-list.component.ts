@@ -341,7 +341,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
                             <span>{{ detailMainPost.likeCount }}</span>
                           </button>
                           @if (!selectedTopic.isLocked) {
-                            <button (click)="openReplyForm(detailMainPost.id)"
+                            <button (click)="toggleReplyForm(detailMainPost.id)"
                               class="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-blue-600 transition-colors">
                               <lucide-icon [img]="replyIcon" [size]="13"></lucide-icon>
                               Reply
@@ -400,7 +400,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
                                     <span>{{ reply.likeCount }}</span>
                                   </button>
                                   @if (!selectedTopic.isLocked) {
-                                    <button (click)="openReplyForm(reply.id)"
+                                    <button (click)="toggleReplyForm(reply.id)"
                                       class="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-blue-600 transition-colors">
                                       <lucide-icon [img]="replyIcon" [size]="12"></lucide-icon>
                                       Reply
@@ -686,26 +686,26 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   totalPages = 1;
   pageSize = 15;
   searchQuery = '';
-  selectedAuthorId?: string;
+  selectedAuthorId?: number;
   selectedAuthorName?: string;
   sortBy = 'recent';
   selectedTagFilter?: string;
 
   // Detail state
-  selectedTopicId: string | null = null;
+  selectedTopicId: number | null = null;
   selectedTopic: TopicDetailDto | null = null;
   detailMainPost: PostDto | null = null;
   topicLoading = false;
   topicError: string | null = null;
-  activeReplyForm: string | null = null;
+  activeReplyForm: number | null = null;
   replyText = '';
   replySubmitting = false;
   showDeleteModal = false;
-  replyToDelete: string | null = null;
+  replyToDelete: number | null = null;
 
   // Flagging variables
   showFlagModal = false;
-  postToFlag: string | null = null;
+  postToFlag: number | null = null;
   flagReason = '';
   flagDetails = '';
   flagSubmitting = false;
@@ -789,7 +789,7 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     return this.detailMainPost.replies.filter(r => !nestedIds.has(r.id));
   }
 
-  getNestedReplies(parentId: string): PostDto[] {
+  getNestedReplies(parentId: number): PostDto[] {
     if (!this.detailMainPost) return [];
     const parent = this.detailMainPost.replies.find(r => r.id === parentId);
     const fromParent = parent?.replies ?? [];
@@ -827,16 +827,16 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   onSortChange(s: string): void { this.sortBy = s; this.currentPage = 1; this.loadTopics(); }
   filterByTag(tag: string): void { this.selectedTagFilter = tag; this.currentPage = 1; this.loadTopics(); }
   clearTagFilter(): void { this.selectedTagFilter = undefined; this.currentPage = 1; this.loadTopics(); }
-  filterByAuthor(userId: string, name: string): void { this.selectedAuthorId = userId; this.selectedAuthorName = name; this.currentPage = 1; this.loadTopics(); }
+  filterByAuthor(userId: number, name: string): void { this.selectedAuthorId = userId; this.selectedAuthorName = name; this.currentPage = 1; this.loadTopics(); }
   clearAuthorFilter(): void { this.selectedAuthorId = undefined; this.selectedAuthorName = undefined; this.currentPage = 1; this.loadTopics(); }
   clearAllFilters(): void { this.searchQuery = ''; this.selectedAuthorId = undefined; this.selectedAuthorName = undefined; this.selectedTagFilter = undefined; this.sortBy = 'recent'; this.currentPage = 1; this.loadTopics(); }
   goToPage(page: number): void { this.currentPage = page; this.loadTopics(); }
   previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
   nextPage(): void { if (this.currentPage < this.totalPages) this.goToPage(this.currentPage + 1); }
 
-  onThreadLike(topicId: string): void {
+  onThreadLike(topicId: number): void {
     const topic = this.topics.find(t => t.id === topicId);
-    if (!topic || !topic.mainPostId || topic.mainPostId === '00000000-0000-0000-0000-000000000000') return;
+    if (!topic || !topic.mainPostId) return;
     const wasLiked = topic.isMainPostLikedByCurrentUser;
     topic.isMainPostLikedByCurrentUser = !wasLiked;
     topic.totalLikes += wasLiked ? -1 : 1;
@@ -876,7 +876,7 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
 
   // ── Detail actions ────────────────────────────────────────
 
-  openThread(topicId: string): void {
+  openThread(topicId: number): void {
     this.view = 'detail';
     this.selectedTopicId = topicId;
     this.topicLoading = true;
@@ -908,10 +908,10 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     this.replyText = '';
   }
 
-  openReplyForm(postId: string): void { this.activeReplyForm = postId; this.replyText = ''; }
+  toggleReplyForm(postId: number): void { this.activeReplyForm = postId; this.replyText = ''; }
   closeReplyForm(): void { this.activeReplyForm = null; this.replyText = ''; }
 
-  submitReply(postId: string): void {
+  submitReply(postId: number): void {
     if (!this.replyText.trim() || !this.selectedTopic || !this.detailMainPost) return;
     this.replySubmitting = true;
     this.forumService.createReply(this.selectedTopic.id, postId, this.replyText)
@@ -943,7 +943,7 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     });
   }
 
-  confirmDeleteReply(postId: string): void {
+  confirmDeleteReply(postId: number): void {
     this.replyToDelete = postId;
     this.showDeleteModal = true;
     if (typeof document !== 'undefined') {
@@ -977,7 +977,7 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     });
   }
 
-  openFlagModal(postId: string): void {
+  openFlagModal(postId: number): void {
     this.postToFlag = postId;
     this.flagReason = '';
     this.flagDetails = '';
@@ -1036,13 +1036,16 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     return url.includes('lucide') || url.includes('placeholder') || url.includes('default');
   }
 
-  isCurrentUser(userId: string): boolean {
-    return this.authStore.currentUser?.id === userId;
+  isCurrentUser(userId: number): boolean {
+    return Number(this.authStore.currentUser?.id) === userId;
   }
 
   timeAgo(date: Date | string): string {
     const d = new Date(date);
-    const diffMs = Date.now() - d.getTime();
+    let diffMs = Date.now() - d.getTime();
+    
+    if (diffMs < 0) diffMs = 0;
+    
     const m = Math.floor(diffMs / 60000);
     const h = Math.floor(m / 60);
     const days = Math.floor(h / 24);
@@ -1050,7 +1053,15 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     if (m < 60) return `${m}m ago`;
     if (h < 24) return `${h}h ago`;
     if (days < 7) return `${days}d ago`;
-    return d.toLocaleDateString();
+    
+    return d.toLocaleString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
   }
 }
 

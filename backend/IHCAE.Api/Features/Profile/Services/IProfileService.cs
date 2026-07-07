@@ -17,7 +17,7 @@ public interface IProfileService
     /// <param name="userId">The user ID to retrieve profile for</param>
     /// <returns>The user's complete profile data</returns>
     /// <exception cref="KeyNotFoundException">Thrown when user is not found</exception>
-    Task<ProfileDto> GetProfileAsync(Guid userId);
+    Task<ProfileDto> GetProfileAsync(int userId);
 
     /// <summary>
     /// Updates the profile information for the specified user.
@@ -28,7 +28,7 @@ public interface IProfileService
     /// <param name="request">The profile update request containing new values</param>
     /// <returns>The updated profile data</returns>
     /// <exception cref="KeyNotFoundException">Thrown when user is not found</exception>
-    Task<ProfileDto> UpdateProfileAsync(Guid userId, UpdateProfileRequest request);
+    Task<ProfileDto> UpdateProfileAsync(int userId, UpdateProfileRequest request);
 
     /// <summary>
     /// Updates the profile image URL for the specified user.
@@ -39,6 +39,6 @@ public interface IProfileService
     /// <param name="imageUrl">The URL to the uploaded image</param>
     /// <returns>The updated profile data with new image URL</returns>
     /// <exception cref="KeyNotFoundException">Thrown when user is not found</exception>
-    Task<ProfileDto> UpdateProfileImageAsync(Guid userId, string imageUrl);
+    Task<ProfileDto> UpdateProfileImageAsync(int userId, string imageUrl);
 }
 

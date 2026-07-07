@@ -70,7 +70,7 @@ public class EventManagementController : ControllerBase
             var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var eventDto = await _eventService.CreateEventAsync(userId, request, isAdmin);
-            return CreatedAtRoute("GetEventById", new { controller = "Events", id = eventDto.Id }, eventDto);
+            return CreatedAtRoute("GetEventBySlug", new { slug = eventDto.Slug }, eventDto);
         }
         catch (ArgumentException ex)
         {
@@ -93,7 +93,7 @@ public class EventManagementController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventRequest request)
+    public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateEventRequest request)
     {
         try
         {
@@ -138,7 +138,7 @@ public class EventManagementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteEvent(Guid id)
+    public async Task<IActionResult> DeleteEvent(int id)
     {
         try
         {
@@ -197,7 +197,7 @@ public class EventManagementController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ApproveEvent(Guid id)
+    public async Task<IActionResult> ApproveEvent(int id)
     {
         try
         {
@@ -231,7 +231,7 @@ public class EventManagementController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RejectEvent(Guid id, [FromBody] RejectContentRequest request)
+    public async Task<IActionResult> RejectEvent(int id, [FromBody] RejectContentRequest request)
     {
         try
         {
@@ -262,10 +262,10 @@ public class EventManagementController : ControllerBase
         }
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token");
         }

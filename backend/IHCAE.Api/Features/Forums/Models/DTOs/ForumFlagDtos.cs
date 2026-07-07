@@ -37,13 +37,13 @@ public class ResolveFlagRequest
 /// </summary>
 public class ForumFlagDto
 {
-    public Guid Id { get; set; }
-    public Guid PostId { get; set; }
+    public int Id { get; set; }
+    public int PostId { get; set; }
     public string PostContent { get; set; } = string.Empty;
     public string TopicTitle { get; set; } = string.Empty;
-    public Guid TopicId { get; set; }
+    public int TopicId { get; set; }
     public string FlaggedByName { get; set; } = string.Empty;
-    public Guid FlaggedById { get; set; }
+    public int FlaggedById { get; set; }
     public string Reason { get; set; } = string.Empty;
     public string? Details { get; set; }
     public string Status { get; set; } = string.Empty;
@@ -54,5 +54,5 @@ public class ForumFlagDto
 
     // Post author info
     public string PostAuthorName { get; set; } = string.Empty;
-    public Guid PostAuthorId { get; set; }
+    public int PostAuthorId { get; set; }
 }

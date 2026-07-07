@@ -82,7 +82,7 @@ public class FileUploadController : ControllerBase
                 return BadRequest(new ErrorResponse { Message = "No file provided" });
             }
 
-            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
             var imageUrl = await _fileUploadService.UploadProfileImageAsync(file, userId);
 
             return Ok(new FileUploadResponse

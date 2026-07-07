@@ -13,7 +13,7 @@ public class DiscussionTopic
     /// Unique identifier for the topic (UUID format)
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Title of the discussion topic
@@ -23,10 +23,17 @@ public class DiscussionTopic
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
+    /// URL-friendly slug
+    /// </summary>
+    [Required]
+    [MaxLength(255)]
+    public string Slug { get; set; } = string.Empty;
+
+    /// <summary>
     /// ID of the user who created this topic
     /// </summary>
     [Required]
-    public Guid CreatedById { get; set; }
+    public int CreatedById { get; set; }
 
     /// <summary>
     /// Navigation property to the user who created this topic

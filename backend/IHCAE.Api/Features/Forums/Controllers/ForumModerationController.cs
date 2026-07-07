@@ -37,7 +37,7 @@ public class ForumModerationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> DeleteTopic(Guid topicId)
+    public async Task<IActionResult> DeleteTopic(int topicId)
     {
         try
         {
@@ -71,7 +71,7 @@ public class ForumModerationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> TogglePinTopic(Guid topicId)
+    public async Task<IActionResult> TogglePinTopic(int topicId)
     {
         try
         {
@@ -102,7 +102,7 @@ public class ForumModerationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> ToggleLockTopic(Guid topicId)
+    public async Task<IActionResult> ToggleLockTopic(int topicId)
     {
         try
         {
@@ -133,7 +133,7 @@ public class ForumModerationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> DeletePost(Guid postId, [FromBody] DeletePostRequest? request = null)
+    public async Task<IActionResult> DeletePost(int postId, [FromBody] DeletePostRequest? request = null)
     {
         try
         {
@@ -171,7 +171,7 @@ public class ForumModerationController : ControllerBase
     [ProducesResponseType(typeof(PostDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdatePost(Guid postId, [FromBody] UpdatePostRequest request)
+    public async Task<IActionResult> UpdatePost(int postId, [FromBody] UpdatePostRequest request)
     {
         try
         {
@@ -276,7 +276,7 @@ public class ForumModerationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RestorePost(Guid postId)
+    public async Task<IActionResult> RestorePost(int postId)
     {
         try
         {
@@ -309,7 +309,7 @@ public class ForumModerationController : ControllerBase
     [HttpPut("flags/{flagId}/resolve")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ResolveFlag(Guid flagId, [FromBody] ResolveFlagRequest request)
+    public async Task<IActionResult> ResolveFlag(int flagId, [FromBody] ResolveFlagRequest request)
     {
         try
         {
@@ -345,10 +345,10 @@ public class ForumModerationController : ControllerBase
     /// <summary>
     /// Gets the current user ID from the JWT token.
     /// </summary>
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token.");
         }

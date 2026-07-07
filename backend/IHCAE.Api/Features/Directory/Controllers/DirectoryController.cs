@@ -120,7 +120,7 @@ public class DirectoryController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAlumniDetail([FromRoute] Guid userId)
+    public async Task<IActionResult> GetAlumniDetail([FromRoute] int userId)
     {
         try
         {

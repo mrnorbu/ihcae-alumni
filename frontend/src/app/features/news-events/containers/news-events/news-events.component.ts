@@ -7,6 +7,7 @@ import { HeaderComponent, FooterComponent } from '../../../../shared/components'
 import { NewsService } from '../../services/news.service';
 import { EventsService } from '../../services/events.service';
 import type { NewsArticleSummary, EventSummary } from '../../models';
+import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
 
 /**
  * News & Events Component
@@ -20,7 +21,7 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
 @Component({
   selector: 'app-news-events',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
@@ -58,7 +59,7 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
                   </div>
                 </div>
               </div>
-              <button class="btn-primary btn-sm md:self-center" [routerLink]="['/events', featuredEvent()!.id]">
+              <button class="btn-primary btn-sm md:self-center" [routerLink]="['/events', featuredEvent()!.slug]">
                 Register Now
               </button>
             </div>
@@ -98,12 +99,12 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
               } @else {
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                   @for (article of news(); track article.id; let i = $index) {
-                    <div class="group cursor-pointer py-3 border-b border-neutral-200/60 hover:bg-neutral-50/30 px-2 rounded-lg transition-colors" [routerLink]="['/news', article.id]">
+                    <div class="group cursor-pointer py-3 border-b border-neutral-200/60 hover:bg-neutral-50/30 px-2 rounded-lg transition-colors" [routerLink]="['/news', article.slug]">
                       <!-- Article Image -->
                       <div class="h-40 rounded overflow-hidden relative mb-2 relative bg-neutral-100 flex items-center justify-center">
                         @if (article.thumbnailUrl) {
                           <img
-                            [src]="article.thumbnailUrl"
+                            [src]="article.thumbnailUrl | appImageUrl"
                             [alt]="article.title"
                             class="w-full h-full object-cover"
                             (error)="onImageError($event)"
@@ -159,7 +160,7 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
                   @for (event of events(); track event.id) {
                     <div class="group cursor-pointer py-3 border-b border-neutral-200/60 hover:bg-neutral-50/30 px-2 rounded-lg transition-colors">
                       <div class="flex items-start justify-between gap-4">
-                        <div class="flex-1 min-w-0" [routerLink]="['/events', event.id]">
+                        <div class="flex-1 min-w-0 cursor-pointer" [routerLink]="['/events', event.slug]">
                           <div class="flex items-center gap-2 mb-1">
                             <h3 class="text-base md:text-lg font-bold text-neutral-900 group-hover:text-primary-700 transition-colors leading-snug truncate">{{ event.title }}</h3>
                             @if (event.category) {
@@ -200,10 +201,10 @@ import type { NewsArticleSummary, EventSummary } from '../../models';
                           }
                         </div>
                         <div class="flex items-center gap-2 flex-shrink-0 self-center">
-                          <button class="btn-primary btn-sm" [routerLink]="['/events', event.id]">
+                          <button class="btn-primary btn-sm" [routerLink]="['/events', event.slug]">
                             Register
                           </button>
-                          <button class="btn-outline btn-sm" [routerLink]="['/events', event.id]">
+                          <button class="btn-outline btn-sm" [routerLink]="['/events', event.slug]">
                             Details
                           </button>
                         </div>
@@ -323,12 +324,11 @@ export class NewsEventsComponent implements OnInit {
 
   getNewsIcon(category: string): any {
     const iconMap: { [key: string]: any } = {
-      'Program Updates': this.sparklesIcon,
-      'Alumni News': this.awardIcon,
-      'Conservation': this.mountainIcon,
-      'Facilities': this.buildingIcon,
-      'Partnerships': this.users2Icon,
-      'Training': this.bookOpenIcon,
+      'General News': this.newspaperIcon,
+      'Announcement': this.sparklesIcon,
+      'Success Story': this.awardIcon,
+      'Achievement': this.mountainIcon,
+      'Alumni Spotlight': this.users2Icon,
       'default': this.newspaperIcon
     };
     return iconMap[category] || iconMap['default'];

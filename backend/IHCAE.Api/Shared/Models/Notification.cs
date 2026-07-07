@@ -13,13 +13,13 @@ public class Notification
     /// Unique identifier for the notification.
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The user ID of the recipient of this notification.
     /// </summary>
     [Required]
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// Navigation property to the recipient.

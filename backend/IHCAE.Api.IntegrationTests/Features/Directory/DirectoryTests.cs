@@ -29,7 +29,7 @@ public class DirectoryTests : IntegrationTestBase
         return result!.Token;
     }
 
-    private async Task SeedAlumniRoleAndUserAsync(AppDbContext context, Guid userId, string email, string password, string firstName, string lastName)
+    private async Task SeedAlumniRoleAndUserAsync(AppDbContext context, int userId, string email, string password, string firstName, string lastName)
     {
         var alumniRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.Alumni);
         if (alumniRole == null)
@@ -77,7 +77,7 @@ public class DirectoryTests : IntegrationTestBase
     public async Task GetAlumniDirectory_WithValidToken_ReturnsPaginatedList()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var email = "directoryviewer@example.com";
         var password = "Password123!";
 
@@ -87,7 +87,7 @@ public class DirectoryTests : IntegrationTestBase
             await SeedAlumniRoleAndUserAsync(context, userId, email, password, "Viewer", "User");
             
             // Seed a second user to appear in directory
-            await SeedAlumniRoleAndUserAsync(context, Guid.NewGuid(), "anotheralumni@example.com", "Password123!", "Another", "Alumni");
+            await SeedAlumniRoleAndUserAsync(context, Random.Shared.Next(1, 1000000), "anotheralumni@example.com", "Password123!", "Another", "Alumni");
         }
 
         var token = await GetAuthTokenAsync(email, password);
@@ -109,11 +109,11 @@ public class DirectoryTests : IntegrationTestBase
     public async Task GetAlumniDetail_WithValidToken_ReturnsDetail()
     {
         // Arrange
-        var viewerUserId = Guid.NewGuid();
+        var viewerUserId = Random.Shared.Next(1, 1000000);
         var viewerEmail = "detailviewer@example.com";
         var password = "Password123!";
         
-        var targetUserId = Guid.NewGuid();
+        var targetUserId = Random.Shared.Next(1, 1000000);
         var targetEmail = "targetalumni@example.com";
 
         using (var scope = _factory.Services.CreateScope())

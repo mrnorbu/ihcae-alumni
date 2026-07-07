@@ -133,7 +133,12 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                     <!-- Title -->
                     <div class="mb-6">
                       <label class="input-label">Title <span class="text-error-600">*</span></label>
-                      <input formControlName="title" type="text" class="input-field" placeholder="Enter title">
+                      <input formControlName="title" type="text" class="input-field" placeholder="Enter title"
+                             [class.border-red-300]="newsForm.get('title')?.invalid && newsForm.get('title')?.touched"
+                             [class.ring-red-100]="newsForm.get('title')?.invalid && newsForm.get('title')?.touched">
+                      @if (newsForm.get('title')?.invalid && newsForm.get('title')?.touched) {
+                        <p class="mt-1.5 text-[11px] font-medium text-red-500">• Title is required (minimum 10 characters)</p>
+                      }
                     </div>
 
                     <!-- Category (only for news, not success story) -->
@@ -150,8 +155,17 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
 
                     <div class="mb-6">
                       <label class="input-label">Content <span class="text-error-600">*</span></label>
-                      <textarea formControlName="content" rows="20" class="input-field min-h-[500px]" placeholder="Write your content here..."></textarea>
-                      <p class="text-xs text-neutral-500 mt-1">{{ newsForm.get('content')?.value?.length || 0 }} characters</p>
+                      <textarea formControlName="content" rows="20" class="input-field min-h-[500px]" placeholder="Write your content here..."
+                                [class.border-red-300]="newsForm.get('content')?.invalid && newsForm.get('content')?.touched"
+                                [class.ring-red-100]="newsForm.get('content')?.invalid && newsForm.get('content')?.touched"></textarea>
+                      <div class="flex justify-between mt-1.5 text-[11px] text-neutral-400 font-medium tracking-wide">
+                        @if (newsForm.get('content')?.invalid && newsForm.get('content')?.touched) {
+                          <p class="text-red-500">Content is required (minimum 100 characters)</p>
+                        } @else {
+                          <p>Minimum 100 characters</p>
+                        }
+                        <p>{{ newsForm.get('content')?.value?.length || 0 }} characters</p>
+                      </div>
                     </div>
 
                     <!-- Image Upload -->
@@ -213,24 +227,38 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                     <!-- Title -->
                     <div class="mb-6">
                       <label class="input-label">Event Title <span class="text-error-600">*</span></label>
-                      <input formControlName="title" type="text" class="input-field">
+                      <input formControlName="title" type="text" class="input-field"
+                             [class.border-red-300]="eventForm.get('title')?.invalid && eventForm.get('title')?.touched"
+                             [class.ring-red-100]="eventForm.get('title')?.invalid && eventForm.get('title')?.touched">
+                      @if (eventForm.get('title')?.invalid && eventForm.get('title')?.touched) {
+                        <p class="mt-1.5 text-[11px] font-medium text-red-500">• Title is required</p>
+                      }
                     </div>
 
                     <!-- Description -->
                     <div class="mb-6">
                       <label class="input-label">Description <span class="text-error-600">*</span></label>
-                      <textarea formControlName="description" rows="6" class="input-field"></textarea>
+                      <textarea formControlName="description" rows="6" class="input-field"
+                                [class.border-red-300]="eventForm.get('description')?.invalid && eventForm.get('description')?.touched"
+                                [class.ring-red-100]="eventForm.get('description')?.invalid && eventForm.get('description')?.touched"></textarea>
+                      @if (eventForm.get('description')?.invalid && eventForm.get('description')?.touched) {
+                        <p class="mt-1.5 text-[11px] font-medium text-red-500">• Description is required</p>
+                      }
                     </div>
 
                     <!-- Date and Location Row -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label class="input-label">Event Date <span class="text-error-600">*</span></label>
-                        <input formControlName="eventDate" type="datetime-local" class="input-field">
+                        <input formControlName="eventDate" type="datetime-local" class="input-field"
+                               [class.border-red-300]="eventForm.get('eventDate')?.invalid && eventForm.get('eventDate')?.touched"
+                               [class.ring-red-100]="eventForm.get('eventDate')?.invalid && eventForm.get('eventDate')?.touched">
                       </div>
                       <div>
                         <label class="input-label">Location <span class="text-error-600">*</span></label>
-                        <input formControlName="location" type="text" class="input-field">
+                        <input formControlName="location" type="text" class="input-field"
+                               [class.border-red-300]="eventForm.get('location')?.invalid && eventForm.get('location')?.touched"
+                               [class.ring-red-100]="eventForm.get('location')?.invalid && eventForm.get('location')?.touched">
                       </div>
                     </div>
 
@@ -247,6 +275,26 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                       <div>
                         <label class="input-label">Capacity (optional)</label>
                         <input formControlName="capacity" type="number" class="input-field" placeholder="Leave empty for unlimited">
+                      </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-6">
+                      <label class="input-label">Image</label>
+                      <div class="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
+                        @if (imagePreview()) {
+                          <div class="relative">
+                            <img [src]="imagePreview() | appImageUrl" alt="Preview" class="max-h-64 mx-auto rounded-lg mb-4">
+                            <button type="button" (click)="removeImage()" class="btn-outline btn-sm">Remove</button>
+                          </div>
+                        } @else {
+                          <lucide-icon [img]="imageIconLucide" [size]="48" class="text-neutral-400 mx-auto mb-4"></lucide-icon>
+                          <label class="btn-primary cursor-pointer inline-flex items-center gap-2">
+                            <lucide-icon [img]="uploadIcon" [size]="18"></lucide-icon>
+                            Choose Image
+                            <input type="file" class="hidden" accept="image/*" (change)="onImageSelected($event)">
+                          </label>
+                        }
                       </div>
                     </div>
 
@@ -310,7 +358,7 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                           <div class="flex-1">
                             <div class="flex items-center gap-3 mb-2 flex-wrap">
                               <h3 class="text-lg font-semibold text-neutral-900">{{ item.title }}</h3>
-                              @if (item.status === 'Draft') {
+                              @if ($any(item.status) === 'Draft' || $any(item.status) === 0) {
                                 @if (item.rejectionReason) {
                                   <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100 flex items-center gap-1">
                                     <lucide-icon [img]="alertIcon" [size]="12"></lucide-icon>
@@ -320,17 +368,17 @@ import type { NewsArticleSummary, EventSummary, NewsCategory, EventCategory } fr
                                   <span class="badge badge-secondary">Draft</span>
                                 }
                               }
-                              @if (item.status === 'PendingReview') {
+                              @if ($any(item.status) === 'PendingReview' || $any(item.status) === 1) {
                                 <span class="badge badge-warning">Pending Review</span>
                               }
-                              @if (item.status === 'Published') {
+                              @if ($any(item.status) === 'Published' || $any(item.status) === 2) {
                                 <span class="badge badge-success">Published</span>
                               }
                             </div>
                             <p class="text-neutral-600 mb-3 line-clamp-2">
                               {{ getItemDescription(item) }}
                             </p>
-                            @if (item.status === 'Draft' && item.rejectionReason) {
+                            @if (($any(item.status) === 'Draft' || $any(item.status) === 0) && item.rejectionReason) {
                               <div class="mt-2.5 mb-3 text-xs text-red-750 bg-red-50/50 border border-red-100 rounded-lg p-3">
                                 <strong class="block text-red-800 mb-0.5 font-bold uppercase tracking-wider text-[10px]">Feedback from Administrator</strong>
                                 {{ item.rejectionReason }}
@@ -631,14 +679,41 @@ export class ContentManagementComponent implements OnInit {
   }
 
   submitEvent(): void {
-    if (this.eventForm.invalid) return;
-
+    if (this.eventForm.invalid || this.isSubmitting()) return;
     this.isSubmitting.set(true);
+
+    const file = this.selectedFile();
+    if (file) {
+      this.fileUploadService.uploadContentImage(file, 'event').subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.submitEventWithImages(response.imageUrl, response.thumbnailUrl);
+          } else {
+            this.isSubmitting.set(false);
+            alert('Image upload failed: ' + response.message);
+          }
+        },
+        error: (err) => {
+          console.error('Image upload error:', err);
+          this.isSubmitting.set(false);
+          alert('Failed to upload image: ' + (err.error?.message || 'Please try again.'));
+        }
+      });
+    } else {
+      this.submitEventWithImages('', '');
+    }
+  }
+
+  private submitEventWithImages(imageUrl: string, thumbnailUrl: string): void {
     const formValue = this.eventForm.value;
+    const finalImageUrl = this.imagePreview() ? (imageUrl || this.editingItem()?.imageUrl) : undefined;
+    const finalThumbnailUrl = this.imagePreview() ? (thumbnailUrl || this.editingItem()?.thumbnailUrl) : undefined;
     
     const request = {
       ...formValue,
       eventDate: new Date(formValue.eventDate),
+      imageUrl: finalImageUrl,
+      thumbnailUrl: finalThumbnailUrl,
       publish: this.isAdmin()
     };
 
@@ -658,6 +733,7 @@ export class ContentManagementComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error submitting event:', err);
+        alert(`Error: ${err.error?.message || 'Failed to submit event. Please try again.'}`);
         this.isSubmitting.set(false);
       }
     });
@@ -697,13 +773,41 @@ export class ContentManagementComponent implements OnInit {
   }
 
   saveEventAsDraft(): void {
-    if (this.eventForm.invalid) return;
+    if (this.eventForm.invalid || this.isSubmitting()) return;
     this.isSubmitting.set(true);
+
+    const file = this.selectedFile();
+    if (file) {
+      this.fileUploadService.uploadContentImage(file, 'event').subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.saveEventDraftWithImages(response.imageUrl, response.thumbnailUrl);
+          } else {
+            this.isSubmitting.set(false);
+            alert('Image upload failed: ' + response.message);
+          }
+        },
+        error: (err) => {
+          console.error('Image upload error:', err);
+          this.isSubmitting.set(false);
+          alert('Failed to upload image: ' + (err.error?.message || 'Please try again.'));
+        }
+      });
+    } else {
+      this.saveEventDraftWithImages('', '');
+    }
+  }
+
+  private saveEventDraftWithImages(imageUrl: string, thumbnailUrl: string): void {
     const formValue = this.eventForm.value;
+    const finalImageUrl = this.imagePreview() ? (imageUrl || this.editingItem()?.imageUrl) : undefined;
+    const finalThumbnailUrl = this.imagePreview() ? (thumbnailUrl || this.editingItem()?.thumbnailUrl) : undefined;
     
     const request = {
       ...formValue,
       eventDate: new Date(formValue.eventDate),
+      imageUrl: finalImageUrl,
+      thumbnailUrl: finalThumbnailUrl,
       publish: false
     };
 
@@ -723,6 +827,7 @@ export class ContentManagementComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error saving event draft:', err);
+        alert(`Error: ${err.error?.message || 'Failed to save event draft. Please try again.'}`);
         this.isSubmitting.set(false);
       }
     });
@@ -791,7 +896,7 @@ export class ContentManagementComponent implements OnInit {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  deleteItem(id: string): void {
+  deleteItem(id: number): void {
     if (!confirm('Are you sure you want to delete this item?')) return;
     
     const apiCall = this.activeTab() === 'events'
@@ -829,7 +934,7 @@ export class ContentManagementComponent implements OnInit {
   }
 
   viewArticleDetail(item: any): void {
-    const path = this.activeTab() === 'events' ? `/events/${item.id}` : `/news/${item.id}`;
+    const path = this.activeTab() === 'events' ? `/events/${item.slug}` : `/news/${item.slug}`;
     this.router.navigate([path]);
   }
 

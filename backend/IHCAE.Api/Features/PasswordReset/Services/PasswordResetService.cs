@@ -63,7 +63,7 @@ public class PasswordResetService : IPasswordResetService
 
             var resetToken = new PasswordResetToken
             {
-                Id = Guid.NewGuid(),
+                
                 UserId = user.Id,
                 TokenHash = tokenHash,
                 CreatedAt = DateTime.UtcNow,
@@ -172,7 +172,7 @@ public class PasswordResetService : IPasswordResetService
     /// Invalidates all unused password reset tokens for a user.
     /// </summary>
     /// <param name="userId">The user ID</param>
-    private async Task InvalidateExistingTokensAsync(Guid userId)
+    private async Task InvalidateExistingTokensAsync(int userId)
     {
         var existingTokens = await _context.PasswordResetTokens
             .Where(rt => rt.UserId == userId && !rt.IsUsed)

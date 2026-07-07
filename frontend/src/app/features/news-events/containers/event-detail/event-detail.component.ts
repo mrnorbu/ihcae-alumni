@@ -205,7 +205,7 @@ import type { Event, EventSummary } from '../../models';
                     <div class="divide-y divide-neutral-200/60">
                       @for (upEvent of upcomingEvents(); track upEvent.id) {
                         <div 
-                          [routerLink]="['/events', upEvent.id]"
+                          [routerLink]="['/events', upEvent.slug]"
                           class="group cursor-pointer py-3 first:pt-0 last:pb-0 block transition-colors"
                         >
                           <span class="text-[9px] font-semibold uppercase tracking-wider text-primary-700 block mb-0.5">
@@ -275,9 +275,9 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
-  private loadEvent(id: string): void {
+  private loadEvent(slug: string): void {
     this.isLoading.set(true);
-    this.eventsService.getEventById(id).subscribe({
+    this.eventsService.getEventBySlug(slug).subscribe({
       next: (event) => {
         this.event.set(event);
         this.isLoading.set(false);
@@ -295,7 +295,7 @@ export class EventDetailComponent implements OnInit {
       next: (result) => {
         // Exclude current event and show at most 3
         const filtered = result.items
-          .filter(item => item.id !== currentId)
+          .filter(item => item.slug !== currentId)
           .slice(0, 3);
         this.upcomingEvents.set(filtered);
       },
@@ -317,7 +317,7 @@ export class EventDetailComponent implements OnInit {
 
   openRegistrationForm(): void {
     if (this.isEventFull()) return;
-    this.router.navigate(['/events', this.event()!.id, 'register']);
+    this.router.navigate(['/events', this.event()!.slug, 'register']);
   }
 
   formatEventDate(date: Date | undefined): string {

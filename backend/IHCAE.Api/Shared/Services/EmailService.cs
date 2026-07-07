@@ -174,7 +174,7 @@ public class EmailService : IEmailService
     /// <summary>
     /// Sends an admin notification that a new event has been submitted.
     /// </summary>
-    public async Task SendEventSubmittedNotificationAsync(string to, string eventTitle, Guid eventId)
+    public async Task SendEventSubmittedNotificationAsync(string to, string eventTitle, int eventId)
     {
         var subject = "New Event Pending Review";
         var htmlBody = GetEventSubmittedTemplate(eventTitle, eventId);
@@ -207,7 +207,7 @@ public class EmailService : IEmailService
     /// <summary>
     /// Sends an admin notification that a new article has been submitted.
     /// </summary>
-    public async Task SendNewsSubmittedNotificationAsync(string to, string articleTitle, Guid articleId)
+    public async Task SendNewsSubmittedNotificationAsync(string to, string articleTitle, int articleId)
     {
         var subject = "New Content Pending Review";
         var htmlBody = GetNewsSubmittedTemplate(articleTitle, articleId);
@@ -434,7 +434,7 @@ public class EmailService : IEmailService
         return WrapInLayout("Content Moderation Update", content);
     }
 
-    private static string GetEventSubmittedTemplate(string eventTitle, Guid eventId)
+    private static string GetEventSubmittedTemplate(string eventTitle, int eventId)
     {
         var content = $@"
             <h2>Hello Administrator,</h2>
@@ -479,7 +479,7 @@ public class EmailService : IEmailService
         return WrapInLayout("Event Registration Confirmed", content);
     }
 
-    private static string GetNewsSubmittedTemplate(string articleTitle, Guid articleId)
+    private static string GetNewsSubmittedTemplate(string articleTitle, int articleId)
     {
         var content = $@"
             <h2>Hello Administrator,</h2>

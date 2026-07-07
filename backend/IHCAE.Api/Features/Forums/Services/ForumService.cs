@@ -39,7 +39,7 @@ public class ForumService : IForumService
     /// Gets a paginated list of discussion topics sorted by recent activity.
     /// Pinned topics appear first, then sorted by most recent post activity.
     /// </summary>
-    public async Task<PaginatedResult<TopicSummaryDto>> GetTopicsAsync(Guid currentUserId, int page = 1, int pageSize = 20, List<string>? tags = null, string? search = null, Guid? authorId = null, string sortBy = "recent")
+    public async Task<PaginatedResult<TopicSummaryDto>> GetTopicsAsync(int currentUserId, int page = 1, int pageSize = 20, List<string>? tags = null, string? search = null, int? authorId = null, string sortBy = "recent")
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 100) pageSize = 20;
@@ -125,7 +125,7 @@ public class ForumService : IForumService
                 IsLocked = t.IsLocked,
                 CreatedAt = t.CreatedAt,
                 TotalLikes = 0, // Will be calculated separately to avoid loading all likes
-                MainPostId = Guid.Empty, // Will be set separately
+                MainPostId = 0, // Will be set separately
                 IsMainPostLikedByCurrentUser = false, // Will be set separately
                 Tags = t.TopicTags.Select(tt => new TagDto
                 {
@@ -175,7 +175,7 @@ public class ForumService : IForumService
     /// Gets a single topic with all its posts in nested structure.
     /// Includes author info, like counts, and nested replies (1 level deep).
     /// </summary>
-    public async Task<TopicDetailDto> GetTopicByIdAsync(Guid topicId, Guid currentUserId)
+    public async Task<TopicDetailDto> GetTopicByIdAsync(int topicId, int currentUserId)
     {
         var topic = await _context.DiscussionTopics
             .Include(t => t.CreatedBy)
@@ -215,7 +215,7 @@ public class ForumService : IForumService
                 .ThenInclude(pp => pp!.Author)
                     .ThenInclude(a => a.AlumniProfile)
             .Where(p => p.TopicId == topicId && p.ParentPostId.HasValue && !p.IsDeleted)
-            .OrderBy(p => p.CreatedAt) // Chronological order
+            .OrderByDescending(p => p.CreatedAt) // Chronological order (newest first)
             .ToListAsync();
         
         _logger.LogInformation("Loaded {ReplyCount} replies for topic {TopicId}", allReplies.Count, topicId);
@@ -260,11 +260,11 @@ public class ForumService : IForumService
     /// Creates a new discussion topic with an initial post.
     /// The first post becomes the topic starter and cannot be deleted separately.
     /// </summary>
-    public async Task<TopicDetailDto> CreateTopicAsync(Guid userId, string title, string content, List<string>? tags = null)
+    public async Task<TopicDetailDto> CreateTopicAsync(int userId, string title, string content, List<string>? tags = null)
     {
         var topic = new DiscussionTopic
         {
-            Id = Guid.NewGuid(),
+            
             Title = title,
             CreatedById = userId,
             CreatedAt = DateTime.UtcNow
@@ -272,9 +272,9 @@ public class ForumService : IForumService
 
         var firstPost = new ForumPost
         {
-            Id = Guid.NewGuid(),
+            
             Content = content,
-            TopicId = topic.Id,
+            Topic = topic,
             AuthorId = userId,
             CreatedAt = DateTime.UtcNow
         };
@@ -291,7 +291,7 @@ public class ForumService : IForumService
             {
                 var topicTag = new DiscussionTopicTag
                 {
-                    TopicId = topic.Id,
+                    Topic = topic,
                     TagId = tag.Id
                 };
                 _context.DiscussionTopicTags.Add(topicTag);
@@ -311,7 +311,7 @@ public class ForumService : IForumService
     /// Supports nested replies (1 level deep) via parentPostId parameter.
     /// Prevents posting to locked topics.
     /// </summary>
-    public async Task<PostDto> CreatePostAsync(Guid topicId, Guid userId, string content, Guid? parentPostId = null)
+    public async Task<PostDto> CreatePostAsync(int topicId, int userId, string content, int? parentPostId = null, List<int>? mentionedUserIds = null)
     {
         var topic = await _context.DiscussionTopics
             .FirstOrDefaultAsync(t => t.Id == topicId);
@@ -344,7 +344,7 @@ public class ForumService : IForumService
 
         var post = new ForumPost
         {
-            Id = Guid.NewGuid(),
+            
             Content = content,
             TopicId = topicId,
             AuthorId = userId,
@@ -391,7 +391,7 @@ public class ForumService : IForumService
 
                     var notification = new Notification
                     {
-                        Id = Guid.NewGuid(),
+                        
                         UserId = parentAuthor.Id,
                         Title = "New reply to your post",
                         Message = $"{authorName} replied to your post in: {createdPost.Topic.Title}",
@@ -419,7 +419,7 @@ public class ForumService : IForumService
 
                     var notification = new Notification
                     {
-                        Id = Guid.NewGuid(),
+                        
                         UserId = topicCreator.Id,
                         Title = "New reply to your topic",
                         Message = $"{authorName} replied to your topic: {createdPost.Topic.Title}",
@@ -431,6 +431,34 @@ public class ForumService : IForumService
                     _context.Notifications.Add(notification);
                 }
             }
+
+            // Generate notifications for mentioned users
+            if (mentionedUserIds != null && mentionedUserIds.Any())
+            {
+                var mentionedUsers = await _context.Users
+                    .Where(u => mentionedUserIds.Contains(u.Id) && u.Id != userId)
+                    .ToListAsync();
+
+                foreach (var mentionedUser in mentionedUsers)
+                {
+                    // Optionally send an email:
+                    // await _emailService.SendMentionNotificationAsync(mentionedUser.Email, mentionedUser.FirstName, createdPost.Topic.Title, authorName, postLink);
+
+                    var mentionNotification = new Notification
+                    {
+                        
+                        UserId = mentionedUser.Id,
+                        Title = "You were mentioned in a post",
+                        Message = $"{authorName} mentioned you in a post in: {createdPost.Topic.Title}",
+                        Type = "Mention",
+                        Link = $"/forums/topic/{topicId}",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Notifications.Add(mentionNotification);
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
 
@@ -440,7 +468,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Adds a like to a post.
     /// </summary>
-    public async Task<bool> LikePostAsync(Guid postId, Guid userId)
+    public async Task<bool> LikePostAsync(int postId, int userId)
     {
         var post = await _context.ForumPosts.FirstOrDefaultAsync(p => p.Id == postId);
         if (post == null)
@@ -474,7 +502,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Removes a like from a post.
     /// </summary>
-    public async Task<bool> UnlikePostAsync(Guid postId, Guid userId)
+    public async Task<bool> UnlikePostAsync(int postId, int userId)
     {
         var like = await _context.PostLikes
             .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == userId);
@@ -495,7 +523,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Deletes an entire topic and all its posts (Admin only).
     /// </summary>
-    public async Task<bool> DeleteTopicAsync(Guid topicId)
+    public async Task<bool> DeleteTopicAsync(int topicId)
     {
         var topic = await _context.DiscussionTopics
             .FirstOrDefaultAsync(t => t.Id == topicId);
@@ -516,7 +544,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Soft deletes a post (Admin only).
     /// </summary>
-    public async Task<bool> DeletePostAsync(Guid postId, Guid deletedBy, string reason)
+    public async Task<bool> DeletePostAsync(int postId, int deletedBy, string reason)
     {
         var post = await _context.ForumPosts
             .Include(p => p.Replies)
@@ -553,7 +581,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Updates the content of a post (Admin only).
     /// </summary>
-    public async Task<PostDto> UpdatePostAsync(Guid postId, string content, Guid currentUserId)
+    public async Task<PostDto> UpdatePostAsync(int postId, string content, int currentUserId)
     {
         var post = await _context.ForumPosts
             .Include(p => p.Author)
@@ -579,7 +607,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Soft deletes a post (user can only delete their own posts).
     /// </summary>
-    public async Task<bool> DeleteOwnPostAsync(Guid postId, Guid userId)
+    public async Task<bool> DeleteOwnPostAsync(int postId, int userId)
     {
         var post = await _context.ForumPosts
             .FirstOrDefaultAsync(p => p.Id == postId);
@@ -609,7 +637,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Deletes a topic (soft delete, admin only).
     /// </summary>
-    public async Task<bool> DeleteTopicAsync(Guid topicId, Guid adminUserId)
+    public async Task<bool> DeleteTopicAsync(int topicId, int adminUserId)
     {
         var topic = await _context.DiscussionTopics
             .Include(t => t.CreatedBy)
@@ -639,7 +667,7 @@ public class ForumService : IForumService
 
             var notification = new Notification
             {
-                Id = Guid.NewGuid(),
+                
                 UserId = topic.CreatedBy.Id,
                 Title = "Topic Deleted by Moderator",
                 Message = $"Your topic \"{topic.Title}\" was deleted. Reason: Topic violated community guidelines or was removed by an administrator.",
@@ -658,7 +686,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Toggles pin status for a topic (admin only).
     /// </summary>
-    public async Task<bool> TogglePinTopicAsync(Guid topicId, Guid adminUserId)
+    public async Task<bool> TogglePinTopicAsync(int topicId, int adminUserId)
     {
         var topic = await _context.DiscussionTopics
             .FirstOrDefaultAsync(t => t.Id == topicId);
@@ -682,7 +710,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Toggles lock status for a topic (admin only).
     /// </summary>
-    public async Task<bool> ToggleLockTopicAsync(Guid topicId, Guid adminUserId)
+    public async Task<bool> ToggleLockTopicAsync(int topicId, int adminUserId)
     {
         var topic = await _context.DiscussionTopics
             .Include(t => t.CreatedBy)
@@ -714,7 +742,7 @@ public class ForumService : IForumService
 
             var notification = new Notification
             {
-                Id = Guid.NewGuid(),
+                
                 UserId = topic.CreatedBy.Id,
                 Title = "Topic Locked by Moderator",
                 Message = $"Your topic \"{topic.Title}\" has been locked by an administrator.",
@@ -733,7 +761,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Deletes a post as admin with audit trail (soft delete).
     /// </summary>
-    public async Task<bool> DeletePostAsAdminAsync(Guid postId, Guid adminUserId, string reason)
+    public async Task<bool> DeletePostAsAdminAsync(int postId, int adminUserId, string reason)
     {
         var post = await _context.ForumPosts
             .Include(p => p.Replies)
@@ -779,7 +807,7 @@ public class ForumService : IForumService
 
             var notification = new Notification
             {
-                Id = Guid.NewGuid(),
+                
                 UserId = post.Author.Id,
                 Title = "Post Deleted by Moderator",
                 Message = $"Your post in \"{post.Topic.Title}\" was deleted by a moderator. Reason: {reason}",
@@ -798,7 +826,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Helper method to map ForumPost entity to PostDto.
     /// </summary>
-    private PostDto MapToPostDto(ForumPost post, Guid currentUserId)
+    private PostDto MapToPostDto(ForumPost post, int currentUserId)
     {
         var dto = new PostDto
         {
@@ -837,7 +865,7 @@ public class ForumService : IForumService
     /// <summary>
     /// Restores a soft-deleted post (Admin only).
     /// </summary>
-    public async Task<bool> RestorePostAsync(Guid postId, Guid adminUserId)
+    public async Task<bool> RestorePostAsync(int postId, int adminUserId)
     {
         var post = await _context.ForumPosts
             .Include(p => p.Replies)

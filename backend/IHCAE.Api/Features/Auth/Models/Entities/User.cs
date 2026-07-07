@@ -12,7 +12,7 @@ public class User
     /// Unique identifier for the user (UUID format)
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// User's email address - must be unique across the system

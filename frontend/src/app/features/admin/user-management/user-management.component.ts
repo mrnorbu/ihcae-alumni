@@ -33,7 +33,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CustomSelectComponent, SelectOption } from '../../../shared/components';
 
 interface UserRecord {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -72,7 +72,7 @@ interface UserStats {
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 class="text-xl font-bold text-neutral-900">Alumni & User Management</h2>
-          <p class="text-sm text-neutral-500 mt-1">Manage platform accounts, security roles, alumni approvals, and legacy roster</p>
+          <p class="text-sm text-neutral-500 mt-1">Manage platform accounts, security roles, alumni approvals, and IHCAE records</p>
         </div>
         <button (click)="openCreateUserModal()" class="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-semibold hover:bg-neutral-800 transition-colors shadow-sm">
           <lucide-icon [img]="usersIcon" [size]="16"></lucide-icon>
@@ -107,7 +107,7 @@ interface UserStats {
           class="flex items-center gap-1.5 px-4 py-3 border-b-2 font-semibold text-sm transition-all duration-200 whitespace-nowrap"
           [class]="activeTab() === 'roster' ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-primary-900'">
           <lucide-icon [img]="databaseIcon" [size]="16" [strokeWidth]="activeTab() === 'roster' ? 2.5 : 2"></lucide-icon>
-          Legacy Roster
+          IHCAE Records
         </button>
       </div>
 
@@ -439,8 +439,14 @@ interface UserStats {
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-neutral-700 mb-1">Password *</label>
-                    <input type="password" [(ngModel)]="createUserForm.password" name="password" required
-                      class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <div class="relative">
+                      <input [type]="showCreatePassword ? 'text' : 'password'" [(ngModel)]="createUserForm.password" name="password" required
+                        class="w-full px-3 py-2 pr-10 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                      <button type="button" (click)="showCreatePassword = !showCreatePassword"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 focus:outline-none rounded">
+                        <lucide-icon [img]="showCreatePassword ? eyeIcon : eyeIcon" [size]="16"></lucide-icon>
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Roles (Select multiple)</label>
@@ -467,8 +473,8 @@ interface UserStats {
                         class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-normal">
                     </div>
                     <div>
-                      <label class="block text-xs font-semibold text-neutral-700 mb-1">Batch / Graduation Year *</label>
-                      <input type="text" [(ngModel)]="createUserForm.batch" name="batch" required placeholder="e.g. 2024"
+                      <label class="block text-xs font-semibold text-neutral-700 mb-1">Batch (e.g. May 2025) *</label>
+                      <input type="text" [(ngModel)]="createUserForm.batch" name="batch" required placeholder="e.g. May 2025"
                         class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-normal">
                     </div>
                   </div>
@@ -485,7 +491,7 @@ interface UserStats {
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-neutral-700 mb-1">Job Title</label>
-                      <input type="text" [(ngModel)]="createUserForm.jobTitle" name="jobTitle" placeholder="e.g. Software Engineer"
+                      <input type="text" [(ngModel)]="createUserForm.jobTitle" name="jobTitle" placeholder="e.g. Trekking Guide"
                         class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-normal">
                     </div>
                   </div>
@@ -594,8 +600,8 @@ interface UserStats {
                         class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-normal">
                     </div>
                     <div>
-                      <label class="block text-xs font-semibold text-neutral-700 mb-1">Batch / Graduation Year *</label>
-                      <input type="text" [(ngModel)]="editDetailsForm.batch" name="batch" placeholder="e.g. 2024"
+                      <label class="block text-xs font-semibold text-neutral-700 mb-1">Batch (e.g. May 2025) *</label>
+                      <input type="text" [(ngModel)]="editDetailsForm.batch" name="batch" placeholder="e.g. May 2025"
                         class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-normal">
                     </div>
                   </div>
@@ -612,7 +618,7 @@ interface UserStats {
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-neutral-700 mb-1">Job Title</label>
-                      <input type="text" [(ngModel)]="editDetailsForm.jobTitle" name="jobTitle" placeholder="e.g. Software Engineer"
+                      <input type="text" [(ngModel)]="editDetailsForm.jobTitle" name="jobTitle" placeholder="e.g. Trekking Guide"
                         class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-normal">
                     </div>
                   </div>
@@ -636,8 +642,14 @@ interface UserStats {
                     <div class="mt-3 p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-2.5">
                       <label class="block text-xs font-semibold text-neutral-700">Enter New Password directly</label>
                       <div class="flex gap-2">
-                        <input type="password" [(ngModel)]="inlineNewPassword" name="inlineNewPassword" placeholder="Minimum 6 characters"
-                          class="flex-1 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <div class="relative flex-1">
+                          <input [type]="showInlinePassword ? 'text' : 'password'" [(ngModel)]="inlineNewPassword" name="inlineNewPassword" placeholder="Minimum 6 characters"
+                            class="w-full px-3 py-1.5 pr-10 text-sm border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                          <button type="button" (click)="showInlinePassword = !showInlinePassword"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 focus:outline-none rounded">
+                            <lucide-icon [img]="showInlinePassword ? eyeIcon : eyeIcon" [size]="16"></lucide-icon>
+                          </button>
+                        </div>
                         <button type="button" (click)="saveInlinePassword()" [disabled]="!inlineNewPassword || inlineNewPassword.length < 6"
                           class="px-3 py-1.5 text-xs font-semibold text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                           Update Password
@@ -720,8 +732,12 @@ export class UserManagementComponent implements OnInit {
   showCreateUserModal = signal(false);
   showEditDetailsModal = signal(false);
   showChangePasswordModal = signal(false);
-  showInlinePasswordInput = signal(false);
+  showInlinePasswordInput = signal<boolean>(false);
   inlineNewPassword = '';
+
+  showCreatePassword = false;
+  showInlinePassword = false;
+
   activeModalTab: 'profile' | 'alumni' | 'security' = 'profile';
   createUserStep = 1;
   
@@ -742,7 +758,7 @@ export class UserManagementComponent implements OnInit {
     firstName: '', lastName: '', phone: '', location: '', jobTitle: '', course: '', batch: '', roles: [] as string[]
   };
 
-  isEditDetailsDirty = computed(() => {
+  isEditDetailsDirty(): boolean {
     const user = this.selectedUser();
     if (!user) return false;
     
@@ -764,7 +780,7 @@ export class UserManagementComponent implements OnInit {
       originalRoles.some(r => !currentRoles.includes(r));
 
     return hasBaseChanges || hasRoleChanges;
-  });
+  }
   changePasswordForm = { newPassword: '' };
   
   banReason = '';
@@ -991,9 +1007,9 @@ export class UserManagementComponent implements OnInit {
   toggleCreateUserRole(role: string) {
     const idx = this.createUserForm.roles.indexOf(role);
     if (idx >= 0) {
-      this.createUserForm.roles.splice(idx, 1);
+      this.createUserForm.roles = [];
     } else {
-      this.createUserForm.roles.push(role);
+      this.createUserForm.roles = [role];
     }
   }
 
@@ -1034,12 +1050,12 @@ export class UserManagementComponent implements OnInit {
   toggleEditDetailsRole(role: string) {
     const idx = this.editDetailsForm.roles.indexOf(role);
     if (idx >= 0) {
-      this.editDetailsForm.roles.splice(idx, 1);
+      this.editDetailsForm.roles = [];
       if (role === 'Alumni' && this.activeModalTab === 'alumni') {
         this.activeModalTab = 'profile';
       }
     } else {
-      this.editDetailsForm.roles.push(role);
+      this.editDetailsForm.roles = [role];
     }
   }
 

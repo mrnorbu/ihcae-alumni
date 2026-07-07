@@ -31,7 +31,7 @@ public class ForumModerationTests : IntegrationTestBase
         return result!.Token;
     }
 
-    private async Task SeedAdminAndForumDataAsync(AppDbContext context, Guid adminId, Guid topicId, Guid postId)
+    private async Task SeedAdminAndForumDataAsync(AppDbContext context, int adminId, int topicId, int postId)
     {
         var adminEmail = "admin.mod@example.com";
         var existingAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
@@ -107,9 +107,9 @@ public class ForumModerationTests : IntegrationTestBase
     {
         // Arrange
         _factory.EmailServiceMock.ClearReceivedCalls();
-        var adminId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -149,9 +149,9 @@ public class ForumModerationTests : IntegrationTestBase
     {
         // Arrange
         _factory.EmailServiceMock.ClearReceivedCalls();
-        var adminId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -184,9 +184,9 @@ public class ForumModerationTests : IntegrationTestBase
     public async Task TogglePinTopic_AsAdmin_ReturnsSuccess()
     {
         // Arrange
-        var adminId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -217,9 +217,9 @@ public class ForumModerationTests : IntegrationTestBase
     public async Task FlagPost_AsUser_ReturnsSuccess()
     {
         // Arrange
-        var adminId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -254,9 +254,9 @@ public class ForumModerationTests : IntegrationTestBase
     public async Task GetFlags_AsAdmin_ReturnsFlags()
     {
         // Arrange
-        var adminId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -299,10 +299,10 @@ public class ForumModerationTests : IntegrationTestBase
     public async Task ResolveFlag_AsAdmin_ReturnsSuccess()
     {
         // Arrange
-        var adminId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
-        var flagId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
+        var flagId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -353,9 +353,9 @@ public class ForumModerationTests : IntegrationTestBase
     public async Task RestorePost_AsAdmin_ReturnsSuccess()
     {
         // Arrange
-        var adminId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {

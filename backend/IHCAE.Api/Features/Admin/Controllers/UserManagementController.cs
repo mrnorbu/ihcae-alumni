@@ -75,7 +75,7 @@ public class UserManagementController : ControllerBase
                 isBanned = u.IsBanned,
                 createdAt = u.CreatedAt,
                 updatedAt = u.UpdatedAt,
-                roles = u.UserRoles.Select(ur => ur.Role.Name).ToList(),
+                roles = u.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role.Name).ToList(),
                 course = u.AlumniProfile != null ? u.AlumniProfile.Course : null,
                 batch = u.AlumniProfile != null ? u.AlumniProfile.Batch : null,
                 location = u.AlumniProfile != null ? u.AlumniProfile.Location : null,
@@ -124,7 +124,7 @@ public class UserManagementController : ControllerBase
                         Status = u.Status.ToString(),
                         CreatedAt = u.CreatedAt,
                         LastLoginAt = u.LastLoginAt,
-                        Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList()
+                        Roles = u.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role.Name).ToList()
                     })
                     .ToList();
 
@@ -174,7 +174,7 @@ public class UserManagementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ApproveUser(Guid userId)
+    public async Task<IActionResult> ApproveUser(int userId)
     {
         try
         {
@@ -191,6 +191,7 @@ public class UserManagementController : ControllerBase
 
             // Update user status to approved
             user.Status = UserStatus.Approved;
+            user.EmailVerified = true; // Auto-verify email upon admin approval
             user.UpdatedAt = DateTime.UtcNow;
             await _userRepository.UpdateAsync(user);
 
@@ -205,14 +206,30 @@ public class UserManagementController : ControllerBase
 
                 // Populate AlumniProfile with authoritative data from roster
                 var profile = await _context.AlumniProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
-                if (profile != null)
+                if (profile == null)
                 {
-                    profile.Course = match.Course;
-                    profile.Batch = match.Batch;
-                    profile.Location = match.Location;
-                    profile.UpdatedAt = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
+                    profile = new AlumniProfile
+                    {
+                        UserId = userId,
+                        Course = match.Course,
+                        Batch = match.Batch,
+                        Location = match.Location,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.AlumniProfiles.Add(profile);
                 }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(match.Course))
+                        profile.Course = match.Course;
+                    if (!string.IsNullOrWhiteSpace(match.Batch))
+                        profile.Batch = match.Batch;
+                    if (!string.IsNullOrWhiteSpace(match.Location))
+                        profile.Location = match.Location;
+                        
+                    profile.UpdatedAt = DateTime.UtcNow;
+                }
+                await _context.SaveChangesAsync();
             }
 
             // Send approval email
@@ -257,7 +274,7 @@ public class UserManagementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RejectUser(Guid userId, [FromBody] RejectUserRequest? request = null)
+    public async Task<IActionResult> RejectUser(int userId, [FromBody] RejectUserRequest? request = null)
     {
         try
         {

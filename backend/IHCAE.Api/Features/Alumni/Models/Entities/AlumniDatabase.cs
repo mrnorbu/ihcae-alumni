@@ -12,7 +12,7 @@ public class AlumniDatabase
     /// Unique identifier for the alumni record
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Alumni's first name
@@ -69,7 +69,7 @@ public class AlumniDatabase
     /// ID of the user account that matched this alumni record
     /// Null if no match has been found yet
     /// </summary>
-    public Guid? MatchedUserId { get; set; }
+    public int? MatchedUserId { get; set; }
 
     // Navigation properties
     /// <summary>

@@ -318,7 +318,7 @@ export class ContentReviewComponent implements OnInit {
   // Simple Reject modal (quick actions)
   showRejectModal = signal(false);
   rejectReason = '';
-  rejectItemId = '';
+  rejectItemId: number | null = null;
   rejectItemType: 'article' | 'event' = 'article';
 
   // Dedicated Detailed Review Modal State
@@ -483,7 +483,7 @@ export class ContentReviewComponent implements OnInit {
 
   // --- Quick Review Actions ---
 
-  approveArticle(id: string): void {
+  approveArticle(id: number): void {
     if (this.isProcessing()) return;
 
     this.isProcessing.set(true);
@@ -499,7 +499,7 @@ export class ContentReviewComponent implements OnInit {
     });
   }
 
-  approveEvent(id: string): void {
+  approveEvent(id: number): void {
     if (this.isProcessing()) return;
 
     this.isProcessing.set(true);
@@ -515,7 +515,7 @@ export class ContentReviewComponent implements OnInit {
     });
   }
 
-  openRejectModal(id: string, type: 'article' | 'event'): void {
+  openRejectModal(id: number, type: 'article' | 'event'): void {
     this.rejectItemId = id;
     this.rejectItemType = type;
     this.rejectReason = '';
@@ -525,7 +525,7 @@ export class ContentReviewComponent implements OnInit {
   closeRejectModal(): void {
     this.showRejectModal.set(false);
     this.rejectReason = '';
-    this.rejectItemId = '';
+    this.rejectItemId = null;
   }
 
   confirmReject(): void {
@@ -533,7 +533,7 @@ export class ContentReviewComponent implements OnInit {
 
     this.isProcessing.set(true);
     if (this.rejectItemType === 'article') {
-      this.newsService.rejectArticle(this.rejectItemId, this.rejectReason).subscribe({
+      this.newsService.rejectArticle(this.rejectItemId!, this.rejectReason).subscribe({
         next: () => {
           this.isProcessing.set(false);
           this.pendingArticles.set(this.pendingArticles().filter(a => a.id !== this.rejectItemId));
@@ -545,7 +545,7 @@ export class ContentReviewComponent implements OnInit {
         }
       });
     } else {
-      this.eventsService.rejectEvent(this.rejectItemId, this.rejectReason).subscribe({
+      this.eventsService.rejectEvent(this.rejectItemId!, this.rejectReason).subscribe({
         next: () => {
           this.isProcessing.set(false);
           this.pendingEvents.set(this.pendingEvents().filter(e => e.id !== this.rejectItemId));

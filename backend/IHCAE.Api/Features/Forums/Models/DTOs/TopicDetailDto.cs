@@ -10,7 +10,7 @@ public class TopicDetailDto
     /// <summary>
     /// Unique identifier for the topic
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Title of the discussion topic

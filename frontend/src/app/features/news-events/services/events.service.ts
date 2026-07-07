@@ -33,7 +33,7 @@ export class EventsService {
   getUpcomingEvents(
     page: number = 1,
     pageSize: number = 10,
-    categoryId?: string,
+    categoryId?: number,
     location?: string,
     startDate?: Date,
     endDate?: Date
@@ -62,9 +62,16 @@ export class EventsService {
   }
 
   /**
-   * Gets a single published event by ID.
+   * Gets a single published event by slug.
    */
-  getEventById(id: string): Observable<Event> {
+  getEventBySlug(slug: string): Observable<Event> {
+    return this.http.get<Event>(`${this.apiUrl}/slug/${slug}`);
+  }
+
+  /**
+   * Gets a single event by ID (useful for editing).
+   */
+  getEventById(id: number): Observable<Event> {
     return this.http.get<Event>(`${this.apiUrl}/${id}`);
   }
 
@@ -72,14 +79,14 @@ export class EventsService {
    * Registers for an event (no auth required).
    * If authenticated, user data is pre-filled.
    */
-  registerForEvent(eventId: string, request: RegisterForEventRequest): Observable<void> {
+  registerForEvent(eventId: number, request: RegisterForEventRequest): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${eventId}/register`, request);
   }
 
   /**
    * Checks if the current user is already registered for an event.
    */
-  checkIfRegistered(eventId: string, email: string): Observable<boolean> {
+  checkIfRegistered(eventId: number, email: string): Observable<boolean> {
     let params = new HttpParams().set('email', email);
     return this.http.get<boolean>(`${this.apiUrl}/${eventId}/check-registration`, { params });
   }
@@ -87,7 +94,7 @@ export class EventsService {
   /**
    * Gets the number of available spots for an event.
    */
-  getAvailableSpots(eventId: string): Observable<number> {
+  getAvailableSpots(eventId: number): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/${eventId}/available-spots`);
   }
 
@@ -110,7 +117,7 @@ export class EventsService {
    * Updates an existing event (Admin/ContentCreator only).
    * Must be the owner or admin.
    */
-  updateEvent(id: string, request: UpdateEventRequest): Observable<Event> {
+  updateEvent(id: number, request: UpdateEventRequest): Observable<Event> {
     return this.http.put<Event>(`${this.managementApiUrl}/${id}`, request);
   }
 
@@ -118,7 +125,7 @@ export class EventsService {
    * Deletes an event (Admin/ContentCreator only).
    * Must be the owner or admin. Cannot delete if registrations exist.
    */
-  deleteEvent(id: string): Observable<void> {
+  deleteEvent(id: number): Observable<void> {
     return this.http.delete<void>(`${this.managementApiUrl}/${id}`);
   }
 
@@ -140,7 +147,7 @@ export class EventsService {
    * Approves a pending event (Admin only).
    * Changes status to published.
    */
-  approveEvent(id: string): Observable<void> {
+  approveEvent(id: number): Observable<void> {
     return this.http.post<void>(`${this.managementApiUrl}/${id}/approve`, {});
   }
 
@@ -148,7 +155,7 @@ export class EventsService {
    * Rejects a pending event (Admin only).
    * Sends email notification with reason.
    */
-  rejectEvent(id: string, reason: string): Observable<void> {
+  rejectEvent(id: number, reason: string): Observable<void> {
     return this.http.post<void>(`${this.managementApiUrl}/${id}/reject`, { reason });
   }
 
@@ -156,7 +163,7 @@ export class EventsService {
    * Gets registrations for an event (Admin only).
    */
   getEventRegistrations(
-    eventId: string,
+    eventId: number,
     page: number = 1,
     pageSize: number = 50
   ): Observable<PaginatedResult<EventRegistration>> {
@@ -170,7 +177,7 @@ export class EventsService {
   /**
    * Exports event registrations to CSV (Admin only).
    */
-  exportRegistrationsCsv(eventId: string): Observable<Blob> {
+  exportRegistrationsCsv(eventId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${eventId}/registrations/export`, {
       responseType: 'blob'
     });

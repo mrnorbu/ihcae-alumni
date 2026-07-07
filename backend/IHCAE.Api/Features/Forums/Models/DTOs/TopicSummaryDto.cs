@@ -10,12 +10,13 @@ public class TopicSummaryDto
     /// <summary>
     /// Unique identifier for the topic
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Title of the discussion topic
     /// </summary>
     public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
 
     /// <summary>
     /// Information about the topic creator
@@ -55,7 +56,7 @@ public class TopicSummaryDto
     /// <summary>
     /// ID of the main post (first post in the topic)
     /// </summary>
-    public Guid MainPostId { get; set; }
+    public int MainPostId { get; set; }
 
     /// <summary>
     /// Whether the current user has liked the main post

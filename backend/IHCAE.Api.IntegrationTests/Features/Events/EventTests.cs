@@ -18,7 +18,7 @@ public class EventTests : IntegrationTestBase
     {
     }
 
-    private async Task SeedEventDataAsync(AppDbContext context, Guid creatorId, Guid categoryId, Guid publishedUpcomingEventId, Guid publishedPastEventId)
+    private async Task SeedEventDataAsync(AppDbContext context, int creatorId, int categoryId, int publishedUpcomingEventId, int publishedPastEventId)
     {
         // Add Creator
         var existingCreator = await context.Users.FirstOrDefaultAsync(u => u.Email == "event.creator@example.com");
@@ -98,7 +98,7 @@ public class EventTests : IntegrationTestBase
         // Add Draft Event
         context.Events.Add(new Event
         {
-            Id = Guid.NewGuid(),
+            Id = Random.Shared.Next(1, 1000000),
             Title = "Draft Meetup",
             Description = "Draft description",
             Location = "Paris",
@@ -116,10 +116,10 @@ public class EventTests : IntegrationTestBase
     public async Task GetUpcomingEvents_ReturnsOnlyPublishedAndUpcomingEvents()
     {
         // Arrange
-        var creatorId = Guid.NewGuid();
-        var categoryId = Guid.NewGuid();
-        var upcomingId = Guid.NewGuid();
-        var pastId = Guid.NewGuid();
+        var creatorId = Random.Shared.Next(1, 1000000);
+        var categoryId = Random.Shared.Next(1, 1000000);
+        var upcomingId = Random.Shared.Next(1, 1000000);
+        var pastId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -150,10 +150,10 @@ public class EventTests : IntegrationTestBase
     public async Task GetEventById_WithValidPublishedId_ReturnsEvent()
     {
         // Arrange
-        var creatorId = Guid.NewGuid();
-        var categoryId = Guid.NewGuid();
-        var upcomingId = Guid.NewGuid();
-        var pastId = Guid.NewGuid();
+        var creatorId = Random.Shared.Next(1, 1000000);
+        var categoryId = Random.Shared.Next(1, 1000000);
+        var upcomingId = Random.Shared.Next(1, 1000000);
+        var pastId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -177,10 +177,10 @@ public class EventTests : IntegrationTestBase
     public async Task RegisterForEvent_WithValidData_ReturnsSuccess()
     {
         // Arrange
-        var creatorId = Guid.NewGuid();
-        var categoryId = Guid.NewGuid();
-        var upcomingId = Guid.NewGuid();
-        var pastId = Guid.NewGuid();
+        var creatorId = Random.Shared.Next(1, 1000000);
+        var categoryId = Random.Shared.Next(1, 1000000);
+        var upcomingId = Random.Shared.Next(1, 1000000);
+        var pastId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -191,7 +191,7 @@ public class EventTests : IntegrationTestBase
         var requestBody = new RegisterForEventRequest
         {
             Name = "John Doe",
-            Email = $"john.doe.{Guid.NewGuid()}@example.com",
+            Email = $"john.doe.{Random.Shared.Next(1, 1000000)}@example.com",
             Phone = "1234567890"
         };
 
@@ -213,13 +213,13 @@ public class EventTests : IntegrationTestBase
     public async Task GetCategories_ReturnsAllCategories()
     {
         // Arrange
-        var creatorId = Guid.NewGuid();
-        var categoryId = Guid.NewGuid();
+        var creatorId = Random.Shared.Next(1, 1000000);
+        var categoryId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await SeedEventDataAsync(context, creatorId, categoryId, Guid.NewGuid(), Guid.NewGuid());
+            await SeedEventDataAsync(context, creatorId, categoryId, Random.Shared.Next(1, 1000000), Random.Shared.Next(1, 1000000));
         }
 
         // Act

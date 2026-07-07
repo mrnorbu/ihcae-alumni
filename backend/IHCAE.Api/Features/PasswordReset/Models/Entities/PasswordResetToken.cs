@@ -10,12 +10,12 @@ public class PasswordResetToken
     /// <summary>
     /// Unique identifier for the password reset token.
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The user ID associated with this password reset token.
     /// </summary>
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// Navigation property to the user.

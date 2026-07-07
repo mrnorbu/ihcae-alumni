@@ -22,7 +22,7 @@ public class EmailVerificationTests : IntegrationTestBase
     public async Task SendVerificationEmail_WithValidUser_ReturnsOkAndSendsEmail()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -65,7 +65,7 @@ public class EmailVerificationTests : IntegrationTestBase
     public async Task VerifyEmail_WithValidToken_VerifiesUser()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var rawToken = "my-secret-token";
         
         using var sha256 = SHA256.Create();
@@ -89,7 +89,7 @@ public class EmailVerificationTests : IntegrationTestBase
             
             context.EmailVerificationTokens.Add(new EmailVerificationToken
             {
-                Id = Guid.NewGuid(),
+                Id = Random.Shared.Next(1, 1000000),
                 UserId = userId,
                 TokenHash = tokenHash,
                 CreatedAt = DateTime.UtcNow,
@@ -124,7 +124,7 @@ public class EmailVerificationTests : IntegrationTestBase
     public async Task VerifyEmail_WithExpiredToken_ReturnsBadRequest()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var rawToken = "my-expired-token";
         
         using var sha256 = SHA256.Create();
@@ -148,7 +148,7 @@ public class EmailVerificationTests : IntegrationTestBase
             
             context.EmailVerificationTokens.Add(new EmailVerificationToken
             {
-                Id = Guid.NewGuid(),
+                Id = Random.Shared.Next(1, 1000000),
                 UserId = userId,
                 TokenHash = tokenHash,
                 CreatedAt = DateTime.UtcNow.AddDays(-2),

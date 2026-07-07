@@ -23,7 +23,7 @@ public class PasswordResetTests : IntegrationTestBase
     public async Task ForgotPassword_WithValidEmail_ReturnsOkAndSendsEmail()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var email = "forgot@example.com";
         using (var scope = _factory.Services.CreateScope())
         {
@@ -67,7 +67,7 @@ public class PasswordResetTests : IntegrationTestBase
     public async Task ResetPassword_WithValidTokenAndNewPassword_UpdatesPassword()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var rawToken = "my-reset-token";
         
         using var sha256 = SHA256.Create();
@@ -90,7 +90,7 @@ public class PasswordResetTests : IntegrationTestBase
             
             context.PasswordResetTokens.Add(new PasswordResetToken
             {
-                Id = Guid.NewGuid(),
+                Id = Random.Shared.Next(1, 1000000),
                 UserId = userId,
                 TokenHash = tokenHash,
                 CreatedAt = DateTime.UtcNow,

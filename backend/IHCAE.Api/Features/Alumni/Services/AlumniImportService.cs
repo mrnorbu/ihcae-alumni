@@ -102,7 +102,7 @@ public class AlumniImportService : IAlumniImportService
                 // Create new alumni record
                 var alumniRecord = new AlumniDatabase
                 {
-                    Id = Guid.NewGuid(),
+                    
                     FirstName = firstName,
                     LastName = lastName,
                     Email = email,
@@ -290,7 +290,7 @@ public class AlumniImportService : IAlumniImportService
     /// <param name="alumniId">The alumni record ID</param>
     /// <param name="userId">The user account ID</param>
     /// <returns>Task representing the async operation</returns>
-    public async Task LinkAlumniToUserAsync(Guid alumniId, Guid userId)
+    public async Task LinkAlumniToUserAsync(int alumniId, int userId)
     {
         var alumniRecord = await _context.AlumniDatabase.FindAsync(alumniId);
         if (alumniRecord != null)
@@ -393,7 +393,7 @@ public class AlumniImportService : IAlumniImportService
     /// </summary>
     /// <param name="alumniIds">The list of alumni IDs</param>
     /// <returns>The bulk generation result containing generated and linked counts</returns>
-    public async Task<BulkGenerateResultDto> BulkGenerateUserAccountsAsync(IEnumerable<Guid> alumniIds)
+    public async Task<BulkGenerateResultDto> BulkGenerateUserAccountsAsync(IEnumerable<int> alumniIds)
     {
         var result = new BulkGenerateResultDto();
         var frontendUrl = _urlHelperService.GetFrontendUrl();
@@ -457,7 +457,7 @@ public class AlumniImportService : IAlumniImportService
                     var (setupToken, setupTokenHash) = GenerateToken();
                     _context.PasswordResetTokens.Add(new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
                     {
-                        Id = Guid.NewGuid(),
+                        
                         UserId = existingUser.Id,
                         TokenHash = setupTokenHash,
                         CreatedAt = DateTime.UtcNow,
@@ -476,17 +476,20 @@ public class AlumniImportService : IAlumniImportService
                 // No user exists — create one
                 var user = new IHCAE.Api.Features.Auth.Models.Entities.User
                 {
-                    Id = Guid.NewGuid(),
+                    
                     FirstName = alumni.FirstName,
                     LastName = alumni.LastName,
                     Email = alumni.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString(), 12),
+                    Phone = alumni.Phone,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(System.Guid.NewGuid().ToString(), 12),
                     Status = IHCAE.Api.Features.Auth.Models.Entities.UserStatus.Approved,
                     EmailVerified = true,
                     IsBanned = false,
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+                
                 _context.AlumniProfiles.Add(new IHCAE.Api.Features.Auth.Models.Entities.AlumniProfile
                 {
                     UserId = user.Id,
@@ -504,7 +507,7 @@ public class AlumniImportService : IAlumniImportService
                 var (token, tokenHash) = GenerateToken();
                 _context.PasswordResetTokens.Add(new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
                 {
-                    Id = Guid.NewGuid(),
+                    
                     UserId = user.Id,
                     TokenHash = tokenHash,
                     CreatedAt = DateTime.UtcNow,
@@ -539,7 +542,7 @@ public class AlumniImportService : IAlumniImportService
         return (token, hash);
     }
 
-    public async Task<bool> DeleteAlumniRecordAsync(Guid id)
+    public async Task<bool> DeleteAlumniRecordAsync(int id)
     {
         var alumni = await _context.AlumniDatabase.FindAsync(id);
         if (alumni == null) return false;
@@ -549,7 +552,7 @@ public class AlumniImportService : IAlumniImportService
         return true;
     }
 
-    public async Task ResendInvitationAsync(Guid alumniId)
+    public async Task ResendInvitationAsync(int alumniId)
     {
         var alumni = await _context.AlumniDatabase
             .Include(a => a.MatchedUser)
@@ -567,7 +570,7 @@ public class AlumniImportService : IAlumniImportService
 
         _context.PasswordResetTokens.Add(new IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken
         {
-            Id = Guid.NewGuid(),
+            
             UserId = alumni.MatchedUserId.Value,
             TokenHash = tokenHash,
             CreatedAt = DateTime.UtcNow,
@@ -598,7 +601,7 @@ public class AlumniImportService : IAlumniImportService
 
         var alumni = new AlumniDatabase
         {
-            Id = Guid.NewGuid(),
+            
             FirstName = record.FirstName,
             LastName = record.LastName,
             Email = record.Email.ToLower(),

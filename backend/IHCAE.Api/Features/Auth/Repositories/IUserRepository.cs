@@ -13,7 +13,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="id">The user's unique identifier</param>
     /// <returns>The user if found, null otherwise</returns>
-    Task<User?> GetByIdAsync(Guid id);
+    Task<User?> GetByIdAsync(int id);
 
     /// <summary>
     /// Gets a user by their email address.
@@ -68,7 +68,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="id">The user's unique identifier</param>
     /// <returns>The user with roles if found, null otherwise</returns>
-    Task<User?> GetWithRolesAsync(Guid id);
+    Task<User?> GetWithRolesAsync(int id);
 
     /// <summary>
     /// Gets approved alumni with optional filtering and pagination.
@@ -92,7 +92,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="id">The user's unique identifier</param>
     /// <returns>The user with profile if found, null otherwise</returns>
-    Task<User?> GetWithProfileAsync(Guid id);
+    Task<User?> GetWithProfileAsync(int id);
 
     /// <summary>
     /// Assigns a role to a user.
@@ -100,7 +100,7 @@ public interface IUserRepository
     /// <param name="userId">The user's unique identifier</param>
     /// <param name="roleName">The name of the role to assign</param>
     /// <returns>True if role was assigned successfully, false if user or role not found</returns>
-    Task<bool> AssignRoleAsync(Guid userId, string roleName);
+    Task<bool> AssignRoleAsync(int userId, string roleName);
 
     /// <summary>
     /// Removes a role from a user.
@@ -108,6 +108,6 @@ public interface IUserRepository
     /// <param name="userId">The user's unique identifier</param>
     /// <param name="roleName">The name of the role to remove</param>
     /// <returns>True if role was removed successfully, false if user or role not found</returns>
-    Task<bool> RemoveRoleAsync(Guid userId, string roleName);
+    Task<bool> RemoveRoleAsync(int userId, string roleName);
 }
 

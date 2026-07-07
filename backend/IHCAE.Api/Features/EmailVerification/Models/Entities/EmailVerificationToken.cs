@@ -10,12 +10,12 @@ public class EmailVerificationToken
     /// <summary>
     /// Unique identifier for the verification token.
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The user ID associated with this verification token.
     /// </summary>
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// Navigation property to the user.

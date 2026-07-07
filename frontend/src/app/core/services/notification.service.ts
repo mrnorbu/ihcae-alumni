@@ -110,7 +110,7 @@ export class NotificationService {
    * Removes a notification by ID.
    * @param id The notification ID to remove
    */
-  public removeNotification(id: string): void {
+  public removeNotification(id: number): void {
     const notifications = this._notifications.value.filter(n => n.id !== id);
     this._notifications.next(notifications);
   }
@@ -153,10 +153,10 @@ export class NotificationService {
 
   /**
    * Generates a unique ID for notifications.
-   * @returns A unique string ID
+   * @returns A unique number ID
    */
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+  private generateId(): number {
+    return Math.floor(Math.random() * 1000000000);
   }
 
   /**

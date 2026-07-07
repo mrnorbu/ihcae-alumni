@@ -25,7 +25,7 @@ public class EventRegistrationService : IEventRegistrationService
         _emailService = emailService;
     }
 
-    public async Task<EventRegistrationDto> RegisterForEventAsync(Guid eventId, RegisterForEventRequest request, Guid? userId)
+    public async Task<EventRegistrationDto> RegisterForEventAsync(int eventId, RegisterForEventRequest request, int? userId)
     {
         var eventEntity = await _context.Events
             .Include(e => e.Registrations)
@@ -66,7 +66,7 @@ public class EventRegistrationService : IEventRegistrationService
 
         var registration = new EventRegistration
         {
-            Id = Guid.NewGuid(),
+            
             EventId = eventId,
             UserId = userId,
             Name = request.Name,
@@ -88,13 +88,13 @@ public class EventRegistrationService : IEventRegistrationService
         return MapToDto(registration);
     }
 
-    public async Task<bool> CheckIfRegisteredAsync(Guid eventId, string email)
+    public async Task<bool> CheckIfRegisteredAsync(int eventId, string email)
     {
         return await _context.EventRegistrations
             .AnyAsync(r => r.EventId == eventId && r.Email.ToLower() == email.ToLower());
     }
 
-    public async Task<int> GetAvailableSpotsAsync(Guid eventId)
+    public async Task<int> GetAvailableSpotsAsync(int eventId)
     {
         var eventEntity = await _context.Events
             .Include(e => e.Registrations)
@@ -114,7 +114,7 @@ public class EventRegistrationService : IEventRegistrationService
         return Math.Max(0, eventEntity.Capacity.Value - confirmedCount);
     }
 
-    public async Task<PaginatedResult<EventRegistrationDto>> GetEventRegistrationsAsync(Guid eventId, int page, int pageSize)
+    public async Task<PaginatedResult<EventRegistrationDto>> GetEventRegistrationsAsync(int eventId, int page, int pageSize)
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 100) pageSize = 20;
@@ -142,7 +142,7 @@ public class EventRegistrationService : IEventRegistrationService
         };
     }
 
-    public async Task<byte[]> ExportRegistrationsToCsvAsync(Guid eventId)
+    public async Task<byte[]> ExportRegistrationsToCsvAsync(int eventId)
     {
         var registrations = await _context.EventRegistrations
             .Where(r => r.EventId == eventId)
@@ -166,7 +166,7 @@ public class EventRegistrationService : IEventRegistrationService
         return Encoding.UTF8.GetBytes(csv.ToString());
     }
 
-    public async Task<bool> CancelRegistrationAsync(Guid registrationId, Guid adminId)
+    public async Task<bool> CancelRegistrationAsync(int registrationId, int adminId)
     {
         var registration = await _context.EventRegistrations.FindAsync(registrationId);
 
@@ -201,7 +201,7 @@ public class EventRegistrationService : IEventRegistrationService
         };
     }
 
-    private async Task SendRegistrationConfirmationAsync(Guid registrationId, string eventTitle)
+    private async Task SendRegistrationConfirmationAsync(int registrationId, string eventTitle)
     {
         try
         {

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IHCAE Alumni App - Comprehensive Tutorial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eaeaea;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: #666666;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            color: #0056b3;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-top: 40px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .screenshot-container {
+            margin: 30px 0;
+            border: 1px solid #dddddd;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .screenshot-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+            border: 1px solid #eeeeee;
+        }
+
+        .caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #777777;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .highlight-box {
+            background-color: #e8f4fd;
+            border-left: 5px solid #0056b3;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .highlight-box h4 {
+            margin-top: 0;
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            color: #888888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>IHCAE Alumni Application Tutorial</h1>
+        <p>A step-by-step guide for basic users, registration, and administrators.</p>
+    </header>
+
+    <!-- SECTION 1: THE UNAUTHENTICATED USER -->
+    <div class="section" id="normal-user">
+        <h2>1. The Guest Experience (Without Logging In)</h2>
+        <p>Before you even create an account, the IHCAE Alumni App offers valuable information to the public. When you navigate to the main website, you land on the <strong>Homepage</strong>.</p>
+        
+        <h3>The Homepage</h3>
+        <p>As a guest visiting the site, you will see a public landing page. Here, you have options to join the community or sign in. The navigation bar provides access to public sections.</p>
+        <div class="screenshot-container">
+            <img src="screenshots/1-homepage.png" alt="IHCAE Alumni Homepage">
+            <div class="caption">Figure 1: The main homepage displaying the login area and public navigation.</div>
+        </div>
+
+        <h3>News & Events</h3>
+        <p>Clicking on "News & Events" in the navigation bar takes you to the public notice board. You can see upcoming events, such as reunions and training programs, as well as the latest success stories without needing an account.</p>
+        <div class="screenshot-container">
+            <img src="screenshots/3-news-events.png" alt="News and Events Page">
+            <div class="caption">Figure 2: The public News & Events page.</div>
+        </div>
+    </div>
+
+
+    <!-- SECTION 2: REGISTRATION PROCESS -->
+    <div class="section" id="registration">
+        <h2>2. Registration: Joining the Network</h2>
+        <p>To view other alumni and access the Directory, you must become a registered member.</p>
+
+        <h3>How to Register</h3>
+        <ul>
+            <li>On the top right of the Homepage, click the <strong>Join Network</strong> or <strong>Register</strong> button.</li>
+            <li>You will be presented with a registration form. You must fill in all required fields:
+                <ul>
+                    <li><strong>Personal Information:</strong> First Name, Last Name.</li>
+                    <li><strong>Contact Details:</strong> A valid Email Address and a secure Password.</li>
+                </ul>
+            </li>
+            <li>Once filled out, click the submit button.</li>
+        </ul>
+
+        <div class="screenshot-container">
+            <img src="screenshots/2-registration-filled.png" alt="Registration Form Filled">
+            <div class="caption">Figure 3: The registration form where new alumni provide their details.</div>
+        </div>
+
+        <div class="highlight-box">
+            <h4>What happens after I register?</h4>
+            <p>For security and verification purposes, your account goes into a <strong>"Pending Approval"</strong> state. An administrator must manually review your details and approve your account. You will be able to log in and view the Directory only after this approval is granted.</p>
+        </div>
+    </div>
+
+
+    <!-- SECTION 3: ADMINISTRATOR GUIDE -->
+    <div class="section" id="admin-guide">
+        <h2>3. The Administrator Experience</h2>
+        <p>Administrators have special privileges to manage users and content. This section details the various admin dashboards.</p>
+
+        <h3>The Admin Dashboard</h3>
+        <p>After logging in with admin credentials, click on the <strong>Admin</strong> link in the navigation bar. This takes you to the central console overview.</p>
+        <ul>
+            <li><strong>Overview Panel:</strong> View total registered alumni, pending accounts, and active users.</li>
+            <li><strong>Quick Actions:</strong> Easily jump to user management or content creation.</li>
+        </ul>
+
+        <div class="screenshot-container">
+            <img src="screenshots/5-admin-dashboard.png" alt="Admin Dashboard">
+            <div class="caption">Figure 4: The Admin Dashboard showing user statistics and quick actions.</div>
+        </div>
+
+        <h3>Managing the Directory (Alumni Hub)</h3>
+        <p>By clicking on <strong>Alumni & User Management</strong> (or the Alumni Hub), admins can oversee the entire directory and manage approvals.</p>
+        <ul>
+            <li><strong>Pending Approvals:</strong> View a list of new users who have recently registered. You can verify their identity and click Approve.</li>
+            <li><strong>Directory:</strong> Search for specific alumni and view their full profiles.</li>
+        </ul>
+
+        <div class="screenshot-container">
+            <img src="screenshots/4-admin-directory.png" alt="Admin Alumni Hub">
+            <div class="caption">Figure 5: The Alumni Hub for managing user approvals and the directory.</div>
+        </div>
+        
+        <h3>Content Management (News & Events)</h3>
+        <p>Administrators also have the ability to create, edit, or delete the News and Events that are displayed to the public.</p>
+        <ul>
+            <li>Navigate to the <strong>News & Events</strong> section inside the Admin Console.</li>
+            <li>You can add new success stories or schedule upcoming events from this screen.</li>
+        </ul>
+        
+        <div class="screenshot-container">
+            <img src="screenshots/6-admin-content.png" alt="Admin Content Management">
+            <div class="caption">Figure 6: The Content Management page for publishing news and events.</div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 IHCAE Alumni Association. Tutorial Guide.</p>
+    </footer>
+</div>
+
+</body>
+</html>

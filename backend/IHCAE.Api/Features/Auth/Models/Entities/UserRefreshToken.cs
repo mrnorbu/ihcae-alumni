@@ -13,13 +13,13 @@ public class UserRefreshToken
     /// Unique identifier for the refresh token
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the User entity
     /// </summary>
     [Required]
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// Hashed version of the refresh token for security

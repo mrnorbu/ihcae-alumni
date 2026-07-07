@@ -11,17 +11,17 @@ public class EventRegistration
     /// <summary>
     /// Unique identifier for the registration
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     
     /// <summary>
     /// Foreign key to the event
     /// </summary>
-    public Guid EventId { get; set; }
+    public int EventId { get; set; }
     
     /// <summary>
     /// Foreign key to the user (null for public registrations)
     /// </summary>
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
     
     /// <summary>
     /// Name of the registrant

@@ -13,13 +13,13 @@ public class ForumFlag
     /// Unique identifier for the flag
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The post being flagged
     /// </summary>
     [Required]
-    public Guid PostId { get; set; }
+    public int PostId { get; set; }
 
     /// <summary>
     /// Navigation property to the flagged post
@@ -30,7 +30,7 @@ public class ForumFlag
     /// The user who flagged the post
     /// </summary>
     [Required]
-    public Guid FlaggedById { get; set; }
+    public int FlaggedById { get; set; }
 
     /// <summary>
     /// Navigation property to the user who flagged
@@ -59,7 +59,7 @@ public class ForumFlag
     /// <summary>
     /// Admin who resolved this flag (if resolved)
     /// </summary>
-    public Guid? ResolvedById { get; set; }
+    public int? ResolvedById { get; set; }
 
     /// <summary>
     /// Navigation property to admin who resolved

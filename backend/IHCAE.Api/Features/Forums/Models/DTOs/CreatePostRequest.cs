@@ -13,5 +13,10 @@ public class CreatePostRequest
     /// <summary>
     /// ID of the parent post (null for top-level posts)
     /// </summary>
-    public Guid? ParentPostId { get; set; }
+    public int? ParentPostId { get; set; }
+
+    /// <summary>
+    /// Optional list of user IDs mentioned in this post
+    /// </summary>
+    public List<int>? MentionedUserIds { get; set; }
 }

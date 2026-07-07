@@ -28,7 +28,7 @@ public class ForumTests : IntegrationTestBase
         return result!.Token;
     }
 
-    private async Task SeedForumDataAsync(AppDbContext context, Guid userId, Guid topicId, Guid postId)
+    private async Task SeedForumDataAsync(AppDbContext context, int userId, int topicId, int postId)
     {
         var email = "forum.user@example.com";
         var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -83,9 +83,9 @@ public class ForumTests : IntegrationTestBase
     public async Task GetTopics_ReturnsPaginatedTopics()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
-        var postId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
+        var postId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -114,11 +114,11 @@ public class ForumTests : IntegrationTestBase
     public async Task CreateTopic_ReturnsCreatedTopic()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await SeedForumDataAsync(context, userId, Guid.NewGuid(), Guid.NewGuid());
+            await SeedForumDataAsync(context, userId, Random.Shared.Next(1, 1000000), Random.Shared.Next(1, 1000000));
         }
 
         var token = await GetUserTokenAsync("forum.user@example.com", "Password123!");
@@ -150,12 +150,12 @@ public class ForumTests : IntegrationTestBase
     public async Task CreatePost_InExistingTopic_ReturnsCreatedPost()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var topicId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
+        var topicId = Random.Shared.Next(1, 1000000);
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await SeedForumDataAsync(context, userId, topicId, Guid.NewGuid());
+            await SeedForumDataAsync(context, userId, topicId, Random.Shared.Next(1, 1000000));
         }
 
         var token = await GetUserTokenAsync("forum.user@example.com", "Password123!");

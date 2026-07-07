@@ -15,7 +15,7 @@ public class CreateNewsArticleRequest
     public string Content { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "Category is required")]
-    public Guid CategoryId { get; set; }
+    public int CategoryId { get; set; }
     
     public string? ImageUrl { get; set; }
     public string? ThumbnailUrl { get; set; }

@@ -45,7 +45,7 @@ public class ProfileService : IProfileService
     /// <param name="userId">The user ID to retrieve profile for</param>
     /// <returns>The user's complete profile data</returns>
     /// <exception cref="KeyNotFoundException">Thrown when user is not found</exception>
-    public async Task<ProfileDto> GetProfileAsync(Guid userId)
+    public async Task<ProfileDto> GetProfileAsync(int userId)
     {
         // Retrieve user with all related data
         var user = await _userRepository.GetByIdAsync(userId);
@@ -76,7 +76,7 @@ public class ProfileService : IProfileService
     /// <param name="request">The profile update request containing new values</param>
     /// <returns>The updated profile data</returns>
     /// <exception cref="KeyNotFoundException">Thrown when user is not found</exception>
-    public async Task<ProfileDto> UpdateProfileAsync(Guid userId, UpdateProfileRequest request)
+    public async Task<ProfileDto> UpdateProfileAsync(int userId, UpdateProfileRequest request)
     {
         // Retrieve user with all related data
         var user = await _userRepository.GetByIdAsync(userId);
@@ -138,6 +138,16 @@ public class ProfileService : IProfileService
         // Update timestamp
         user.AlumniProfile.UpdatedAt = DateTime.UtcNow;
 
+        // Sync to AlumniDatabase if linked
+        var alumniRecord = await _context.AlumniDatabase.FirstOrDefaultAsync(a => a.MatchedUserId == userId);
+        if (alumniRecord != null)
+        {
+            if (request.Phone != null) alumniRecord.Phone = request.Phone;
+            if (request.Location != null) alumniRecord.Location = request.Location;
+            if (request.Course != null) alumniRecord.Course = request.Course;
+            if (request.Batch != null) alumniRecord.Batch = request.Batch;
+        }
+
         // Save changes to database
         await _context.SaveChangesAsync();
 
@@ -156,7 +166,7 @@ public class ProfileService : IProfileService
     /// <param name="imageUrl">The URL to the uploaded image</param>
     /// <returns>The updated profile data with new image URL</returns>
     /// <exception cref="KeyNotFoundException">Thrown when user is not found</exception>
-    public async Task<ProfileDto> UpdateProfileImageAsync(Guid userId, string imageUrl)
+    public async Task<ProfileDto> UpdateProfileImageAsync(int userId, string imageUrl)
     {
         // Retrieve user with all related data
         var user = await _userRepository.GetByIdAsync(userId);

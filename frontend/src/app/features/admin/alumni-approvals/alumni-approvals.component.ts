@@ -24,7 +24,7 @@ import {
 } from 'lucide-angular';
 
 interface UserRecord {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -264,9 +264,9 @@ export class AlumniApprovalsComponent implements OnInit {
   mapPinIcon = MapPin;
   userIcon = User;
 
-  expandedUserId = signal<string | null>(null);
+  expandedUserId = signal<number | null>(null);
 
-  toggleExpand(id: string) {
+  toggleExpand(id: number) {
     this.expandedUserId.set(this.expandedUserId() === id ? null : id);
   }
 

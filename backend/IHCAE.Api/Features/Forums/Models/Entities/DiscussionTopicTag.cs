@@ -12,7 +12,7 @@ public class DiscussionTopicTag
     /// Foreign key to the DiscussionTopic.
     /// </summary>
     [Required]
-    public Guid TopicId { get; set; }
+    public int TopicId { get; set; }
 
     /// <summary>
     /// Navigation property to the DiscussionTopic.

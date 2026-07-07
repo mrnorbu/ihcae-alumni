@@ -4,6 +4,7 @@ import { LucideAngularModule, ArrowLeft, Calendar, User, Eye, Share2, Newspaper 
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
 import { NewsService } from '../../services/news.service';
 import type { NewsArticle, NewsArticleSummary } from '../../models';
+import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
 
 /**
  * News Detail Component
@@ -14,7 +15,7 @@ import type { NewsArticle, NewsArticleSummary } from '../../models';
 @Component({
   selector: 'app-news-detail',
   standalone: true,
-  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
@@ -48,11 +49,11 @@ import type { NewsArticle, NewsArticleSummary } from '../../models';
             <!-- Main Content (8 cols) -->
             <article class="lg:col-span-8 bg-transparent">
               <!-- Featured Image -->
-              @if (article()!.imageUrl) {
+              @if (article()?.imageUrl) {
                 <div class="w-full h-72 md:h-96 relative overflow-hidden bg-neutral-100 rounded-lg mb-5">
                   <img 
-                    [src]="article()!.imageUrl" 
-                    [alt]="article()!.title"
+                    [src]="article()?.imageUrl | appImageUrl" 
+                    [alt]="article()?.title"
                     class="w-full h-full object-cover"
                     (error)="onImageError($event)"
                   >
@@ -127,14 +128,14 @@ import type { NewsArticle, NewsArticleSummary } from '../../models';
                   <div class="divide-y divide-neutral-200/60">
                     @for (recent of recentArticles(); track recent.id) {
                       <div 
-                        [routerLink]="['/news', recent.id]"
+                        [routerLink]="['/news', recent.slug]"
                         class="group cursor-pointer py-3 first:pt-0 last:pb-0 block transition-colors"
                       >
                         <div class="flex gap-3">
                           <!-- Small Image / Icon -->
                           <div class="w-14 h-14 rounded bg-neutral-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
                             @if (recent.thumbnailUrl) {
-                              <img [src]="recent.thumbnailUrl" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                              <img [src]="recent.thumbnailUrl | appImageUrl" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                             } @else {
                               <div class="w-full h-full bg-primary-50 text-primary-700/80 flex items-center justify-center">
                                 <lucide-icon [img]="newspaperIcon" [size]="16"></lucide-icon>
@@ -233,9 +234,9 @@ export class NewsDetailComponent implements OnInit {
     });
   }
 
-  private loadArticle(id: string): void {
+  private loadArticle(slug: string): void {
     this.isLoading.set(true);
-    this.newsService.getArticleById(id).subscribe({
+    this.newsService.getArticleBySlug(slug).subscribe({
       next: (article) => {
         this.article.set(article);
         this.isLoading.set(false);
@@ -253,7 +254,7 @@ export class NewsDetailComponent implements OnInit {
       next: (result) => {
         // Exclude the current article and show at most 3
         const filtered = result.items
-          .filter(item => item.id !== currentId)
+          .filter(item => item.slug !== currentId)
           .slice(0, 3);
         this.recentArticles.set(filtered);
       },

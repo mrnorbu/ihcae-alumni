@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace IHCAE.Infrastructure.Migrations
+namespace IHCAE.Api.Shared.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -24,9 +24,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Alumni.Models.Entities.AlumniDatabase", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Batch")
                         .HasMaxLength(100)
@@ -60,8 +62,8 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<Guid?>("MatchedUserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int?>("MatchedUserId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
@@ -80,8 +82,8 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Auth.Models.Entities.AlumniProfile", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Batch")
                         .HasMaxLength(100)
@@ -111,6 +113,11 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("varchar(1024)");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -125,9 +132,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Auth.Models.Entities.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -195,9 +204,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Auth.Models.Entities.UserRefreshToken", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -215,8 +226,8 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -230,9 +241,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.EmailVerification.Models.Entities.EmailVerificationToken", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -253,8 +266,8 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime?>("UsedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -268,23 +281,25 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Events.Models.Entities.Event", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("Capacity")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("char(36)");
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
-                    b.Property<Guid>("CreatedById")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -310,6 +325,10 @@ namespace IHCAE.Infrastructure.Migrations
 
                     b.Property<DateTime?>("RegistrationDeadline")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -341,9 +360,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Events.Models.Entities.EventCategory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -377,17 +398,19 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Events.Models.Entities.EventRegistration", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -406,8 +429,8 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -427,17 +450,19 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.DiscussionTopic", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
-                    b.Property<Guid>("CreatedById")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsLocked")
                         .ValueGeneratedOnAdd()
@@ -448,6 +473,11 @@ namespace IHCAE.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -470,8 +500,8 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.DiscussionTopicTag", b =>
                 {
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("TopicId")
+                        .HasColumnType("int");
 
                     b.Property<int>("TagId")
                         .HasColumnType("int");
@@ -485,9 +515,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.ForumFlag", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -498,11 +530,11 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<Guid>("FlaggedById")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("FlaggedById")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -516,8 +548,8 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("ResolvedById")
-                        .HasColumnType("char(36)");
+                    b.Property<int?>("ResolvedById")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -542,12 +574,14 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.ForumPost", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("char(36)");
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -561,8 +595,8 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("char(36)");
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("DeletionReason")
                         .HasMaxLength(500)
@@ -573,11 +607,11 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
-                    b.Property<Guid?>("ParentPostId")
-                        .HasColumnType("char(36)");
+                    b.Property<int?>("ParentPostId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("TopicId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -597,11 +631,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.Forums.Models.Entities.PostLike", b =>
                 {
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -617,15 +651,17 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.News.Models.Entities.NewsArticle", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("char(36)");
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -646,6 +682,14 @@ namespace IHCAE.Infrastructure.Migrations
 
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -682,9 +726,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.News.Models.Entities.NewsCategory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -718,9 +764,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Features.PasswordReset.Models.Entities.PasswordResetToken", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -741,8 +789,8 @@ namespace IHCAE.Infrastructure.Migrations
                     b.Property<DateTime?>("UsedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -756,9 +804,11 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Shared.Models.Notification", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -789,8 +839,8 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -876,8 +926,8 @@ namespace IHCAE.Infrastructure.Migrations
 
             modelBuilder.Entity("IHCAE.Api.Shared.Models.UserRole", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)")
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
                         .HasColumnOrder(0);
 
                     b.Property<int>("RoleId")
@@ -889,8 +939,8 @@ namespace IHCAE.Infrastructure.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
-                    b.Property<Guid?>("AssignedBy")
-                        .HasColumnType("char(36)");
+                    b.Property<int?>("AssignedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("UserId", "RoleId");
 

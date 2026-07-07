@@ -36,7 +36,7 @@ public class EventsController : ControllerBase
     public async Task<IActionResult> GetUpcomingEvents(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] Guid? categoryId = null,
+        [FromQuery] int? categoryId = null,
         [FromQuery] string? location = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
@@ -57,10 +57,35 @@ public class EventsController : ControllerBase
     /// <summary>
     /// Get a single published event by ID
     /// </summary>
+    [HttpGet("slug/{slug}", Name = "GetEventBySlug")]
+    [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetEventBySlug(string slug)
+    {
+        try
+        {
+            var eventDto = await _eventService.GetEventBySlugAsync(slug);
+            return Ok(eventDto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Event {EventSlug} not found", slug);
+            return NotFound(new ErrorResponse { Message = "Event not found" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving event {EventSlug}", slug);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get a single published event by ID
+    /// </summary>
     [HttpGet("{id}", Name = "GetEventById")]
     [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetEventById(Guid id)
+    public async Task<IActionResult> GetEventById(int id)
     {
         try
         {
@@ -70,7 +95,7 @@ public class EventsController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Event {EventId} not found", id);
-            return NotFound(new ErrorResponse { Message = "Event not found" });
+            return NotFound(new ErrorResponse { Message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -86,7 +111,7 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(EventRegistrationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RegisterForEvent(Guid id, [FromBody] RegisterForEventRequest request)
+    public async Task<IActionResult> RegisterForEvent(int id, [FromBody] RegisterForEventRequest request)
     {
         try
         {
@@ -96,18 +121,18 @@ public class EventsController : ControllerBase
             }
 
             // Get user ID if authenticated
-            Guid? userId = null;
+            int? userId = null;
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var parsedUserId))
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var parsedUserId))
                 {
                     userId = parsedUserId;
                 }
             }
 
             var registration = await _registrationService.RegisterForEventAsync(id, request, userId);
-            return CreatedAtAction(nameof(GetEventById), new { id }, registration);
+            return StatusCode(StatusCodes.Status201Created, registration);
         }
         catch (KeyNotFoundException ex)
         {
@@ -131,7 +156,7 @@ public class EventsController : ControllerBase
     /// </summary>
     [HttpGet("{id}/check-registration")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    public async Task<IActionResult> CheckIfRegistered(Guid id, [FromQuery] string email)
+    public async Task<IActionResult> CheckIfRegistered(int id, [FromQuery] string email)
     {
         try
         {
@@ -156,7 +181,7 @@ public class EventsController : ControllerBase
     [HttpGet("{id}/available-spots")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAvailableSpots(Guid id)
+    public async Task<IActionResult> GetAvailableSpots(int id)
     {
         try
         {
@@ -202,7 +227,7 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(PaginatedResult<EventRegistrationDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetEventRegistrations(
-        Guid id,
+        int id,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -225,7 +250,7 @@ public class EventsController : ControllerBase
     [Authorize(Roles = "Admin,ContentCreator")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> ExportRegistrations(Guid id)
+    public async Task<IActionResult> ExportRegistrations(int id)
     {
         try
         {

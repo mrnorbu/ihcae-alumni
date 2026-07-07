@@ -214,7 +214,7 @@ export class EventRegistrationComponent implements OnInit {
   isSubmitting = signal(false);
   registrationSuccess = signal(false);
   errorMessage = signal<string | null>(null);
-  eventId: string = '';
+  eventId: number = 0;
 
   // Form
   registrationForm: FormGroup;
@@ -228,20 +228,20 @@ export class EventRegistrationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.eventId = id;
-      this.loadEvent(id);
+    const slug = this.route.snapshot.paramMap.get('id'); // Route uses :id but we pass a slug
+    if (slug) {
+      this.loadEvent(slug);
       this.prefillUserData();
     } else {
       this.router.navigate(['/news-events']);
     }
   }
 
-  private loadEvent(id: string): void {
+  private loadEvent(slug: string): void {
     this.isLoadingEvent.set(true);
-    this.eventsService.getEventById(id).subscribe({
+    this.eventsService.getEventBySlug(slug).subscribe({
       next: (event) => {
+        this.eventId = event.id;
         this.event.set(event);
         this.isLoadingEvent.set(false);
         
@@ -250,7 +250,7 @@ export class EventRegistrationComponent implements OnInit {
           this.errorMessage.set('This event is full. Registration is no longer available.');
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading event:', err);
         this.router.navigate(['/news-events']);
       }
@@ -295,11 +295,19 @@ export class EventRegistrationComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/events', this.eventId]);
+    if (this.event()) {
+      this.router.navigate(['/events', this.event()!.slug]);
+    } else {
+      this.router.navigate(['/news-events']);
+    }
   }
 
   goToEvent(): void {
-    this.router.navigate(['/events', this.eventId]);
+    if (this.event()) {
+      this.router.navigate(['/events', this.event()!.slug]);
+    } else {
+      this.router.navigate(['/news-events']);
+    }
   }
 
   formatEventDate(date: Date | undefined): string {

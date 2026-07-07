@@ -17,6 +17,7 @@ using IHCAE.Api.Features.News.Services;
 using IHCAE.Api.Features.Events.Services;
 using IHCAE.Api.Shared.Services;
 using IHCAE.Api.Shared.Middleware;
+using IHCAE.Api.Shared.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+// Add services to the container
+builder.Services.AddControllers()
+    .AddJsonOptions(options => 
+    {
+        options.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

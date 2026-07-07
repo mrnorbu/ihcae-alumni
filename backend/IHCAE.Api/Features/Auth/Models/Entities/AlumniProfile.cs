@@ -13,7 +13,13 @@ public class AlumniProfile
     /// Foreign key to the User entity - one-to-one relationship
     /// </summary>
     [Key]
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
+
+    /// <summary>
+    /// Unique URL-friendly slug (e.g., tenzing-norgay)
+    /// </summary>
+    [MaxLength(255)]
+    public string Slug { get; set; } = string.Empty;
 
     /// <summary>
     /// URL to the user's profile image

@@ -21,7 +21,7 @@ public class NewsTests : IntegrationTestBase
     {
     }
 
-    private async Task SeedNewsDataAsync(AppDbContext context, Guid authorId, Guid generalCategoryId, Guid successStoryCategoryId, Guid publishedArticleId, Guid successStoryArticleId)
+    private async Task SeedNewsDataAsync(AppDbContext context, int authorId, int generalCategoryId, int successStoryCategoryId, int publishedArticleId, int successStoryArticleId)
     {
         // Add Author
         var existingAuthor = await context.Users.FirstOrDefaultAsync(u => u.Email == "news.author@example.com");
@@ -115,7 +115,7 @@ public class NewsTests : IntegrationTestBase
         // Add a draft article that shouldn't be returned by public endpoints
         context.NewsArticles.Add(new NewsArticle
         {
-            Id = Guid.NewGuid(),
+            Id = Random.Shared.Next(1, 1000000),
             Title = "Draft News",
             Content = "Draft content",
             CategoryId = generalCategoryId,
@@ -132,11 +132,11 @@ public class NewsTests : IntegrationTestBase
     public async Task GetPublishedArticles_ReturnsOnlyPublishedArticles()
     {
         // Arrange
-        var authorId = Guid.NewGuid();
-        var generalCatId = Guid.NewGuid();
-        var successCatId = Guid.NewGuid();
-        var publishedId = Guid.NewGuid();
-        var successId = Guid.NewGuid();
+        var authorId = Random.Shared.Next(1, 1000000);
+        var generalCatId = Random.Shared.Next(1, 1000000);
+        var successCatId = Random.Shared.Next(1, 1000000);
+        var publishedId = Random.Shared.Next(1, 1000000);
+        var successId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -166,11 +166,11 @@ public class NewsTests : IntegrationTestBase
     public async Task GetArticleById_WithValidPublishedId_ReturnsArticle()
     {
         // Arrange
-        var authorId = Guid.NewGuid();
-        var generalCatId = Guid.NewGuid();
-        var successCatId = Guid.NewGuid();
-        var publishedId = Guid.NewGuid();
-        var successId = Guid.NewGuid();
+        var authorId = Random.Shared.Next(1, 1000000);
+        var generalCatId = Random.Shared.Next(1, 1000000);
+        var successCatId = Random.Shared.Next(1, 1000000);
+        var publishedId = Random.Shared.Next(1, 1000000);
+        var successId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -194,11 +194,11 @@ public class NewsTests : IntegrationTestBase
     public async Task GetSuccessStories_ReturnsOnlySuccessStories()
     {
         // Arrange
-        var authorId = Guid.NewGuid();
-        var generalCatId = Guid.NewGuid();
-        var successCatId = Guid.NewGuid();
-        var publishedId = Guid.NewGuid();
-        var successId = Guid.NewGuid();
+        var authorId = Random.Shared.Next(1, 1000000);
+        var generalCatId = Random.Shared.Next(1, 1000000);
+        var successCatId = Random.Shared.Next(1, 1000000);
+        var publishedId = Random.Shared.Next(1, 1000000);
+        var successId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -226,14 +226,14 @@ public class NewsTests : IntegrationTestBase
     public async Task GetCategories_ReturnsAllCategories()
     {
         // Arrange
-        var authorId = Guid.NewGuid();
-        var generalCatId = Guid.NewGuid();
-        var successCatId = Guid.NewGuid();
+        var authorId = Random.Shared.Next(1, 1000000);
+        var generalCatId = Random.Shared.Next(1, 1000000);
+        var successCatId = Random.Shared.Next(1, 1000000);
 
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await SeedNewsDataAsync(context, authorId, generalCatId, successCatId, Guid.NewGuid(), Guid.NewGuid());
+            await SeedNewsDataAsync(context, authorId, generalCatId, successCatId, Random.Shared.Next(1, 1000000), Random.Shared.Next(1, 1000000));
         }
 
         // Act
@@ -257,7 +257,7 @@ public class NewsTests : IntegrationTestBase
         return result!.Token;
     }
 
-    private async Task SeedAlumniRoleAndUserAsync(AppDbContext context, Guid userId, string email, string password, string firstName, string lastName)
+    private async Task SeedAlumniRoleAndUserAsync(AppDbContext context, int userId, string email, string password, string firstName, string lastName)
     {
         var alumniRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.Alumni);
         if (alumniRole == null)
@@ -294,7 +294,7 @@ public class NewsTests : IntegrationTestBase
     public async Task SubmitContent_AsAlumni_ReturnsSuccess()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Random.Shared.Next(1, 1000000);
         var email = "submit.alumni@example.com";
         var password = "Password123!";
         
@@ -308,7 +308,7 @@ public class NewsTests : IntegrationTestBase
             {
                 context.NewsCategories.Add(new NewsCategory
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Random.Shared.Next(1, 1000000),
                     Name = "General News",
                     Slug = "general-news",
                     CreatedAt = DateTime.UtcNow

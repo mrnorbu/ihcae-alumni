@@ -9,7 +9,7 @@ public class UserSummaryDto
     /// <summary>
     /// User's unique identifier.
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// User's first name.
@@ -20,6 +20,7 @@ public class UserSummaryDto
     /// User's last name.
     /// </summary>
     public string LastName { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
 
     /// <summary>
     /// User's email address.

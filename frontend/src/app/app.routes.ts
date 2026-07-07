@@ -68,8 +68,6 @@ export const routes: Routes = [
       { path: 'forums', loadComponent: () => import('./features/admin/forum-moderation/forum-moderation.component').then(m => m.ForumModerationComponent), canActivate: [AdminGuard] },
       { path: 'content', loadComponent: () => import('./features/admin/news-events-management/news-events-management.component').then(m => m.NewsEventsManagementComponent) },
       { path: 'users', loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent), canActivate: [AdminGuard] },
-      { path: 'analytics', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Analytics' }, canActivate: [AdminGuard] },
-      { path: 'settings', loadComponent: () => import('./features/admin/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent), data: { feature: 'Settings' }, canActivate: [AdminGuard] },
     ]
   },
   {

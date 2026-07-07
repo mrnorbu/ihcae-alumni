@@ -7,6 +7,7 @@ import { NewsService } from '../../services/news.service';
 import { UserAuthStore } from '../../../../core/state/user-auth.store';
 import { NewsCategory, SubmitContentRequest } from '../../models';
 import { FileUploadService } from '../../../../shared/services/file-upload.service';
+import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
 
 /**
  * Submit Content Component
@@ -17,7 +18,7 @@ import { FileUploadService } from '../../../../shared/services/file-upload.servi
 @Component({
   selector: 'app-submit-content',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [ReactiveFormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-white page-fade-in">
       <app-header></app-header>
@@ -161,16 +162,12 @@ import { FileUploadService } from '../../../../shared/services/file-upload.servi
                 <div class="mb-6">
                   <label class="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-2">
                     Featured Image 
-                    @if (contentForm.get('categorySlug')?.value === 'success-story') {
-                      <span class="text-error-600">* (Required for Success Stories)</span>
-                    } @else {
-                      <span class="text-neutral-400 normal-case tracking-normal">(Optional)</span>
-                    }
+                    <span class="text-neutral-400 normal-case tracking-normal">(Optional)</span>
                   </label>
                   <div class="border-2 border-dashed border-neutral-200 bg-neutral-50/50 hover:bg-neutral-50 rounded-xl p-6 text-center hover:border-primary-400 transition-colors">
                     @if (imagePreview()) {
                       <div class="relative">
-                        <img [src]="imagePreview()" alt="Preview" class="max-h-48 mx-auto rounded-lg mb-4 shadow-sm border border-neutral-200">
+                        <img [src]="imagePreview() | appImageUrl" alt="Preview" class="max-h-48 mx-auto rounded-lg mb-4 shadow-sm border border-neutral-200">
                         <button 
                           type="button"
                           (click)="removeImage()"
@@ -235,10 +232,10 @@ import { FileUploadService } from '../../../../shared/services/file-upload.servi
                 <div class="flex gap-3 pt-2">
                   <button
                     type="submit"
-                    [disabled]="contentForm.invalid || (contentForm.get('categorySlug')?.value === 'success-story' && !imagePreview()) || isSubmitting()"
+                    [disabled]="contentForm.invalid || isSubmitting()"
                     class="btn-primary flex-1 flex items-center justify-center gap-2"
-                    [class.opacity-50]="contentForm.invalid || (contentForm.get('categorySlug')?.value === 'success-story' && !imagePreview()) || isSubmitting()"
-                    [class.cursor-not-allowed]="contentForm.invalid || (contentForm.get('categorySlug')?.value === 'success-story' && !imagePreview()) || isSubmitting()"
+                    [class.opacity-50]="contentForm.invalid || isSubmitting()"
+                    [class.cursor-not-allowed]="contentForm.invalid || isSubmitting()"
                   >
                     @if (isSubmitting()) {
                       <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
@@ -341,10 +338,10 @@ export class SubmitContentComponent implements OnInit {
     });
   }
 
-  private loadArticleForEdit(id: string): void {
+  private loadArticleForEdit(id: number): void {
     this.isSubmitting.set(true);
     this.newsService.getArticleById(id).subscribe({
-      next: (article) => {
+      next: (article: any) => {
         this.editingItem.set(article);
         this.contentForm.patchValue({
           title: article.title,
@@ -356,7 +353,7 @@ export class SubmitContentComponent implements OnInit {
         }
         this.isSubmitting.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading article for edit:', err);
         this.errorMessage.set('Failed to load article details.');
         this.isSubmitting.set(false);
@@ -408,10 +405,6 @@ export class SubmitContentComponent implements OnInit {
     }
 
     const formValue = this.contentForm.value;
-    if (formValue.categorySlug === 'success-story' && !this.selectedFile() && !this.imagePreview()) {
-      this.imageError.set('Image is required for success stories');
-      return;
-    }
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -430,7 +423,7 @@ export class SubmitContentComponent implements OnInit {
         error: (err) => {
           console.error('Image upload error:', err);
           this.isSubmitting.set(false);
-          this.errorMessage.set('Failed to upload image. Please try again.');
+          this.errorMessage.set(err.error?.message || 'Failed to upload image. Please try again.');
         }
       });
     } else {
@@ -456,7 +449,7 @@ export class SubmitContentComponent implements OnInit {
         publish: false
       };
 
-      this.newsService.updateArticle(this.editId()!, updateRequest as any).subscribe({
+      this.newsService.updateArticle(Number(this.editId()!), updateRequest as any).subscribe({
         next: () => {
           this.isSubmitting.set(false);
           this.submissionSuccess.set(true);

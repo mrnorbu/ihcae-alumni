@@ -396,15 +396,15 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
   mainPost: PostDto | null = null;
   loading = true;
   error: string | null = null;
-  activeReplyForm: string | null = null;
+  activeReplyForm: number | null = null;
   replyText = '';
   submitting = false;
   showDeleteModal = false;
-  postToDelete: string | null = null;
+  postToDelete: number | null = null;
 
   // Flagging variables
   showFlagModal = false;
-  postToFlag: string | null = null;
+  postToFlag: number | null = null;
   flagReason = '';
   flagDetails = '';
   flagSubmitting = false;
@@ -457,7 +457,7 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
   }
 
   /** Replies that are nested under a specific parent reply */
-  getNestedReplies(parentId: string): PostDto[] {
+  getNestedReplies(parentId: number): PostDto[] {
     if (!this.mainPost) return [];
     // Check both mainPost.replies (flat structure from backend) and the parent's own .replies
     const parent = this.mainPost.replies.find(r => r.id === parentId);
@@ -485,7 +485,7 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadTopic(id?: string): void {
+  loadTopic(id?: number): void {
     const topicId = id || this.route.snapshot.params['id'];
     if (!topicId) return;
 
@@ -507,7 +507,7 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  openReplyForm(postId: string): void {
+  openReplyForm(postId: number): void {
     this.activeReplyForm = postId;
     this.replyText = '';
   }
@@ -517,7 +517,7 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
     this.replyText = '';
   }
 
-  submitReply(postId: string): void {
+  submitReply(postId: number): void {
     if (!this.replyText.trim() || !this.topic || !this.mainPost) return;
     this.submitting = true;
 
@@ -566,7 +566,7 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  confirmDeletePost(postId: string): void {
+  confirmDeletePost(postId: number): void {
     this.postToDelete = postId;
     this.showDeleteModal = true;
   }
@@ -574,7 +574,7 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
   deletePost(): void {
     if (!this.postToDelete || !this.mainPost) return;
     const idToDelete = this.postToDelete;
-    this.forumService.deleteOwnPost(idToDelete)
+    this.forumService.deleteOwnPost(Number(idToDelete))
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -607,11 +607,11 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
     return url.includes('lucide') || url.includes('placeholder') || url.includes('default');
   }
 
-  isCurrentUser(userId: string): boolean {
+  isCurrentUser(userId: number): boolean {
     return this.authStore.currentUser?.id === userId;
   }
 
-  openFlagModal(postId: string): void {
+  openFlagModal(postId: number): void {
     this.postToFlag = postId;
     this.flagReason = '';
     this.flagDetails = '';
@@ -659,7 +659,11 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
   formatDate(date: Date | string): string {
     const d = new Date(date);
     const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
+    let diffMs = now.getTime() - d.getTime();
+    
+    // Prevent negative time differences (future dates) from showing 'just now' indefinitely
+    if (diffMs < 0) diffMs = 0;
+    
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
@@ -668,6 +672,14 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return d.toLocaleDateString();
+    
+    return d.toLocaleString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
   }
 }

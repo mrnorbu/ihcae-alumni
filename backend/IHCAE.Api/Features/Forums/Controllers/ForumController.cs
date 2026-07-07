@@ -44,7 +44,7 @@ public class ForumController : ControllerBase
         [FromQuery] int pageSize = 20, 
         [FromQuery] string? tags = null,
         [FromQuery] string? search = null,
-        [FromQuery] Guid? authorId = null,
+        [FromQuery] int? authorId = null,
         [FromQuery] string sortBy = "recent")
     {
         try
@@ -71,7 +71,7 @@ public class ForumController : ControllerBase
     [ProducesResponseType(typeof(TopicDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetTopicById(Guid topicId)
+    public async Task<IActionResult> GetTopicById(int topicId)
     {
         try
         {
@@ -125,7 +125,7 @@ public class ForumController : ControllerBase
     [ProducesResponseType(typeof(PostDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> CreatePost(Guid topicId, [FromBody] CreatePostRequest request)
+    public async Task<IActionResult> CreatePost(int topicId, [FromBody] CreatePostRequest request)
     {
         try
         {
@@ -135,7 +135,7 @@ public class ForumController : ControllerBase
             }
 
             var userId = GetCurrentUserId();
-            var post = await _forumService.CreatePostAsync(topicId, userId, request.Content, request.ParentPostId);
+            var post = await _forumService.CreatePostAsync(topicId, userId, request.Content, request.ParentPostId, request.MentionedUserIds);
             return CreatedAtAction(nameof(GetTopicById), new { topicId }, post);
         }
         catch (KeyNotFoundException ex)
@@ -162,7 +162,7 @@ public class ForumController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> LikePost(Guid postId)
+    public async Task<IActionResult> LikePost(int postId)
     {
         try
         {
@@ -189,7 +189,7 @@ public class ForumController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UnlikePost(Guid postId)
+    public async Task<IActionResult> UnlikePost(int postId)
     {
         try
         {
@@ -217,7 +217,7 @@ public class ForumController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> DeletePost(Guid postId)
+    public async Task<IActionResult> DeletePost(int postId)
     {
         try
         {
@@ -249,7 +249,7 @@ public class ForumController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> FlagPost(Guid postId, [FromBody] FlagPostRequest request)
+    public async Task<IActionResult> FlagPost(int postId, [FromBody] FlagPostRequest request)
     {
         try
         {
@@ -308,6 +308,32 @@ public class ForumController : ControllerBase
     }
 
     /// <summary>
+    /// Searches for users by name for mentions.
+    /// </summary>
+    [HttpGet("users/search")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> SearchUsers([FromQuery] string q, [FromQuery] int limit = 5)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(q)) return Ok(new List<object>());
+            var query = q.ToLower();
+            var users = await _context.Users
+                .Where(u => u.Status == IHCAE.Api.Features.Auth.Models.Entities.UserStatus.Approved && !u.IsBanned)
+                .Where(u => u.FirstName.ToLower().Contains(query) || u.LastName.ToLower().Contains(query))
+                .Take(limit)
+                .Select(u => new { u.Id, u.FirstName, u.LastName })
+                .ToListAsync();
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching users");
+            return StatusCode(500, new ErrorResponse { Message = "An error occurred while searching users." });
+        }
+    }
+
+    /// <summary>
     /// Gets the most popular tags.
     /// </summary>
     [HttpGet("tags/popular")]
@@ -350,10 +376,10 @@ public class ForumController : ControllerBase
     /// <summary>
     /// Gets the current user ID from the JWT token.
     /// </summary>
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token.");
         }

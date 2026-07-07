@@ -34,6 +34,7 @@ public class SeedDataService : IHostedService
         {
             await SeedRolesAsync(context);
             await SeedAdminUserAsync(context);
+            await SeedCategoriesAsync(context);
             await AddRejectionReasonColumnIfMissingAsync(context);
             _logger.LogInformation("Database seeding completed successfully");
         }
@@ -131,6 +132,42 @@ public class SeedDataService : IHostedService
     }
 
     /// <summary>
+    /// Seeds the default categories for News and Events
+    /// </summary>
+    private async Task SeedCategoriesAsync(AppDbContext context)
+    {
+        var hasNewsCategories = await context.NewsCategories.AnyAsync();
+        if (!hasNewsCategories)
+        {
+            var newsCategories = new List<IHCAE.Api.Features.News.Models.Entities.NewsCategory>
+            {
+                new() { Name = "General News", Slug = "general-news", Description = "Latest news and updates from IHCAE", CreatedAt = DateTime.UtcNow },
+                new() { Name = "Announcement", Slug = "announcement", Description = "Important announcements", CreatedAt = DateTime.UtcNow },
+                new() { Name = "Success Story", Slug = "success-story", Description = "Stories of achievements from our alumni", CreatedAt = DateTime.UtcNow },
+                new() { Name = "Achievement", Slug = "achievement", Description = "Notable achievements and awards", CreatedAt = DateTime.UtcNow },
+                new() { Name = "Alumni Spotlight", Slug = "alumni-spotlight", Description = "Highlighting our outstanding alumni", CreatedAt = DateTime.UtcNow }
+            };
+            context.NewsCategories.AddRange(newsCategories);
+            _logger.LogInformation("Default news categories created successfully");
+        }
+
+        var hasEventCategories = await context.EventCategories.AnyAsync();
+        if (!hasEventCategories)
+        {
+            var eventCategories = new List<IHCAE.Api.Features.Events.Models.Entities.EventCategory>
+            {
+                new() { Name = "Meetups", Slug = "meetups", Description = "Alumni meetups and gatherings", CreatedAt = DateTime.UtcNow },
+                new() { Name = "Expeditions", Slug = "expeditions", Description = "Upcoming expeditions", CreatedAt = DateTime.UtcNow },
+                new() { Name = "Training", Slug = "training", Description = "Training and courses", CreatedAt = DateTime.UtcNow }
+            };
+            context.EventCategories.AddRange(eventCategories);
+            _logger.LogInformation("Default event categories created successfully");
+        }
+        
+        await context.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Seeds the default admin user
     /// </summary>
     private async Task SeedAdminUserAsync(AppDbContext context)
@@ -149,7 +186,7 @@ public class SeedDataService : IHostedService
 
             var adminUser = new User
             {
-                Id = Guid.NewGuid(),
+                
                 Email = adminEmail,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123", 12), // Default password
                 FirstName = "System",

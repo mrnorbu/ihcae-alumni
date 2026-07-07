@@ -45,7 +45,7 @@ public class NewsManagementController : ControllerBase
             var isAdmin = User.IsInRole("Admin") || User.IsInRole("ContentCreator");
 
             var article = await _newsService.CreateArticleAsync(userId, request, isAdmin);
-            return CreatedAtRoute("GetArticleById", new { controller = "News", id = article.Id }, article);
+            return CreatedAtRoute("GetArticleBySlug", new { slug = article.Slug }, article);
         }
         catch (ArgumentException ex)
         {
@@ -68,7 +68,7 @@ public class NewsManagementController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] UpdateNewsArticleRequest request)
+    public async Task<IActionResult> UpdateArticle(int id, [FromBody] UpdateNewsArticleRequest request)
     {
         try
         {
@@ -113,7 +113,7 @@ public class NewsManagementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteArticle(Guid id)
+    public async Task<IActionResult> DeleteArticle(int id)
     {
         try
         {
@@ -214,7 +214,7 @@ public class NewsManagementController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ApproveArticle(Guid id)
+    public async Task<IActionResult> ApproveArticle(int id)
     {
         try
         {
@@ -248,7 +248,7 @@ public class NewsManagementController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RejectArticle(Guid id, [FromBody] RejectContentRequest request)
+    public async Task<IActionResult> RejectArticle(int id, [FromBody] RejectContentRequest request)
     {
         try
         {
@@ -298,7 +298,7 @@ public class NewsManagementController : ControllerBase
 
             var alumniId = GetCurrentUserId();
             var article = await _newsService.SubmitContentAsync(alumniId, request);
-            return CreatedAtRoute("GetArticleById", new { controller = "News", id = article.Id }, article);
+            return CreatedAtRoute("GetArticleBySlug", new { slug = article.Slug }, article);
         }
         catch (ArgumentException ex)
         {
@@ -317,10 +317,10 @@ public class NewsManagementController : ControllerBase
         }
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token");
         }

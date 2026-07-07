@@ -1,3 +1,4 @@
+using IHCAE.Api.Shared.Constants;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -90,7 +91,6 @@ public class AuthService : IAuthService
         // Create user entity — assign AlumniProfile as nav property so EF cascade-saves it
         var user = new User
         {
-            Id = Guid.NewGuid(),
             FirstName = firstName,
             LastName = lastName,
             Email = email.ToLower(),
@@ -102,6 +102,7 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow,
             AlumniProfile = new AlumniProfile
             {
+
                 Course = course,
                 Batch = batch,
                 Location = location,
@@ -117,6 +118,7 @@ public class AuthService : IAuthService
         if (matchingAlumni != null)
         {
             await _alumniImportService.LinkAlumniToUserAsync(matchingAlumni.Id, createdUser.Id);
+            await _userRepository.AssignRoleAsync(createdUser.Id, RoleConstants.Alumni);
         }
 
         // Send appropriate email notification
@@ -308,7 +310,10 @@ public class AuthService : IAuthService
         {
             foreach (var userRole in userWithRoles.UserRoles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, userRole.Role.Name));
+                if (userRole.Role != null)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, userRole.Role.Name));
+                }
             }
         }
 
@@ -336,12 +341,12 @@ public class AuthService : IAuthService
         var jwtSettings = _configuration.GetSection("Jwt");
         var expiryDays = int.Parse(jwtSettings["RefreshTokenExpiryDays"]!);
         
-        var refreshToken = Guid.NewGuid().ToString();
+        var refreshToken = System.Guid.NewGuid().ToString();
         var tokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
 
         var userRefreshToken = new UserRefreshToken
         {
-            Id = Guid.NewGuid(),
+            
             UserId = user.Id,
             TokenHash = tokenHash,
             ExpiresAt = DateTime.UtcNow.AddDays(expiryDays),

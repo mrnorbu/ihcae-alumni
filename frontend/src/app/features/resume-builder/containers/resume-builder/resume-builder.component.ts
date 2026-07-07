@@ -99,11 +99,11 @@ import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption }
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="input-label">Job Title</label>
-                <input [(ngModel)]="profile().currentRole.title" type="text" class="input-field" placeholder="Software Engineer">
+                <input [(ngModel)]="profile().currentRole.title" type="text" class="input-field" placeholder="Trekking Guide">
               </div>
               <div>
                 <label class="input-label">Company</label>
-                <input [(ngModel)]="profile().currentRole.company" type="text" class="input-field" placeholder="Tech Company">
+                <input [(ngModel)]="profile().currentRole.company" type="text" class="input-field" placeholder="Himalayan Expeditions">
               </div>
               <div>
                 <label class="input-label">Start Date</label>

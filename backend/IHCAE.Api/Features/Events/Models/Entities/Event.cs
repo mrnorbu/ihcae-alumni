@@ -11,12 +11,17 @@ public class Event
     /// <summary>
     /// Unique identifier for the event
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     
     /// <summary>
     /// Title of the event
     /// </summary>
     public string Title { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// URL-friendly slug
+    /// </summary>
+    public string Slug { get; set; } = string.Empty;
     
     /// <summary>
     /// Full description of the event
@@ -26,7 +31,7 @@ public class Event
     /// <summary>
     /// Foreign key to the category (optional)
     /// </summary>
-    public Guid? CategoryId { get; set; }
+    public int? CategoryId { get; set; }
     
     /// <summary>
     /// Location where the event will take place
@@ -66,7 +71,7 @@ public class Event
     /// <summary>
     /// Foreign key to the user who created the event
     /// </summary>
-    public Guid CreatedById { get; set; }
+    public int CreatedById { get; set; }
     
     /// <summary>
     /// Publication status of the event

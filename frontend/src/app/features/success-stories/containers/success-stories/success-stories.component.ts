@@ -6,6 +6,7 @@ import { LucideAngularModule, Star, Calendar, MapPin, Award, Plus, Eye, Edit, Tr
 import { HeaderComponent, FooterComponent, CustomSelectComponent, SelectOption } from '../../../../shared/components';
 import { NewsService } from '../../../news-events/services/news.service';
 import type { NewsArticleSummary } from '../../../news-events/models';
+import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
 
 /**
  * Success Stories Component
@@ -19,7 +20,7 @@ import type { NewsArticleSummary } from '../../../news-events/models';
 @Component({
   selector: 'app-success-stories',
   standalone: true,
-  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, CustomSelectComponent],
+  imports: [FormsModule, RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, CustomSelectComponent, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-white page-fade-in">
       <app-header></app-header>
@@ -58,7 +59,7 @@ import type { NewsArticleSummary } from '../../../news-events/models';
                   </div>
                 </div>
               </div>
-              <button class="btn-primary bg-white hover:bg-neutral-100 text-primary-950 font-medium btn-sm px-4 py-2 transition-colors self-start md:self-center" [routerLink]="['/news', getFeaturedStory()!.id]">
+              <button class="btn-primary bg-white hover:bg-neutral-100 text-primary-950 font-medium btn-sm px-4 py-2 transition-colors self-start md:self-center" [routerLink]="['/news', getFeaturedStory()!.slug]">
                 Read Full Story
               </button>
             </div>
@@ -107,12 +108,12 @@ import type { NewsArticleSummary } from '../../../news-events/models';
         @if (!isLoading() && getFilteredStories().length > 0) {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             @for (story of getFilteredStories(); track story.id; let i = $index) {
-              <div class="group cursor-pointer pb-4 border-b border-neutral-200/60 transition-colors" [routerLink]="['/news', story.id]">
+              <div class="group cursor-pointer pb-4 border-b border-neutral-200/60 transition-colors" [routerLink]="['/news', story.slug]">
                 <!-- Story Image -->
                 <div class="aspect-video w-full rounded overflow-hidden mb-2 relative bg-neutral-100 flex items-center justify-center">
                   @if (story.thumbnailUrl) {
                     <img 
-                      [src]="story.thumbnailUrl" 
+                      [src]="story.thumbnailUrl | appImageUrl" 
                       [alt]="story.title" 
                       class="w-full h-full object-cover"
                       (error)="onImageError($event)"

@@ -13,7 +13,7 @@ public class PostLike
     /// ID of the post that was liked
     /// </summary>
     [Required]
-    public Guid PostId { get; set; }
+    public int PostId { get; set; }
 
     /// <summary>
     /// Navigation property to the liked post
@@ -24,7 +24,7 @@ public class PostLike
     /// ID of the user who liked the post
     /// </summary>
     [Required]
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// Navigation property to the user who liked the post

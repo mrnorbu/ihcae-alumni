@@ -29,11 +29,11 @@ public class UserManagementTests : IntegrationTestBase
         return result!.Token;
     }
 
-    private async Task<(Guid AdminId, Guid PendingId1, Guid PendingId2)> SeedAdminAndUsersAsync(AppDbContext context)
+    private async Task<(int AdminId, int PendingId1, int PendingId2)> SeedAdminAndUsersAsync(AppDbContext context)
     {
-        var adminId = Guid.NewGuid();
-        var pendingUserId1 = Guid.NewGuid();
-        var pendingUserId2 = Guid.NewGuid();
+        var adminId = Random.Shared.Next(1, 1000000);
+        var pendingUserId1 = Random.Shared.Next(1, 1000000);
+        var pendingUserId2 = Random.Shared.Next(1, 1000000);
 
         var adminEmail = "admin.user.mgmt@example.com";
         var existingAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
@@ -136,7 +136,7 @@ public class UserManagementTests : IntegrationTestBase
     public async Task GetPendingUsers_ReturnsPaginatedPendingUsers()
     {
         // Arrange
-        Guid adminId, pendingId1, pendingId2;
+        int adminId, pendingId1, pendingId2;
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -169,7 +169,7 @@ public class UserManagementTests : IntegrationTestBase
     public async Task ApproveUser_WithValidPendingUser_UpdatesStatusAndAssignsRole()
     {
         // Arrange
-        Guid adminId, pendingId1, pendingId2;
+        int adminId, pendingId1, pendingId2;
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -212,7 +212,7 @@ public class UserManagementTests : IntegrationTestBase
     public async Task RejectUser_WithValidPendingUser_UpdatesStatus()
     {
         // Arrange
-        Guid adminId, pendingId1, pendingId2;
+        int adminId, pendingId1, pendingId2;
 
         using (var scope = _factory.Services.CreateScope())
         {

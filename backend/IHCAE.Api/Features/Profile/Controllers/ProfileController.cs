@@ -26,6 +26,7 @@ public class ProfileController : ControllerBase
     private readonly IProfileService _profileService;
     private readonly IFileUploadService _fileUploadService;
     private readonly ILogger<ProfileController> _logger;
+    private readonly IUrlHelperService _urlHelperService;
 
     /// <summary>
     /// Initializes the ProfileController with required services.
@@ -33,14 +34,17 @@ public class ProfileController : ControllerBase
     /// <param name="profileService">Service for profile operations</param>
     /// <param name="fileUploadService">Service for file upload operations</param>
     /// <param name="logger">Logger for tracking controller operations</param>
+    /// <param name="urlHelperService">Service for generating absolute URLs</param>
     public ProfileController(
         IProfileService profileService,
         IFileUploadService fileUploadService,
-        ILogger<ProfileController> logger)
+        ILogger<ProfileController> logger,
+        IUrlHelperService urlHelperService)
     {
         _profileService = profileService;
         _fileUploadService = fileUploadService;
         _logger = logger;
+        _urlHelperService = urlHelperService;
     }
 
     /// <summary>
@@ -202,11 +206,11 @@ public class ProfileController : ControllerBase
 
             _logger.LogInformation("Uploaded profile image for user {UserId}", userId);
             
-            // Return success response with image URL
+            // Return success response with absolute image URL
             return Ok(new UploadProfileImageResponse
             {
                 Message = "Profile image uploaded successfully",
-                ProfileImageUrl = imageUrl
+                ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(imageUrl)
             });
         }
         catch (ArgumentException ex)
@@ -235,12 +239,12 @@ public class ProfileController : ControllerBase
     /// </summary>
     /// <returns>The user ID from the token</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when user ID claim is not found or invalid</exception>
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         // Extract user ID from JWT token claims
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user ID in token");
         }

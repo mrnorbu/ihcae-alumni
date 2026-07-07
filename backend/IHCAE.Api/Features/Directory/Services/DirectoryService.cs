@@ -93,7 +93,7 @@ public class DirectoryService : IDirectoryService
     /// <returns>Detailed alumni information including contact details</returns>
     /// <exception cref="KeyNotFoundException">Thrown when alumnus is not found</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown when user is not approved</exception>
-    public async Task<AlumniDetailDto> GetAlumniDetailAsync(Guid userId)
+    public async Task<AlumniDetailDto> GetAlumniDetailAsync(int userId)
     {
         // Retrieve user with profile data
         var user = await _userRepository.GetWithProfileAsync(userId);
