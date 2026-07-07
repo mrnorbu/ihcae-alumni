@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "qNim3aUA7BM=",
+  "dgSpecHash": "HHd4XTEej7g=",
   "success": true,
   "projectFilePath": "/Users/sonamnorbu/Desktop/Kalasha_Ventures/Tourism/IHCAE/Alumni/ihcae-alumni-app/backend/IHCAE.Api/IHCAE.Api.csproj",
   "expectedPackageFiles": [
@@ -55,10 +55,7 @@
     "/Users/sonamnorbu/.nuget/packages/system.composition.hosting/7.0.0/system.composition.hosting.7.0.0.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/system.composition.runtime/7.0.0/system.composition.runtime.7.0.0.nupkg.sha512",
     "/Users/sonamnorbu/.nuget/packages/system.composition.typedparts/7.0.0/system.composition.typedparts.7.0.0.nupkg.sha512",
-    "/Users/sonamnorbu/.nuget/packages/system.identitymodel.tokens.jwt/8.0.1/system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512",
-    "/Users/sonamnorbu/.nuget/packages/microsoft.netcore.app.runtime.linux-x64/10.0.4/microsoft.netcore.app.runtime.linux-x64.10.0.4.nupkg.sha512",
-    "/Users/sonamnorbu/.nuget/packages/microsoft.aspnetcore.app.runtime.linux-x64/10.0.4/microsoft.aspnetcore.app.runtime.linux-x64.10.0.4.nupkg.sha512",
-    "/Users/sonamnorbu/.nuget/packages/microsoft.netcore.app.host.linux-x64/10.0.4/microsoft.netcore.app.host.linux-x64.10.0.4.nupkg.sha512"
+    "/Users/sonamnorbu/.nuget/packages/system.identitymodel.tokens.jwt/8.0.1/system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512"
   ],
   "logs": []
 }

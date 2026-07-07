@@ -301,3 +301,7 @@ migrate*.sh
 !frontend/angular.json
 !frontend/tailwind.config.js
 !IHCAE.sln
+
+# Tutorial ignores
+docs/tutorial/node_modules/
+docs/tutorial/screenshots/

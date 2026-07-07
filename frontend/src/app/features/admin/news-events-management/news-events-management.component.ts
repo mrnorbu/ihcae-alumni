@@ -925,11 +925,18 @@ export class NewsEventsManagementComponent implements OnInit {
     return d.toISOString().slice(0, 16);
   }
 
-  formatDate(date: Date | string | undefined): string {
+  formatDate(date: any): string {
     if (!date) return '';
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric'
-    });
+    let d = typeof date === 'string' ? new Date(date.endsWith('Z') ? date : date + 'Z') : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
+    }).format(d);
   }
 
   // === Image Upload Handlers ===

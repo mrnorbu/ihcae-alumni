@@ -101,10 +101,10 @@ import {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <!-- Upcoming Events -->
-          <div class="flex flex-col bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <div class="flex items-center justify-between pb-2.5 border-b border-neutral-200/50 mb-3.5">
-              <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-950">Upcoming Events</h2>
-              <a routerLink="/news-events" class="text-xs font-bold text-primary-700 hover:text-primary-950 flex items-center gap-0.5 transition-colors">
+          <div class="flex flex-col bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div class="flex items-center justify-between -mt-4 -mx-4 px-4 py-3 bg-emerald-50/50 border-b border-emerald-100/70 mb-3.5">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-900">Upcoming Events</h2>
+              <a routerLink="/news-events" class="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5 transition-colors">
                 View all <lucide-icon [img]="chevronIcon" [size]="11"></lucide-icon>
               </a>
             </div>
@@ -148,10 +148,10 @@ import {
           </div>
 
           <!-- Forum Discussions -->
-          <div class="flex flex-col bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <div class="flex items-center justify-between pb-2.5 border-b border-neutral-200/50 mb-3.5">
-              <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-950">Forum Discussions</h2>
-              <a routerLink="/forums" class="text-xs font-bold text-primary-700 hover:text-primary-950 flex items-center gap-0.5 transition-colors">
+          <div class="flex flex-col bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div class="flex items-center justify-between -mt-4 -mx-4 px-4 py-3 bg-indigo-50/50 border-b border-indigo-100/70 mb-3.5">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-900">Forum Discussions</h2>
+              <a routerLink="/forums" class="text-xs font-bold text-indigo-700 hover:text-indigo-900 flex items-center gap-0.5 transition-colors">
                 View all <lucide-icon [img]="chevronIcon" [size]="11"></lucide-icon>
               </a>
             </div>
@@ -187,10 +187,10 @@ import {
 
         <!-- My Submissions (only for non-admin users) -->
         @if (!isAdmin()) {
-          <div class="bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] mt-1">
-            <div class="flex items-center justify-between pb-2.5 border-b border-neutral-200/50 mb-3.5">
-              <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-950">My Submissions</h2>
-              <a routerLink="/submit-content" class="text-xs font-bold text-primary-700 hover:text-primary-950 flex items-center gap-0.5 transition-colors">
+          <div class="bg-neutral-50/40 border border-neutral-200/50 rounded-lg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] mt-1 overflow-hidden">
+            <div class="flex items-center justify-between -mt-4 -mx-4 px-4 py-3 bg-amber-50/50 border-b border-amber-100/70 mb-3.5">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-amber-900">My Submissions</h2>
+              <a routerLink="/submit-content" class="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 transition-colors">
                 + Submit Content
               </a>
             </div>

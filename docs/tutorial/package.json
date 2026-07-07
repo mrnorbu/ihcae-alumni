@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-screenshots": "npx playwright test tests/screenshot-generator.spec.ts && node convert.js && cp index.html ../../frontend/public/tutorial/ && cp -r images ../../frontend/public/tutorial/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "puppeteer": "^25.3.0"
+    "puppeteer": "^25.3.0",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

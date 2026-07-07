@@ -127,6 +127,11 @@ public class AuthService : IAuthService
         // Send email verification
         await _emailVerificationService.SendVerificationEmailAsync(createdUser.Id);
 
+        // Send admin notification
+        var adminEmail = _configuration["Smtp:FromEmail"] ?? "admin@ihcae.org"; // default to FromEmail or fallback
+        var fullName = $"{firstName} {lastName}".Trim();
+        await _emailService.SendAdminNewUserNotificationAsync(adminEmail, fullName, email, userStatus == UserStatus.Pending);
+
         return createdUser;
     }
 

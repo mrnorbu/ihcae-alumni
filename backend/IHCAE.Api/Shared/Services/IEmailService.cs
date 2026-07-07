@@ -25,6 +25,16 @@ public interface IEmailService
     Task SendRegistrationConfirmationAsync(string to, string firstName, bool isApproved);
 
     /// <summary>
+    /// Sends a notification to the administrator when a new user registers.
+    /// </summary>
+    /// <param name="adminEmail">The administrator's email address</param>
+    /// <param name="userFullName">The full name of the newly registered user</param>
+    /// <param name="userEmail">The email of the newly registered user</param>
+    /// <param name="isPending">Whether the user needs manual approval</param>
+    /// <returns>Task representing the async operation</returns>
+    Task SendAdminNewUserNotificationAsync(string adminEmail, string userFullName, string userEmail, bool isPending);
+
+    /// <summary>
     /// Sends an email verification token to a user.
     /// </summary>
     /// <param name="to">Recipient's email address</param>

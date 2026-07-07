@@ -107,7 +107,7 @@ test.describe('IHCAE Screenshot Generation', () => {
   });
 
   test('Phase 3: Admin Console', async ({ page }) => {
-    test.setTimeout(60000); // Admin phase takes many screenshots, needs more time
+    test.setTimeout(90000); // 90 seconds for longer admin flows // Admin phase takes many screenshots, needs more time
     // Login
     await page.goto(`${BASE_URL}/login`);
     await page.waitForTimeout(1000);
@@ -245,6 +245,22 @@ test.describe('IHCAE Screenshot Generation', () => {
     // Chapter 11: Forum Moderation
     await page.goto(`${BASE_URL}/admin/forums`);
     await page.waitForTimeout(2000);
+    
+    // Capture Topics Tab
+    await page.screenshot({ path: './images/chapter-11-forum-topics.png' });
+    
+    // Capture Topic View Modal
+    const viewBtn = page.locator('button[title="View"]').first();
+    if (await viewBtn.isVisible()) {
+      await viewBtn.click();
+      await page.waitForTimeout(1000);
+      await page.screenshot({ path: './images/chapter-11-forum-topic-view.png' });
+      // Click the X button to close the modal
+      const closeBtn = page.locator('h3:has-text("Topic Details")').locator('..').locator('button');
+      await closeBtn.click();
+      await page.waitForTimeout(1000); // wait for modal to disappear
+    }
+
     const flagsTab = page.locator('button', { hasText: 'Flagged Content' }).first();
     if (await flagsTab.isVisible()) {
       await flagsTab.click();

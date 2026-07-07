@@ -501,6 +501,47 @@ import {
                           </div>
                         </div>
                       </div>
+
+                      <!-- Deeper Nested Replies -->
+                      @for (nested of getNestedReplies(reply.id, selectedTopic()!.posts); track nested.id) {
+                        <div class="ml-16 border border-neutral-100 rounded-lg p-3 bg-neutral-50/30">
+                          <div class="flex items-start gap-2.5">
+                            <div class="flex items-center gap-1 shrink-0">
+                              <lucide-icon [img]="replyIcon" [size]="12" class="text-neutral-300"></lucide-icon>
+                              <div class="w-6 h-6 bg-neutral-100 rounded-full flex items-center justify-center">
+                                @if (nested.author.profileImageUrl && !isDefaultImage(nested.author.profileImageUrl)) {
+                                  <img [src]="nested.author.profileImageUrl" class="w-6 h-6 rounded-full object-cover" />
+                                }
+                                @if (!nested.author.profileImageUrl || isDefaultImage(nested.author.profileImageUrl)) {
+                                  <span class="text-[10px] font-semibold text-neutral-500">{{ nested.author.firstName.charAt(0) }}{{ nested.author.lastName.charAt(0) }}</span>
+                                }
+                              </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                              <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-1.5">
+                                  <span class="text-sm font-medium text-neutral-700">{{ nested.author.firstName }} {{ nested.author.lastName }}</span>
+                                  @if (nested.parentAuthor) {
+                                    <span class="text-[10px] text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">↩ {{ nested.parentAuthor.firstName }}</span>
+                                  }
+                                  <span class="text-xs text-neutral-400">{{ formatDate(nested.createdAt) }}</span>
+                                </div>
+                                <div class="flex items-center gap-0.5">
+                                  <button (click)="openEditModal(nested)" title="Edit"
+                                    class="p-1 rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
+                                    <lucide-icon [img]="editIcon" [size]="12"></lucide-icon>
+                                  </button>
+                                  <button (click)="deletePost(nested)" title="Delete"
+                                    class="p-1 rounded text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                    <lucide-icon [img]="trashIcon" [size]="12"></lucide-icon>
+                                  </button>
+                                </div>
+                              </div>
+                              <p class="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">{{ nested.content }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      }
                     }
                   }
                 }
@@ -799,6 +840,7 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
           this.closeActionModal();
           this.loadFlags();
           this.loadFlagCount();
+          this.loadTopics();
         },
         error: (err) => {
           this.notificationService.showError('Moderation Failed', err?.error?.message || 'An error occurred during moderation.');
@@ -1106,7 +1148,11 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
       'Delete this post? This cannot be undone.',
       'Delete Post',
       () => this.forumService.deletePost(post.id).pipe(takeUntil(this.destroy$)).subscribe({
-        next: () => { this.notificationService.showSuccess('Deleted', 'Post deleted'); if (this.selectedTopic()) this.reloadTopicDetail(this.selectedTopic()!.id); },
+        next: () => { 
+          this.notificationService.showSuccess('Deleted', 'Post deleted'); 
+          if (this.selectedTopic()) this.reloadTopicDetail(this.selectedTopic()!.id); 
+          this.loadTopics();
+        },
         error: () => this.notificationService.showError('Error', 'Failed to delete post')
       })
     );
@@ -1137,10 +1183,38 @@ export class ForumModerationComponent implements OnInit, OnDestroy {
     return !url || url.includes('lucide') || url.includes('placeholder') || url.includes('default');
   }
 
-  formatDate(date: string | Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
+  formatDate(date: any): string {
+    if (!date) return '';
+    let d = typeof date === 'string' ? new Date(date.endsWith('Z') ? date : date + 'Z') : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata', hour12: true
+    }).format(d);
+  }
+
+  getNestedReplies(parentId: number, allPosts: PostDto[]): PostDto[] {
+    if (!allPosts) return [];
+    
+    // Admin component structure: `posts` array usually contains the main post which has `replies`
+    // We need to find the parent reply first across all posts' replies
+    let parentReply: PostDto | undefined;
+    for (const post of allPosts) {
+      parentReply = post.replies?.find(r => r.id === parentId);
+      if (parentReply) break;
+    }
+    
+    const fromParentReplies = parentReply?.replies ?? [];
+    
+    // Also check flat structure inside any post's replies
+    const fromFlat: PostDto[] = [];
+    for (const post of allPosts) {
+      if (post.replies) {
+        fromFlat.push(...post.replies.filter(r => r.parentPostId === parentId));
+      }
+    }
+    
+    const seen = new Set(fromParentReplies.map(r => r.id));
+    return [...fromParentReplies, ...fromFlat.filter(r => !seen.has(r.id))];
   }
 }

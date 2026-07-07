@@ -30,7 +30,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
 
           <!-- ═══ LEFT SIDEBAR ═══ -->
           <aside class="w-48 flex-shrink-0 hidden lg:block">
-            <div class="sticky top-24 space-y-3">
+            <div class="sticky top-16 pt-4 space-y-3">
 
               <!-- New Thread -->
               <button (click)="openCreateTopicModal()"
@@ -102,7 +102,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
           <div class="flex-1 min-w-0">
 
             <!-- ── PERSISTENT TOP BAR (always visible) ── -->
-            <div class="sticky top-24 z-20 bg-white sm:rounded-lg border-y sm:border-x border-neutral-200 mb-3 px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3">
+            <div class="sticky top-16 z-20 bg-white sm:rounded-lg border border-neutral-200 shadow-sm mb-6 px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3">
               @if (view === 'detail') {
                 <button (click)="backToList()"
                   class="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0 mr-1">
@@ -504,7 +504,7 @@ import type { TopicSummaryDto, TagDto, CreateTopicRequest, TopUserDto, TopicDeta
 
           <!-- ═══ RIGHT SIDEBAR ═══ -->
           <aside class="w-56 flex-shrink-0 hidden xl:block">
-            <div class="sticky top-24 space-y-4">
+            <div class="sticky top-16 pt-4 space-y-4">
 
               <!-- Top Users -->
               <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
@@ -1041,7 +1041,8 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
   }
 
   timeAgo(date: Date | string): string {
-    const d = new Date(date);
+    let d = typeof date === 'string' ? new Date(date.endsWith('Z') ? date : date + 'Z') : new Date(date);
+    if (isNaN(d.getTime())) return '';
     let diffMs = Date.now() - d.getTime();
     
     if (diffMs < 0) diffMs = 0;
@@ -1054,14 +1055,13 @@ export class ModernForumListComponent implements OnInit, OnDestroy {
     if (h < 24) return `${h}h ago`;
     if (days < 7) return `${days}d ago`;
     
-    return d.toLocaleString('en-IN', {
+    return new Intl.DateTimeFormat('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true
-    });
+      timeZone: 'Asia/Kolkata'
+    }).format(d);
   }
 }
-

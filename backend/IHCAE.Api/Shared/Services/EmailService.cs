@@ -84,6 +84,34 @@ public class EmailService : IEmailService
     }
 
     /// <summary>
+    /// Sends a notification to the administrator when a new user registers.
+    /// </summary>
+    public async Task SendAdminNewUserNotificationAsync(string adminEmail, string userFullName, string userEmail, bool isPending)
+    {
+        var subject = isPending ? "Action Required: New User Registration Pending Approval" : "New User Registration Auto-Approved";
+        
+        var actionText = isPending 
+            ? "<p>This user's email was not found in the pre-approved Alumni Database. <strong>Their account is pending your review and approval.</strong></p><p>Please log in to the admin dashboard to verify their alumni status and approve or reject the registration.</p>"
+            : "<p>This user's email was successfully matched against the Alumni Database. Their account has been automatically approved.</p>";
+
+        var content = $@"
+            <h2>Hello Administrator,</h2>
+            <p>A new user has registered on the IHCAE Alumni Network.</p>
+            <div class='notice {(isPending ? "warning" : "success")}'>
+                <div class='notice-title'>User Details</div>
+                <p class='notice-content'>
+                    <strong>Name:</strong> {userFullName}<br>
+                    <strong>Email:</strong> {userEmail}
+                </p>
+            </div>
+            {actionText}
+            <p>Best regards,<br>IHCAE Alumni Network System</p>";
+
+        var htmlBody = WrapInLayout("New User Notification", content);
+        await SendEmailAsync(adminEmail, subject, htmlBody);
+    }
+
+    /// <summary>
     /// Sends an email verification token to a user.
     /// </summary>
     public async Task SendEmailVerificationAsync(string to, string firstName, string verificationLink)

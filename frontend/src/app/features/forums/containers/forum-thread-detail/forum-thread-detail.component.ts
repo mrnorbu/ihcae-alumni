@@ -657,9 +657,9 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: Date | string): string {
-    const d = new Date(date);
-    const now = new Date();
-    let diffMs = now.getTime() - d.getTime();
+    let d = typeof date === 'string' ? new Date(date.endsWith('Z') ? date : date + 'Z') : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    let diffMs = Date.now() - d.getTime();
     
     // Prevent negative time differences (future dates) from showing 'just now' indefinitely
     if (diffMs < 0) diffMs = 0;
@@ -673,13 +673,14 @@ export class ForumThreadDetailComponent implements OnInit, OnDestroy {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     
-    return d.toLocaleString('en-IN', {
+    return new Intl.DateTimeFormat('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'Asia/Kolkata',
       hour12: true
-    });
+    }).format(d);
   }
 }

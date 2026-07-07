@@ -94,7 +94,7 @@ public class ForumService : IForumService
             case "mostdiscussed":
                 orderedQuery = query
                     .OrderByDescending(t => t.IsPinned)
-                    .ThenByDescending(t => t.Posts.Count);
+                    .ThenByDescending(t => t.Posts.Count(p => !p.IsDeleted));
                 break;
             default: // "recent"
                 orderedQuery = query
@@ -119,8 +119,8 @@ public class ForumService : IForumService
                     LastName = t.CreatedBy.LastName,
                     ProfileImageUrl = _urlHelperService.GetAbsoluteUrl(t.CreatedBy.AlumniProfile?.ProfileImageUrl)
                 },
-                PostCount = t.Posts.Count,
-                LastReplyAt = t.Posts.Max(p => (DateTime?)p.CreatedAt),
+                PostCount = t.Posts.Count(p => !p.IsDeleted),
+                LastReplyAt = t.Posts.Where(p => !p.IsDeleted).Max(p => (DateTime?)p.CreatedAt),
                 IsPinned = t.IsPinned,
                 IsLocked = t.IsLocked,
                 CreatedAt = t.CreatedAt,
@@ -215,7 +215,7 @@ public class ForumService : IForumService
                 .ThenInclude(pp => pp!.Author)
                     .ThenInclude(a => a.AlumniProfile)
             .Where(p => p.TopicId == topicId && p.ParentPostId.HasValue && !p.IsDeleted)
-            .OrderByDescending(p => p.CreatedAt) // Chronological order (newest first)
+            .OrderBy(p => p.CreatedAt) // Chronological order (oldest first, newest at bottom)
             .ToListAsync();
         
         _logger.LogInformation("Loaded {ReplyCount} replies for topic {TopicId}", allReplies.Count, topicId);
