@@ -143,8 +143,22 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
-// Serve static files (for uploaded images)
+// Serve default static files (wwwroot)
 app.UseStaticFiles();
+
+// Serve custom uploads directory
+var basePath = builder.Configuration["Uploads:BasePath"] ?? Path.Combine("wwwroot", "uploads");
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, basePath);
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 
 app.UseCors("AllowAngularApp");
 

@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Calendar, MapPin, Clock, Users, AlertCircle, CheckCircle, Calendar as CalendarIcon } from 'lucide-angular';
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
+import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
 import { EventsService } from '../../services/events.service';
 import { UserAuthStore } from '../../../../core/state/user-auth.store';
 import type { Event, EventSummary } from '../../models';
@@ -15,7 +16,7 @@ import type { Event, EventSummary } from '../../models';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule],
+  imports: [RouterModule, HeaderComponent, FooterComponent, LucideAngularModule, AppImageUrlPipe],
   template: `
     <div class="min-h-screen bg-neutral-50">
       <app-header></app-header>
@@ -54,6 +55,24 @@ import type { Event, EventSummary } from '../../models';
                     <span class="badge badge-success">
                       {{ event()!.category!.name }}
                     </span>
+                  </div>
+                }
+
+                <!-- Featured Image -->
+                @if (event()?.imageUrl) {
+                  <div class="w-full h-64 md:h-80 relative overflow-hidden bg-neutral-100 rounded-lg mb-5">
+                    <img 
+                      [src]="event()?.imageUrl | appImageUrl" 
+                      [alt]="event()?.title"
+                      class="w-full h-full object-cover"
+                      (error)="onImageError($event)"
+                    >
+                    <div 
+                      style="display: none;"
+                      class="absolute inset-0 bg-primary-900 flex items-center justify-center"
+                    >
+                      <lucide-icon [img]="calendarIcon" [size]="48" class="text-white opacity-80"></lucide-icon>
+                    </div>
                   </div>
                 }
 
@@ -355,8 +374,8 @@ export class EventDetailComponent implements OnInit {
       .join('');
   }
 
-  onImageError(evt: any): void {
-    const imgElement = evt.target as HTMLImageElement;
+  onImageError(event: globalThis.Event): void {
+    const imgElement = event.target as HTMLImageElement;
     imgElement.style.display = 'none';
     const fallbackDiv = imgElement.nextElementSibling as HTMLElement;
     if (fallbackDiv) {

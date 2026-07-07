@@ -159,8 +159,23 @@ import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
                 <div class="space-y-3">
                   @for (event of events(); track event.id) {
                     <div class="group cursor-pointer py-3 border-b border-neutral-200/60 hover:bg-neutral-50/30 px-2 rounded-lg transition-colors">
-                      <div class="flex items-start justify-between gap-4">
-                        <div class="flex-1 min-w-0 cursor-pointer" [routerLink]="['/events', event.slug]">
+                      <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 bg-secondary-50 text-secondary-700 rounded overflow-hidden flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-secondary-100 relative mt-1">
+                          @if (event.thumbnailUrl) {
+                            <img 
+                              [src]="event.thumbnailUrl | appImageUrl" 
+                              [alt]="event.title" 
+                              class="w-full h-full object-cover"
+                              (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'"
+                            >
+                          }
+                          <lucide-icon 
+                            [img]="calendarIcon" 
+                            [size]="24" 
+                            [style.display]="event.thumbnailUrl ? 'none' : 'block'"
+                          ></lucide-icon>
+                        </div>
+                        <div class="flex-1 min-w-0 flex flex-col justify-between cursor-pointer" [routerLink]="['/events', event.slug]">
                           <div class="flex items-center gap-2 mb-1">
                             <h3 class="text-base md:text-lg font-bold text-neutral-900 group-hover:text-primary-700 transition-colors leading-snug truncate">{{ event.title }}</h3>
                             @if (event.category) {
@@ -200,11 +215,11 @@ import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
                             </div>
                           }
                         </div>
-                        <div class="flex items-center gap-2 flex-shrink-0 self-center">
-                          <button class="btn-primary btn-sm" [routerLink]="['/events', event.slug]">
+                        <div class="flex flex-col items-end gap-2 flex-shrink-0 self-start mt-1">
+                          <button class="btn-primary btn-sm w-full" [routerLink]="['/events', event.slug]">
                             Register
                           </button>
-                          <button class="btn-outline btn-sm" [routerLink]="['/events', event.slug]">
+                          <button class="btn-outline btn-sm w-full" [routerLink]="['/events', event.slug]">
                             Details
                           </button>
                         </div>

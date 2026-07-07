@@ -76,12 +76,13 @@ This generates static files in `dist/IHCAE.Web/browser/`.
 ### Step 2: Deploy to Production
 Synchronize the build output directly to the server frontend directory:
 ```bash
-# Run this from the frontend/ directory
-rsync -avz --delete dist/IHCAE.Web/browser/ ihcae@31.97.229.61:~/frontend/
+# Run this from the ROOT directory of the project
+rsync -avz --delete frontend/dist/IHCAE.Web/browser/ ihcae@31.97.229.61:~/frontend/
 ```
 
-> [!IMPORTANT]
-> The trailing slash (`/`) on `dist/IHCAE.Web/browser/` is critical. It ensures that the files inside the folder (like `index.html`) are placed directly under `/home/ihcae/frontend/` instead of nested inside a `browser` subdirectory. This prevents rewrite loop errors in Nginx.
+> [!WARNING]
+> **CRITICAL PATH WARNING:** You must include `frontend/` at the beginning and `/browser/` at the end! 
+> If you sync `dist/IHCAE.Web/` without the `/browser/` folder, Nginx will fail to find `index.html` and throw a **500 Internal Server Error (Rewrite Loop)**.
 
 ---
 
@@ -99,8 +100,9 @@ dotnet publish -c Release -r linux-x64 --self-contained true -o ./publish
 ### Step 2: Deploy to Production
 Synchronize the published backend files to the server:
 ```bash
-# Run this from the backend/IHCAE.Api/ directory
-rsync -avz --delete publish/ ihcae@31.97.229.61:~/backend/publish/
+# Run this from the ROOT directory of the project
+# Note: We exclude wwwroot/uploads to prevent deleting user-uploaded files on the live server!
+rsync -avz --delete --exclude 'wwwroot/uploads' publish/ ihcae@31.97.229.61:~/backend/publish/
 ```
 
 ### Step 3: Grant Executable Permissions (On Server)
@@ -211,9 +213,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Serve static uploaded files (avatars, attachments, post images)
-    location /uploads {
-        alias /home/ihcae/backend/publish/wwwroot/uploads;
+    # Serve static uploaded files via backend (avoids Nginx permission issues)
+    location /uploads/ {
+        proxy_pass http://localhost:5000/uploads/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
         expires 7d;
         add_header Cache-Control "public";
     }

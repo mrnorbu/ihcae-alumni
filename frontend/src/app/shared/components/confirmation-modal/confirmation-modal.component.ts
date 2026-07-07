@@ -12,7 +12,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   imports: [],
   template: `
     @if (isVisible) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black bg-opacity-50">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-fade-in">
           <!-- Icon -->
           <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">

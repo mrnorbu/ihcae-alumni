@@ -172,8 +172,20 @@ import {
               @for (event of upcomingEvents(); track event.id) {
                 <div class="group cursor-pointer py-2.5 border-b border-neutral-200/60 hover:bg-neutral-50/50 px-2 rounded-lg transition-colors" [routerLink]="['/events', event.slug]">
                   <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 bg-secondary-50 text-secondary-700 rounded flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-secondary-100">
-                      <lucide-icon [img]="calendarIcon" [size]="18"></lucide-icon>
+                    <div class="w-12 h-12 bg-secondary-50 text-secondary-700 rounded overflow-hidden flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-secondary-100 relative">
+                      @if (event.thumbnailUrl) {
+                        <img 
+                          [src]="event.thumbnailUrl | appImageUrl" 
+                          [alt]="event.title" 
+                          class="w-full h-full object-cover"
+                          (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'"
+                        >
+                      }
+                      <lucide-icon 
+                        [img]="calendarIcon" 
+                        [size]="18" 
+                        [style.display]="event.thumbnailUrl ? 'none' : 'block'"
+                      ></lucide-icon>
                     </div>
                     <div class="flex-1 min-w-0">
                       <h3 class="text-sm md:text-base font-bold text-neutral-900 group-hover:text-primary-700 transition-colors mb-0.5 line-clamp-2 leading-snug">{{ event.title }}</h3>

@@ -610,12 +610,17 @@ export class NewsEventsManagementComponent implements OnInit {
   // Article modal
   showArticleModal = signal(false);
   editingArticleId: number | null = null;
-  articleForm = { title: '', content: '', categoryId: 0, imageUrl: '', publish: true };
+  articleForm = { title: '', content: '', categoryId: 0, imageUrl: '', thumbnailUrl: '', publish: true };
 
   // Event modal
   showEventModal = signal(false);
   editingEventId: number | null = null;
-  eventForm = { title: '', description: '', location: '', eventDate: '', eventEndDate: '', categoryId: 0, capacity: 0, imageUrl: '', publish: true };
+  eventForm = {
+    title: '', description: '', location: '', categoryId: 0,
+    eventDate: '', eventTime: '', eventEndDate: '', eventEndTime: '',
+    capacity: null as number | null, registrationDeadline: '',
+    imageUrl: '', thumbnailUrl: '', publish: true
+  };
 
   // Registrations modal
   showRegistrationsModal = signal(false);
@@ -676,7 +681,7 @@ export class NewsEventsManagementComponent implements OnInit {
 
   openArticleModal() {
     this.editingArticleId = null;
-    this.articleForm = { title: '', content: '', categoryId: 0, imageUrl: '', publish: true };
+    this.articleForm = { title: '', content: '', categoryId: 0, imageUrl: '', thumbnailUrl: '', publish: true };
     this.showArticleModal.set(true);
   }
 
@@ -689,6 +694,7 @@ export class NewsEventsManagementComponent implements OnInit {
           content: full.content,
           categoryId: full.category?.id || 0,
           imageUrl: full.imageUrl || '',
+          thumbnailUrl: full.thumbnailUrl || '',
           publish: full.status === 'Published'
         };
         this.showArticleModal.set(true);
@@ -711,6 +717,7 @@ export class NewsEventsManagementComponent implements OnInit {
       content: this.articleForm.content.trim(),
       categoryId: this.articleForm.categoryId,
       imageUrl: this.articleForm.imageUrl.trim() || undefined,
+      thumbnailUrl: this.articleForm.thumbnailUrl?.trim() || undefined,
       publish: this.articleForm.publish
     };
 
@@ -763,7 +770,11 @@ export class NewsEventsManagementComponent implements OnInit {
 
   openEventModal() {
     this.editingEventId = null;
-    this.eventForm = { title: '', description: '', location: '', eventDate: '', eventEndDate: '', categoryId: 0, capacity: 0, imageUrl: '', publish: true };
+    this.eventForm = {
+      title: '', description: '', location: '', categoryId: 0,
+      eventDate: '', eventTime: '', eventEndDate: '', eventEndTime: '',
+      capacity: null, registrationDeadline: '', imageUrl: '', thumbnailUrl: '', publish: true
+    };
     this.showEventModal.set(true);
   }
 
@@ -771,15 +782,24 @@ export class NewsEventsManagementComponent implements OnInit {
     this.editingEventId = event.id;
     this.eventsService.getEventById(event.id).subscribe({
       next: (full) => {
+        const startDate = new Date(full.eventDate);
+        const endDate = full.eventEndDate ? new Date(full.eventEndDate) : null;
+        const eventTime = startDate.toTimeString().slice(0, 5);
+        const eventEndTime = endDate ? endDate.toTimeString().slice(0, 5) : '';
+
         this.eventForm = {
           title: full.title,
           description: full.description,
           location: full.location,
-          eventDate: this.toDatetimeLocal(full.eventDate),
-          eventEndDate: full.eventEndDate ? this.toDatetimeLocal(full.eventEndDate) : '',
           categoryId: full.category?.id || 0,
-          capacity: full.capacity || 0,
+          eventDate: startDate.toISOString().split('T')[0],
+          eventTime,
+          eventEndDate: full.eventEndDate ? endDate?.toISOString().split('T')[0] || '' : '',
+          eventEndTime,
+          capacity: full.capacity ?? null,
+          registrationDeadline: full.registrationDeadline ? new Date(full.registrationDeadline).toISOString().split('T')[0] : '',
           imageUrl: full.imageUrl || '',
+          thumbnailUrl: full.thumbnailUrl || '',
           publish: full.status === 'Published'
         };
         this.showEventModal.set(true);
@@ -796,16 +816,21 @@ export class NewsEventsManagementComponent implements OnInit {
   saveEvent() {
     if (!this.eventForm.title.trim() || !this.eventForm.description.trim() || !this.eventForm.location.trim() || !this.eventForm.eventDate) return;
 
+    const eventDateTime = new Date(`${this.eventForm.eventDate}T${this.eventForm.eventTime || '00:00'}`);
+    const eventEndDateTime = this.eventForm.eventEndDate ? new Date(`${this.eventForm.eventEndDate}T${this.eventForm.eventEndTime || '00:00'}`) : undefined;
+
     this.isSaving.set(true);
     const request: CreateEventRequest = {
       title: this.eventForm.title.trim(),
       description: this.eventForm.description.trim(),
-      location: this.eventForm.location.trim(),
-      eventDate: new Date(this.eventForm.eventDate),
-      eventEndDate: this.eventForm.eventEndDate ? new Date(this.eventForm.eventEndDate) : undefined,
       categoryId: this.eventForm.categoryId || undefined,
+      location: this.eventForm.location.trim(),
+      eventDate: eventDateTime,
+      eventEndDate: eventEndDateTime,
       capacity: this.eventForm.capacity || undefined,
+      registrationDeadline: this.eventForm.registrationDeadline ? new Date(this.eventForm.registrationDeadline) : undefined,
       imageUrl: this.eventForm.imageUrl.trim() || undefined,
+      thumbnailUrl: this.eventForm.thumbnailUrl?.trim() || undefined,
       publish: this.eventForm.publish
     };
 
@@ -917,6 +942,7 @@ export class NewsEventsManagementComponent implements OnInit {
         next: (res) => {
           if (res.success && res.imageUrl) {
             this.articleForm.imageUrl = res.imageUrl;
+            this.articleForm.thumbnailUrl = res.thumbnailUrl;
             this.notificationService.showSuccess('Uploaded', 'Cover image uploaded successfully');
           } else {
             this.notificationService.showError('Upload Failed', res.message || 'Could not upload image');
@@ -940,6 +966,7 @@ export class NewsEventsManagementComponent implements OnInit {
         next: (res) => {
           if (res.success && res.imageUrl) {
             this.eventForm.imageUrl = res.imageUrl;
+            this.eventForm.thumbnailUrl = res.thumbnailUrl;
             this.notificationService.showSuccess('Uploaded', 'Cover image uploaded successfully');
           } else {
             this.notificationService.showError('Upload Failed', res.message || 'Could not upload image');

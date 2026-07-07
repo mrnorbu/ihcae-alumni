@@ -40,15 +40,20 @@ public class FileUploadService : IFileUploadService
     /// Initializes the FileUploadService with environment and logger dependencies.
     /// Sets up the uploads directory path and ensures it exists.
     /// </summary>
-    /// <param name="environment">Web host environment for accessing wwwroot path</param>
+    /// <param name="environment">Web host environment for accessing base path</param>
     /// <param name="logger">Logger for tracking upload operations</param>
-    public FileUploadService(IWebHostEnvironment environment, ILogger<FileUploadService> logger)
+    /// <param name="configuration">Configuration for reading custom upload paths</param>
+    public FileUploadService(IWebHostEnvironment environment, ILogger<FileUploadService> logger, IConfiguration configuration)
     {
         _environment = environment;
         _logger = logger;
         
-        // Set up uploads directory path relative to wwwroot
-        _uploadsPath = Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+        // Read base path from config, default to wwwroot/uploads if not set
+        var basePath = configuration["Uploads:BasePath"] ?? Path.Combine("wwwroot", "uploads");
+        
+        // Set up uploads directory path
+        // If basePath is absolute, Path.Combine uses it directly
+        _uploadsPath = Path.Combine(_environment.ContentRootPath, basePath);
         
         // Ensure uploads directory exists
         if (!Directory.Exists(_uploadsPath))
@@ -232,9 +237,13 @@ public class FileUploadService : IFileUploadService
     {
         try
         {
-            // Convert URL to file path
-            var relativePath = fileUrl.TrimStart('/');
-            var filePath = Path.Combine(_environment.ContentRootPath, "wwwroot", relativePath);
+            // Convert URL back to relative path (remove /uploads/)
+            var urlPath = new Uri(fileUrl).AbsolutePath;
+            var relativePath = urlPath.StartsWith("/uploads/") 
+                ? urlPath.Substring("/uploads/".Length) 
+                : urlPath.TrimStart('/');
+                
+            var filePath = Path.Combine(_uploadsPath, relativePath);
 
             // Delete file if it exists
             if (File.Exists(filePath))

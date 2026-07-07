@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Calendar, User, Eye, Share2, Newspaper } from 'lucide-angular';
 import { HeaderComponent, FooterComponent } from '../../../../shared/components';
 import { NewsService } from '../../services/news.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import type { NewsArticle, NewsArticleSummary } from '../../models';
 import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
 
@@ -108,7 +109,7 @@ import { AppImageUrlPipe } from '../../../../shared/pipes/app-image-url.pipe';
                     <h3 class="text-sm font-bold text-neutral-900 mb-0.5">Share this article</h3>
                     <p class="text-xs text-neutral-500">Help others discover this story</p>
                   </div>
-                  <button class="btn-outline btn-sm inline-flex items-center gap-1.5">
+                  <button class="btn-outline btn-sm inline-flex items-center gap-1.5" (click)="shareArticle()">
                     <lucide-icon [img]="shareIcon" [size]="14"></lucide-icon>
                     Share
                   </button>
@@ -206,6 +207,7 @@ export class NewsDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private newsService = inject(NewsService);
+  private notificationService = inject(NotificationService);
 
   // Icons
   arrowLeftIcon = ArrowLeft;
@@ -291,6 +293,26 @@ export class NewsDetailComponent implements OnInit {
     const fallbackDiv = imgElement.nextElementSibling as HTMLElement;
     if (fallbackDiv) {
       fallbackDiv.style.display = 'flex';
+    }
+  }
+
+  shareArticle(): void {
+    const url = window.location.href;
+    const articleTitle = this.article()?.title || 'IHCAE Alumni News';
+    
+    if (navigator.share) {
+      navigator.share({
+        title: articleTitle,
+        url: url
+      }).catch(err => {
+        console.error('Error sharing', err);
+      });
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        this.notificationService.showSuccess('Link Copied', 'Article link copied to clipboard!');
+      }).catch(err => {
+        console.error('Could not copy text: ', err);
+      });
     }
   }
 }
